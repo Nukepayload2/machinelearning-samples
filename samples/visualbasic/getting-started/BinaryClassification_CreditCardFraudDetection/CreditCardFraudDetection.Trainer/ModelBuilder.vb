@@ -150,8 +150,8 @@ Namespace CreditCardFraudDetection.Trainer
 
 				' save train split 
 				Using fileStream = File.Create(Path.Combine(_outputPath, "trainData.csv"))
-					mlContext.Data.SaveAsText(testData, fileStream, separator:= ","c, headerRow:= True, schema:= True)
-				End Using
+                    mlContext.Data.SaveAsText(trainData, fileStream, separator:=","c, headerRow:=True, schema:=True)
+                End Using
 
 			Else
 				'Add the "StratificationColumn" that was added by classification.TrainTestSplit()

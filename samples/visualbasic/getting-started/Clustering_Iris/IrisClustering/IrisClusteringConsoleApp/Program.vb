@@ -9,7 +9,7 @@ Imports Microsoft.ML.Core.Data
 
 Namespace Clustering_Iris
     Friend Module Program
-        Private ReadOnly Property AppPath() As String
+        Private ReadOnly Property AppPath As String
             Get
                 Return Path.GetDirectoryName(Environment.GetCommandLineArgs()(0))
             End Get
@@ -41,7 +41,6 @@ Namespace Clustering_Iris
             Dim fullData As IDataView = textLoader.Read(DataPath)
 
             'Split dataset in two parts: TrainingDataset (80%) and TestDataset (20%)
-            'INSTANT VB TODO TASK: VB has no equivalent to C# deconstruction declarations:
             With mlContext.Clustering.TrainTestSplit(fullData, testFraction:=0.2)
                 Dim trainingDataView = .trainSet
                 Dim testingDataView = .testSet
@@ -81,18 +80,18 @@ Namespace Clustering_Iris
                     .PetalWidth = 5.1F
                 }
 
-                Dim model As ITransformer
                 Using stream = New FileStream(ModelPath, FileMode.Open, FileAccess.Read, FileShare.Read)
-                    model = mlContext.Model.Load(stream)
+                    Dim model As ITransformer = mlContext.Model.Load(stream)
+                    ' Create prediction engine related to the loaded trained model
+                    Dim predFunction = model.MakePredictionFunction(Of IrisData, IrisPrediction)(mlContext)
+
+                    'Score
+                    Dim resultprediction = predFunction.Predict(sampleIrisData)
+
+                    Console.WriteLine($"Cluster assigned for setosa flowers:" & resultprediction.SelectedClusterId)
                 End Using
-
-                ' Create prediction engine related to the loaded trained model
-                Dim predFunction = trainedModel.MakePredictionFunction(Of IrisData, IrisPrediction)(mlContext)
-
-                'Score
-                Dim resultprediction = predFunction.Predict(sampleIrisData)
-                Console.WriteLine($"Cluster assigned for setosa flowers:" & resultprediction.SelectedClusterId)
             End With
+
             Console.WriteLine("=============== End of process, hit any key to finish ===============")
             Console.ReadKey()
         End Sub
