@@ -34,7 +34,7 @@ Namespace CreditCardFraudDetection.Trainer
 
             _mlContext = mlContext
             _assetsPath = assetsPath
-            _dataSetFile = assetsPath
+            _dataSetFile = Path.Combine(_assetsPath, "input\creditcard.csv")
             _outputPath = Path.Combine(_assetsPath, "output")
 		End Sub
 
