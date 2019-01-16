@@ -1,9 +1,4 @@
-﻿Imports System
-Imports System.Collections.Generic
-Imports System.Linq
-
-Imports Microsoft.ML.Transforms
-Imports Microsoft.ML
+﻿Imports Microsoft.ML
 
 Imports ImageClassification.ImageDataStructures
 Imports ImageClassification.ModelScorer.ConsoleHelpers
@@ -19,7 +14,7 @@ Namespace ImageClassification.ModelScorer
         Private ReadOnly labelsLocation As String
         Private ReadOnly mlContext As MLContext
 
-        Public Sub New(ByVal dataLocation As String, ByVal imagesFolder As String, ByVal modelLocation As String, ByVal labelsLocation As String)
+        Public Sub New(dataLocation As String, imagesFolder As String, modelLocation As String, labelsLocation As String)
             Me.dataLocation = dataLocation
             Me.imagesFolder = imagesFolder
             Me.modelLocation = modelLocation
@@ -52,7 +47,7 @@ Namespace ImageClassification.ModelScorer
 
         End Sub
 
-        Private Function LoadModel(ByVal dataLocation As String, ByVal imagesFolder As String, ByVal modelLocation As String) As PredictionEngine(Of ImageNetData, ImageNetPrediction)
+        Private Function LoadModel(dataLocation As String, imagesFolder As String, modelLocation As String) As PredictionEngine(Of ImageNetData, ImageNetPrediction)
             ConsoleWriteHeader("Read model")
             Console.WriteLine($"Model location: {modelLocation}")
             Console.WriteLine($"Images folder: {imagesFolder}")
@@ -72,7 +67,7 @@ Namespace ImageClassification.ModelScorer
             Return predictionFunction
         End Function
 
-        Protected Iterator Function PredictDataUsingModel(ByVal testLocation As String, ByVal imagesFolder As String, ByVal labelsLocation As String, ByVal model As PredictionEngine(Of ImageNetData, ImageNetPrediction)) As IEnumerable(Of ImageNetData)
+        Protected Iterator Function PredictDataUsingModel(testLocation As String, imagesFolder As String, labelsLocation As String, model As PredictionEngine(Of ImageNetData, ImageNetPrediction)) As IEnumerable(Of ImageNetData)
             ConsoleWriteHeader("Classificate images")
             Console.WriteLine($"Images folder: {imagesFolder}")
             Console.WriteLine($"Training file: {testLocation}")

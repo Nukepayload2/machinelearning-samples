@@ -3,8 +3,6 @@
 Imports Microsoft.ML
 Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML.Data
-Imports Microsoft.ML.Runtime.Api
-Imports Microsoft.ML.Runtime.Data
 
 Namespace Common
     Public Class ModelScorer(Of TObservation As Class, TPrediction As {Class, New})

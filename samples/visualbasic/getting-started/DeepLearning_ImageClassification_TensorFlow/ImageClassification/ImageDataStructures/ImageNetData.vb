@@ -1,26 +1,23 @@
-﻿Imports System
-Imports System.Collections.Generic
-Imports System.IO
-Imports System.Linq
+﻿Imports System.IO
 
 Namespace ImageClassification.ImageDataStructures
-	Public Class ImageNetData
-		Public ImagePath As String
+    Public Class ImageNetData
+        Public ImagePath As String
 
-		Public Label As String
+        Public Label As String
 
-		Public Shared Function ReadFromCsv(ByVal file As String, ByVal folder As String) As IEnumerable(Of ImageNetData)
+        Public Shared Function ReadFromCsv(file As String, folder As String) As IEnumerable(Of ImageNetData)
             Return System.IO.File.ReadAllLines(file).Select(Function(x) x.Split(vbTab)).Select(Function(x) New ImageNetData With {
                 .ImagePath = Path.Combine(folder, x(0)),
                 .Label = x(1)
             })
         End Function
-	End Class
+    End Class
 
-	Public Class ImageNetDataProbability
-		Inherits ImageNetData
+    Public Class ImageNetDataProbability
+        Inherits ImageNetData
 
-		Public PredictedLabel As String
-		Public Property Probability() As Single
-	End Class
+        Public PredictedLabel As String
+        Public Property Probability() As Single
+    End Class
 End Namespace

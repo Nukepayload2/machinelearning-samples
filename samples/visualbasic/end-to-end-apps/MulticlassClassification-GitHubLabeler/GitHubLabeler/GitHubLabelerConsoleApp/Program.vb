@@ -1,6 +1,4 @@
-﻿Imports System
-Imports System.Threading.Tasks
-Imports System.IO
+﻿Imports System.IO
 
 ' Requires following NuGet packages
 ' NuGet package -> Microsoft.Extensions.Configuration
@@ -8,7 +6,6 @@ Imports System.IO
 Imports Microsoft.Extensions.Configuration
 
 Imports Microsoft.ML
-Imports Microsoft.ML.Transforms.Conversions
 Imports Microsoft.ML.Core.Data
 
 Imports Common

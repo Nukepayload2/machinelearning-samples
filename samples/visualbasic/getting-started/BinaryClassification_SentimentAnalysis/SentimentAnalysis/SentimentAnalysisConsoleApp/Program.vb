@@ -1,12 +1,8 @@
-﻿Imports System
-Imports System.IO
+﻿Imports System.IO
 Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML
-Imports Microsoft.ML.Trainers
 
 Imports SentimentAnalysisConsoleApp.DataStructures
-Imports Microsoft.ML.Transforms.Text
-Imports System.Data
 Imports Common
 Imports Microsoft.ML.Data
 
@@ -26,7 +22,7 @@ Namespace SentimentAnalysisConsoleApp
         Private BaseModelsPath As String = "../../../../MLModels"
         Private ModelPath As String = $"{BaseModelsPath}/SentimentModel.zip"
 
-        Sub Main(ByVal args() As String)
+        Sub Main(args() As String)
             'Create MLContext to be shared across the model creation workflow objects 
             'Set a random seed for repeatable/deterministic results across multiple trainings.
             Dim mlContext = New MLContext(seed:=1)
@@ -43,7 +39,7 @@ Namespace SentimentAnalysisConsoleApp
 
         End Sub
 
-        Private Function BuildTrainEvaluateAndSaveModel(ByVal mlContext As MLContext) As ITransformer
+        Private Function BuildTrainEvaluateAndSaveModel(mlContext As MLContext) As ITransformer
             ' STEP 1: Common data loading configuration
             Dim textLoader As TextLoader = mlContext.Data.CreateTextReader({
                 New TextLoader.Column("Label", DataKind.Bool, 0),
@@ -87,7 +83,7 @@ Namespace SentimentAnalysisConsoleApp
         End Function
 
         ' (OPTIONAL) Try/test a single prediction by loding the model from the file, first.
-        Private Sub TestSinglePrediction(ByVal mlContext As MLContext)
+        Private Sub TestSinglePrediction(mlContext As MLContext)
 
             Dim sampleStatement As SentimentIssue = New SentimentIssue With {.Text = "This is a very rude movie"}
 

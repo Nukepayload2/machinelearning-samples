@@ -20,7 +20,7 @@ Namespace Clustering_Iris
         Private BaseModelsPath As String = "../../../../MLModels"
         Private ModelPath As String = $"{BaseModelsPath}/IrisModel.zip"
 
-        Public Sub Main(ByVal args() As String)
+        Public Sub Main(args() As String)
             'Create the MLContext to share across components for deterministic results
             Dim mlContext As New MLContext(seed:=1) 'Seed set to any number so you have a deterministic environment
 

@@ -19,7 +19,7 @@ Namespace MulticlassClassification_Iris
         Private BaseModelsPath As String = "../../../../MLModels"
         Private ModelPath As String = $"{BaseModelsPath}/IrisClassificationModel.zip"
 
-        Public Sub Main(ByVal args() As String)
+        Public Sub Main(args() As String)
             ' Create MLContext to be shared across the model creation workflow objects 
             ' Set a random seed for repeatable/deterministic results across multiple trainings.
             Dim mlContext = New MLContext(seed:=0)
@@ -34,7 +34,7 @@ Namespace MulticlassClassification_Iris
             Console.ReadKey()
         End Sub
 
-        Private Sub BuildTrainEvaluateAndSaveModel(ByVal mlContext As MLContext)
+        Private Sub BuildTrainEvaluateAndSaveModel(mlContext As MLContext)
             ' STEP 1: Common data loading configuration
             Dim textLoader = mlContext.Data.CreateTextReader(New TextLoader.Arguments() With {
                 .Separator = vbTab,
@@ -85,7 +85,7 @@ Namespace MulticlassClassification_Iris
             Console.WriteLine("The model is saved to {0}", ModelPath)
         End Sub
 
-        Private Sub TestSomePredictions(ByVal mlContext As MLContext)
+        Private Sub TestSomePredictions(mlContext As MLContext)
 
             'Test Classification Predictions with some hard-coded samples 
 
