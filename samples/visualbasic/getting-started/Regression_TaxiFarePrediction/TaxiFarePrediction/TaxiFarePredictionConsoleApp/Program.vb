@@ -49,22 +49,21 @@ Namespace Regression_TaxiFarePrediction
 		End Sub
 
 		Private Function BuildTrainEvaluateAndSaveModel(ByVal mlContext As MLContext) As ITransformer
-			' STEP 1: Common data loading configuration
-			Dim textLoader As TextLoader = mlContext.Data.TextReader(New TextLoader.Arguments() With {
-				.Separator = ",",
-				.HasHeader = True,
-				.Column = {
-					New TextLoader.Column("VendorId", DataKind.Text, 0),
-					New TextLoader.Column("RateCode", DataKind.Text, 1),
-					New TextLoader.Column("PassengerCount", DataKind.R4, 2),
-					New TextLoader.Column("TripTime", DataKind.R4, 3),
-					New TextLoader.Column("TripDistance", DataKind.R4, 4),
-					New TextLoader.Column("PaymentType", DataKind.Text, 5),
-					New TextLoader.Column("FareAmount", DataKind.R4, 6)
-				}
-			})
+            ' STEP 1: Common data loading configuration
+            Dim textLoader As TextLoader = mlContext.Data.CreateTextReader({
+                    New TextLoader.Column("VendorId", DataKind.Text, 0),
+                    New TextLoader.Column("RateCode", DataKind.Text, 1),
+                    New TextLoader.Column("PassengerCount", DataKind.R4, 2),
+                    New TextLoader.Column("TripTime", DataKind.R4, 3),
+                    New TextLoader.Column("TripDistance", DataKind.R4, 4),
+                    New TextLoader.Column("PaymentType", DataKind.Text, 5),
+                    New TextLoader.Column("FareAmount", DataKind.R4, 6)
+                },
+                separatorChar:=","c,
+                hasHeader:=True
+            )
 
-			Dim baseTrainingDataView As IDataView = textLoader.Read(TrainDataPath)
+            Dim baseTrainingDataView As IDataView = textLoader.Read(TrainDataPath)
 			Dim testDataView As IDataView = textLoader.Read(TestDataPath)
 
 			'Sample code of removing extreme data like "outliers" for FareAmounts higher than $150 and lower than $1 which can be error-data 
@@ -128,14 +127,14 @@ Namespace Regression_TaxiFarePrediction
 				trainedModel = mlContext.Model.Load(stream)
 			End Using
 
-			' Create prediction engine related to the loaded trained model
-			Dim predFunction = trainedModel.MakePredictionFunction(Of TaxiTrip, TaxiTripFarePrediction)(mlContext)
+            ' Create prediction engine related to the loaded trained model
+            Dim predEngine = trainedModel.CreatePredictionEngine(Of TaxiTrip, TaxiTripFarePrediction)(mlContext)
 
-			'Score
-			Dim resultprediction = predFunction.Predict(taxiTripSample)
-			'''
+            'Score
+            Dim resultprediction = predEngine.Predict(taxiTripSample)
+            '''
 
-			Console.WriteLine($"**********************************************************************")
+            Console.WriteLine($"**********************************************************************")
 			Console.WriteLine($"Predicted fare: {resultprediction.FareAmount:0.####}, actual fare: 15.5")
 			Console.WriteLine($"**********************************************************************")
 		End Sub
@@ -146,69 +145,69 @@ Namespace Regression_TaxiFarePrediction
 				trainedModel = mlContext.Model.Load(stream)
 			End Using
 
-			' Create prediction engine related to the loaded trained model
-			Dim predFunction = trainedModel.MakePredictionFunction(Of TaxiTrip, TaxiTripFarePrediction)(mlContext)
+            ' Create prediction engine related to the loaded trained model
+            Dim predEngine = trainedModel.CreatePredictionEngine(Of TaxiTrip, TaxiTripFarePrediction)(mlContext)
 
-			Dim chartFileName As String = ""
-			Using pl = New PLStream()
-				' use SVG backend and write to SineWaves.svg in current directory
-				If args.Length = 1 AndAlso args(0) = "svg" Then
-					pl.sdev("svg")
-					chartFileName = "TaxiRegressionDistribution.svg"
-					pl.sfnam(chartFileName)
-				Else
-					pl.sdev("pngcairo")
-					chartFileName = "TaxiRegressionDistribution.png"
-					pl.sfnam(chartFileName)
-				End If
+            Dim chartFileName As String = ""
+            Using pl = New PLStream()
+                ' use SVG backend and write to SineWaves.svg in current directory
+                If args.Length = 1 AndAlso args(0) = "svg" Then
+                    pl.sdev("svg")
+                    chartFileName = "TaxiRegressionDistribution.svg"
+                    pl.sfnam(chartFileName)
+                Else
+                    pl.sdev("pngcairo")
+                    chartFileName = "TaxiRegressionDistribution.png"
+                    pl.sfnam(chartFileName)
+                End If
 
-				' use white background with black foreground
-				pl.spal0("cmap0_alternate.pal")
+                ' use white background with black foreground
+                pl.spal0("cmap0_alternate.pal")
 
-				' Initialize plplot
-				pl.init()
+                ' Initialize plplot
+                pl.init()
 
-				' set axis limits
-				Const xMinLimit As Integer = 0
-				Const xMaxLimit As Integer = 35 'Rides larger than $35 are not shown in the chart
-				Const yMinLimit As Integer = 0
-				Const yMaxLimit As Integer = 35 'Rides larger than $35 are not shown in the chart
-				pl.env(xMinLimit, xMaxLimit, yMinLimit, yMaxLimit, AxesScale.Independent, AxisBox.BoxTicksLabelsAxes)
+                ' set axis limits
+                Const xMinLimit As Integer = 0
+                Const xMaxLimit As Integer = 35 'Rides larger than $35 are not shown in the chart
+                Const yMinLimit As Integer = 0
+                Const yMaxLimit As Integer = 35 'Rides larger than $35 are not shown in the chart
+                pl.env(xMinLimit, xMaxLimit, yMinLimit, yMaxLimit, AxesScale.Independent, AxisBox.BoxTicksLabelsAxes)
 
-				' Set scaling for mail title text 125% size of default
-				pl.schr(0, 1.25)
+                ' Set scaling for mail title text 125% size of default
+                pl.schr(0, 1.25)
 
-				' The main title
-				pl.lab("Measured", "Predicted", "Distribution of Taxi Fare Prediction")
+                ' The main title
+                pl.lab("Measured", "Predicted", "Distribution of Taxi Fare Prediction")
 
-				' plot using different colors
-				' see http://plplot.sourceforge.net/examples.php?demo=02 for palette indices
-				pl.col0(1)
+                ' plot using different colors
+                ' see http://plplot.sourceforge.net/examples.php?demo=02 for palette indices
+                pl.col0(1)
 
-				Dim totalNumber As Integer = numberOfRecordsToRead
-				Dim testData = (New TaxiTripCsvReader()).GetDataFromCsv(testDataSetPath, totalNumber).ToList()
+                Dim totalNumber As Integer = numberOfRecordsToRead
+                Dim testData = (New TaxiTripCsvReader()).GetDataFromCsv(testDataSetPath, totalNumber).ToList()
 
-				'This code is the symbol to paint
-				Dim code As Char = ChrW(9)
+                'This code is the symbol to paint
+                Dim code As Char = ChrW(9)
 
-				' plot using other color
-				'pl.col0(9); //Light Green
-				'pl.col0(4); //Red
-				pl.col0(2) 'Blue
+                ' plot using other color
+                'pl.col0(9); //Light Green
+                'pl.col0(4); //Red
+                pl.col0(2) 'Blue
 
-				Dim yTotal As Double = 0
-				Dim xTotal As Double = 0
-				Dim xyMultiTotal As Double = 0
-				Dim xSquareTotal As Double = 0
+                Dim yTotal As Double = 0
+                Dim xTotal As Double = 0
+                Dim xyMultiTotal As Double = 0
+                Dim xSquareTotal As Double = 0
 
-				For i As Integer = 0 To testData.Count - 1
-					Dim x = New Double(0){}
-					Dim y = New Double(0){}
+                For i As Integer = 0 To testData.Count - 1
+                    Dim x = New Double(0) {}
+                    Dim y = New Double(0) {}
 
-					'Make Prediction
-					Dim FarePrediction = predFunction.Predict(testData(i))
+                    'Make Prediction
+                    Dim FarePrediction = predEngine.Predict(testData(i))
 
-					x(0) = testData(i).FareAmount
+                    x(0) = testData(i).FareAmount
 					y(0) = FarePrediction.FareAmount
 
 					'Paint a dot
