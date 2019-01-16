@@ -2,6 +2,7 @@
 
 Imports Microsoft.ML
 Imports Microsoft.ML.Core.Data
+Imports Microsoft.ML.Data
 Imports Microsoft.ML.Runtime.Api
 Imports Microsoft.ML.Runtime.Data
 
@@ -17,7 +18,7 @@ Namespace Common
                 privateTrainedModel = value
             End Set
         End Property
-        Public PredictionFunction As PredictionFunction(Of TObservation, TPrediction)
+        Public PredictionEngine As PredictionEngine(Of TObservation, TPrediction)
 
         Public Sub New(mlContext As MLContext, Optional trainedModel As ITransformer = Nothing)
             _mlContext = mlContext
@@ -27,13 +28,13 @@ Namespace Common
                 Me.TrainedModel = trainedModel
 
                 ' Create prediction engine related to the passed trained model
-                PredictionFunction = Me.TrainedModel.MakePredictionFunction(Of TObservation, TPrediction)(_mlContext)
+                PredictionEngine = Me.TrainedModel.CreatePredictionEngine(Of TObservation, TPrediction)(_mlContext)
             End If
         End Sub
 
         Public Function PredictSingle(input As TObservation) As TPrediction
             CheckTrainedModelIsLoaded()
-            Return PredictionFunction.Predict(input)
+            Return PredictionEngine.Predict(input)
         End Function
 
         Public Function PredictBatch(inputDataView As IDataView) As IEnumerable(Of TPrediction)
@@ -48,7 +49,7 @@ Namespace Common
             End Using
 
             ' Create prediction engine related to the loaded trained model
-            PredictionFunction = TrainedModel.MakePredictionFunction(Of TObservation, TPrediction)(_mlContext)
+            PredictionEngine = TrainedModel.CreatePredictionEngine(Of TObservation, TPrediction)(_mlContext)
 
             Return TrainedModel
         End Function

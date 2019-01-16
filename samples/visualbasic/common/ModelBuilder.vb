@@ -1,7 +1,7 @@
 ﻿Imports System.IO
 Imports Microsoft.ML
 Imports Microsoft.ML.Core.Data
-Imports Microsoft.ML.Runtime.Data
+Imports Microsoft.ML.Data
 
 Namespace Common
     Public Class ModelBuilder(Of TObservation As Class, TPrediction As {Class, New})
@@ -43,28 +43,28 @@ Namespace Common
             Return TrainedModel
         End Function
 
-        Public Function EvaluateRegressionModel(testData As IDataView, label As String, score As String) As RegressionEvaluator.Result
+        Public Function EvaluateRegressionModel(testData As IDataView, label As String, score As String) As RegressionMetrics
             CheckTrained()
             Dim predictions = TrainedModel.Transform(testData)
             Dim metrics = _mlcontext.Regression.Evaluate(predictions, label:=label, score:=score)
             Return metrics
         End Function
 
-        Public Function EvaluateBinaryClassificationModel(testData As IDataView, label As String, score As String) As BinaryClassifierEvaluator.Result
+        Public Function EvaluateBinaryClassificationModel(testData As IDataView, label As String, score As String) As CalibratedBinaryClassificationMetrics
             CheckTrained()
             Dim predictions = TrainedModel.Transform(testData)
             Dim metrics = _mlcontext.BinaryClassification.Evaluate(predictions, label:=label, score:=score)
             Return metrics
         End Function
 
-        Public Function EvaluateMultiClassClassificationModel(testData As IDataView, Optional label As String = "Label", Optional score As String = "Score") As MultiClassClassifierEvaluator.Result
+        Public Function EvaluateMultiClassClassificationModel(testData As IDataView, Optional label As String = "Label", Optional score As String = "Score") As MultiClassClassifierMetrics
             CheckTrained()
             Dim predictions = TrainedModel.Transform(testData)
             Dim metrics = _mlcontext.MulticlassClassification.Evaluate(predictions, label:=label, score:=score)
             Return metrics
         End Function
 
-        Public Function CrossValidateAndEvaluateMulticlassClassificationModel(data As IDataView, Optional numFolds As Integer = 5, Optional labelColumn As String = "Label", Optional stratificationColumn As String = Nothing) As (metrics As MultiClassClassifierEvaluator.Result, model As ITransformer, scoredTestData As IDataView)()
+        Public Function CrossValidateAndEvaluateMulticlassClassificationModel(data As IDataView, Optional numFolds As Integer = 5, Optional labelColumn As String = "Label", Optional stratificationColumn As String = Nothing) As (metrics As MultiClassClassifierMetrics, model As ITransformer, scoredTestData As IDataView)()
             'CrossValidation happens actually before training, so no check here.
 
             'Cross validate
@@ -77,7 +77,7 @@ Namespace Common
             Return crossValidationResults
         End Function
 
-        Public Function EvaluateClusteringModel(dataView As IDataView) As ClusteringEvaluator.Result
+        Public Function EvaluateClusteringModel(dataView As IDataView) As ClusteringMetrics
             CheckTrained()
             Dim predictions = TrainedModel.Transform(dataView)
 
