@@ -7,8 +7,8 @@ Namespace Common
 	Public Class MLModelEngine(Of TData As Class, TPrediction As {Class, New})
 		Private ReadOnly _mlContext As MLContext
 		Private ReadOnly _model As ITransformer
-		Private ReadOnly _predictionEnginePool As ObjectPool(Of PredictionFunction(Of TData, TPrediction))
-		Private ReadOnly _minPredictionEngineObjectsInPool As Integer
+        Private ReadOnly _predictionEnginePool As ObjectPool(Of PredictionEngine(Of TData, TPrediction))
+        Private ReadOnly _minPredictionEngineObjectsInPool As Integer
 		Private ReadOnly _maxPredictionEngineObjectsInPool As Integer
 		Private ReadOnly _expirationTime As Double
 
@@ -67,14 +67,14 @@ Namespace Common
             _predictionEnginePool = CreatePredictionEngineObjectPool()
         End Sub
 
-        Private Function CreatePredictionEngineObjectPool() As ObjectPool(Of PredictionFunction(Of TData, TPrediction))
-            Return New ObjectPool(Of PredictionFunction(Of TData, TPrediction))(
+        Private Function CreatePredictionEngineObjectPool() As ObjectPool(Of PredictionEngine(Of TData, TPrediction))
+            Return New ObjectPool(Of PredictionEngine(Of TData, TPrediction))(
                 objectGenerator:=Function()
                                      'Measure PredictionEngine creation
                                      Dim watch = System.Diagnostics.Stopwatch.StartNew()
 
                                      'Make PredictionEngine
-                                     Dim predEngine = _model.MakePredictionFunction(Of TData, TPrediction)(_mlContext)
+                                     Dim predEngine = _model.CreatePredictionEngine(Of TData, TPrediction)(_mlContext)
 
                                      'Stop measuring time
                                      watch.Stop()
@@ -89,7 +89,7 @@ Namespace Common
 
         Public Function Predict(dataSample As TData) As TPrediction
             'Get PredictionEngine object from the Object Pool
-            Dim predictionEngine As PredictionFunction(Of TData, TPrediction) = _predictionEnginePool.GetObject()
+            Dim predictionEngine As CreatePredictionEngine(Of TData, TPrediction) = _predictionEnginePool.GetObject()
 
             'Measure Predict() execution time
             Dim watch = System.Diagnostics.Stopwatch.StartNew()

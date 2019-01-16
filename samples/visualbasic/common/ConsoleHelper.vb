@@ -23,7 +23,7 @@ Namespace Common
         End Sub
 
 
-        Public Sub PrintRegressionMetrics(name As String, metrics As RegressionEvaluator.Result)
+        Public Sub PrintRegressionMetrics(name As String, metrics As RegressionMetrics)
             Console.WriteLine($"*************************************************")
             Console.WriteLine($"*       Metrics for {name} regression model      ")
             Console.WriteLine($"*------------------------------------------------")
@@ -35,17 +35,24 @@ Namespace Common
             Console.WriteLine($"*************************************************")
         End Sub
 
-        Public Sub PrintBinaryClassificationMetrics(name As String, metrics As BinaryClassifierEvaluator.Result)
-            Console.WriteLine($"************************************************************")
-            Console.WriteLine($"*       Metrics for {name} binary classification model      ")
-            Console.WriteLine($"*-----------------------------------------------------------")
-            Console.WriteLine($"*       Accuracy: {metrics.Accuracy:P2}")
-            Console.WriteLine($"*       Auc:      {metrics.Auc:P2}")
-            Console.WriteLine($"*       F1Score:  {metrics.F1Score:P2}")
-            Console.WriteLine($"************************************************************")
-        End Sub
+		Public Sub PrintBinaryClassificationMetrics(name As String, metrics As CalibratedBinaryClassificationMetrics)
+			Console.WriteLine($"************************************************************")
+			Console.WriteLine($"*       Metrics for {name} binary classification model      ")
+			Console.WriteLine($"*-----------------------------------------------------------")
+			Console.WriteLine($"*       Accuracy: {metrics.Accuracy:P2}")
+			Console.WriteLine($"*       Auc:      {metrics.Auc:P2}")
+			Console.WriteLine($"*       Auprc:  {metrics.Auprc:P2}")
+			Console.WriteLine($"*       F1Score:  {metrics.F1Score:P2}")
+			Console.WriteLine($"*       LogLoss:  {metrics.LogLoss:#.##}")
+			Console.WriteLine($"*       LogLossReduction:  {metrics.LogLossReduction:#.##}")
+			Console.WriteLine($"*       PositivePrecision:  {metrics.PositivePrecision:#.##}")
+			Console.WriteLine($"*       PositiveRecall:  {metrics.PositiveRecall:#.##}")
+			Console.WriteLine($"*       NegativePrecision:  {metrics.NegativePrecision:#.##}")
+			Console.WriteLine($"*       NegativeRecall:  {metrics.NegativeRecall:P2}")
+			Console.WriteLine($"************************************************************")
+		End Sub
 
-        Public Sub PrintMultiClassClassificationMetrics(name As String, metrics As MultiClassClassifierEvaluator.Result)
+        Public Sub PrintMultiClassClassificationMetrics(name As String, metrics As MultiClassClassifierMetrics)
             Console.WriteLine($"************************************************************")
             Console.WriteLine($"*    Metrics for {name} multi-class classification model   ")
             Console.WriteLine($"*-----------------------------------------------------------")
@@ -58,7 +65,8 @@ Namespace Common
             Console.WriteLine($"************************************************************")
         End Sub
 
-        Public Sub PrintRegressionFoldsAverageMetrics(algorithmName As String, crossValidationResults() As (metrics As RegressionEvaluator.Result, model As ITransformer, scoredTestData As IDataView))
+        Public Sub PrintRegressionFoldsAverageMetrics(algorithmName As String, crossValidationResults() As _
+                (metrics As RegressionMetrics, model As ITransformer, scoredTestData As IDataView))
             Dim L1 = From r In crossValidationResults Select l = r.metrics.L1
             Dim L2 = From r In crossValidationResults Select l = r.metrics.L2
             Dim RMS = From r In crossValidationResults Select l = r.metrics.L1
@@ -76,7 +84,8 @@ Namespace Common
             Console.WriteLine($"*************************************************************************************************************")
         End Sub
 
-        Public Sub PrintMulticlassClassificationFoldsAverageMetrics(algorithmName As String, crossValResults() As (metrics As MultiClassClassifierEvaluator.Result, model As ITransformer, scoredTestData As IDataView))
+        Public Sub PrintMulticlassClassificationFoldsAverageMetrics(algorithmName As String, crossValResults() As _
+               (metrics As MultiClassClassifierMetrics, model As ITransformer, scoredTestData As IDataView))
             Dim metricsInMultipleFolds = crossValResults.Select(Function(r) r.metrics)
 
             Dim microAccuracyValues = metricsInMultipleFolds.Select(Function(m) m.AccuracyMicro)
@@ -122,7 +131,7 @@ Namespace Common
             Return confidenceInterval95
         End Function
 
-        Public Sub PrintClusteringMetrics(name As String, metrics As ClusteringEvaluator.Result)
+        Public Sub PrintClusteringMetrics(name As String, metrics As ClusteringMetrics)
             Console.WriteLine($"*************************************************")
             Console.WriteLine($"*       Metrics for {name} clustering model      ")
             Console.WriteLine($"*------------------------------------------------")
