@@ -1,11 +1,10 @@
-﻿Imports System
-Imports System.IO
+﻿Imports System.IO
 
 Imports Microsoft.ML
 Imports Common
 Imports Clustering_Iris.DataStructures
-Imports Microsoft.ML.Runtime.Data
 Imports Microsoft.ML.Core.Data
+Imports Microsoft.ML.Data
 
 Namespace Clustering_Iris
     Friend Module Program
@@ -26,17 +25,16 @@ Namespace Clustering_Iris
             Dim mlContext As New MLContext(seed:=1) 'Seed set to any number so you have a deterministic environment
 
             ' STEP 1: Common data loading configuration
-            Dim textLoader As TextLoader = mlContext.Data.TextReader(New TextLoader.Arguments() With {
-                .Separator = vbTab,
-                .HasHeader = True,
-                .Column = {
+            Dim textLoader As TextLoader = mlContext.Data.CreateTextReader({
                     New TextLoader.Column("Label", DataKind.R4, 0),
                     New TextLoader.Column("SepalLength", DataKind.R4, 1),
                     New TextLoader.Column("SepalWidth", DataKind.R4, 2),
                     New TextLoader.Column("PetalLength", DataKind.R4, 3),
                     New TextLoader.Column("PetalWidth", DataKind.R4, 4)
-                }
-            })
+                },
+                separatorChar:=vbTab,
+                hasHeader:=True
+            )
 
             Dim fullData As IDataView = textLoader.Read(DataPath)
 
@@ -83,10 +81,10 @@ Namespace Clustering_Iris
                 Using stream = New FileStream(ModelPath, FileMode.Open, FileAccess.Read, FileShare.Read)
                     Dim model As ITransformer = mlContext.Model.Load(stream)
                     ' Create prediction engine related to the loaded trained model
-                    Dim predFunction = model.MakePredictionFunction(Of IrisData, IrisPrediction)(mlContext)
+                    Dim predEngine = model.CreatePredictionEngine(Of IrisData, IrisPrediction)(mlContext)
 
                     'Score
-                    Dim resultprediction = predFunction.Predict(sampleIrisData)
+                    Dim resultprediction = predEngine.Predict(sampleIrisData)
 
                     Console.WriteLine($"Cluster assigned for setosa flowers:" & resultprediction.SelectedClusterId)
                 End Using
