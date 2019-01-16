@@ -1,7 +1,4 @@
-﻿Imports Microsoft.ML.Runtime.Api
-Imports Microsoft.ML.Runtime.Data
-
-Imports Microsoft.ML.Core.Data
+﻿Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML.Data
 Imports Microsoft.ML
 
@@ -35,22 +32,22 @@ Namespace Common
             Console.WriteLine($"*************************************************")
         End Sub
 
-		Public Sub PrintBinaryClassificationMetrics(name As String, metrics As CalibratedBinaryClassificationMetrics)
-			Console.WriteLine($"************************************************************")
-			Console.WriteLine($"*       Metrics for {name} binary classification model      ")
-			Console.WriteLine($"*-----------------------------------------------------------")
-			Console.WriteLine($"*       Accuracy: {metrics.Accuracy:P2}")
-			Console.WriteLine($"*       Auc:      {metrics.Auc:P2}")
-			Console.WriteLine($"*       Auprc:  {metrics.Auprc:P2}")
-			Console.WriteLine($"*       F1Score:  {metrics.F1Score:P2}")
-			Console.WriteLine($"*       LogLoss:  {metrics.LogLoss:#.##}")
-			Console.WriteLine($"*       LogLossReduction:  {metrics.LogLossReduction:#.##}")
-			Console.WriteLine($"*       PositivePrecision:  {metrics.PositivePrecision:#.##}")
-			Console.WriteLine($"*       PositiveRecall:  {metrics.PositiveRecall:#.##}")
-			Console.WriteLine($"*       NegativePrecision:  {metrics.NegativePrecision:#.##}")
-			Console.WriteLine($"*       NegativeRecall:  {metrics.NegativeRecall:P2}")
-			Console.WriteLine($"************************************************************")
-		End Sub
+        Public Sub PrintBinaryClassificationMetrics(name As String, metrics As CalibratedBinaryClassificationMetrics)
+            Console.WriteLine($"************************************************************")
+            Console.WriteLine($"*       Metrics for {name} binary classification model      ")
+            Console.WriteLine($"*-----------------------------------------------------------")
+            Console.WriteLine($"*       Accuracy: {metrics.Accuracy:P2}")
+            Console.WriteLine($"*       Auc:      {metrics.Auc:P2}")
+            Console.WriteLine($"*       Auprc:  {metrics.Auprc:P2}")
+            Console.WriteLine($"*       F1Score:  {metrics.F1Score:P2}")
+            Console.WriteLine($"*       LogLoss:  {metrics.LogLoss:#.##}")
+            Console.WriteLine($"*       LogLossReduction:  {metrics.LogLossReduction:#.##}")
+            Console.WriteLine($"*       PositivePrecision:  {metrics.PositivePrecision:#.##}")
+            Console.WriteLine($"*       PositiveRecall:  {metrics.PositiveRecall:#.##}")
+            Console.WriteLine($"*       NegativePrecision:  {metrics.NegativePrecision:#.##}")
+            Console.WriteLine($"*       NegativeRecall:  {metrics.NegativeRecall:P2}")
+            Console.WriteLine($"************************************************************")
+        End Sub
 
         Public Sub PrintMultiClassClassificationMetrics(name As String, metrics As MultiClassClassifierMetrics)
             Console.WriteLine($"************************************************************")
