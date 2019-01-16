@@ -4,25 +4,21 @@ Imports System.IO
 Imports System.Linq
 
 Imports Microsoft.ML
-Imports Microsoft.ML.Runtime.Api
 Imports Microsoft.ML.Core.Data
-Imports Microsoft.ML.Runtime
-Imports Microsoft.ML.Runtime.Data
-Imports Microsoft.ML.Runtime.Learners
 
 Imports BikeSharingDemand.DataStructures
 Imports Common
 
 Namespace BikeSharingDemand
 	Public Module ModelScoringTester
-		Public Sub VisualizeSomePredictions(ByVal mlContext As MLContext, ByVal modelName As String, ByVal testDataLocation As String, ByVal predFunction As PredictionFunction(Of DemandObservation, DemandPrediction), ByVal numberOfPredictions As Integer)
+		Public Sub VisualizeSomePredictions(ByVal mlContext As MLContext, ByVal modelName As String, ByVal testDataLocation As String, ByVal predEngine As PredictionEngine(Of DemandObservation, DemandPrediction), ByVal numberOfPredictions As Integer)
 			'Make a few prediction tests 
 			' Make the provided number of predictions and compare with observed data from the test dataset
 			Dim testData = ReadSampleDataFromCsvFile(testDataLocation, numberOfPredictions)
 
 			For i As Integer = 0 To numberOfPredictions - 1
 				'Score
-				Dim resultprediction = predFunction.Predict(testData(i))
+				Dim resultprediction = predEngine.Predict(testData(i))
 
 				Common.ConsoleHelper.PrintRegressionPredictionVersusObserved(resultprediction.PredictedCount.ToString(), testData(i).Count.ToString())
 			Next i

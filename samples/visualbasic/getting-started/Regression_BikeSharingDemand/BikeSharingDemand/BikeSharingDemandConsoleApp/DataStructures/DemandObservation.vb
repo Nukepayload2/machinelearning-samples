@@ -1,23 +1,36 @@
-﻿Imports Microsoft.ML.Runtime.Api
+﻿Imports Microsoft.ML.Data
 Imports System.Collections.Generic
 Imports System.IO
 Imports System.Linq
 
 Namespace BikeSharingDemand.DataStructures
 	Public Class DemandObservation
-		Public Season As Single
-		Public Year As Single
-		Public Month As Single
-		Public Hour As Single
-		Public Holiday As Single
-		Public Weekday As Single
-		Public WorkingDay As Single
-		Public Weather As Single
-		Public Temperature As Single
-		Public NormalizedTemperature As Single
-		Public Humidity As Single
-		Public Windspeed As Single
-		Public Count As Single ' This is the observed count, to be used a "label" to predict
+		<LoadColumn(0)>
+		Public Property Season() As Single
+		<LoadColumn(1)>
+		Public Property Year() As Single
+		<LoadColumn(2)>
+		Public Property Month() As Single
+		<LoadColumn(3)>
+		Public Property Hour() As Single
+		<LoadColumn(4)>
+		Public Property Holiday() As Single
+		<LoadColumn(5)>
+		Public Property Weekday() As Single
+		<LoadColumn(6)>
+		Public Property WorkingDay() As Single
+		<LoadColumn(7)>
+		Public Property Weather() As Single
+		<LoadColumn(8)>
+		Public Property Temperature() As Single
+		<LoadColumn(9)>
+		Public Property NormalizedTemperature() As Single
+		<LoadColumn(10)>
+		Public Property Humidity() As Single
+		<LoadColumn(11)>
+		Public Property Windspeed() As Single
+		<LoadColumn(12)>
+		Public Property Count() As Single ' This is the observed count, to be used a "label" to predict
 	End Class
 
 	Public Module DemandObservationSample

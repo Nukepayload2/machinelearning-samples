@@ -1,11 +1,8 @@
-﻿Imports System
-Imports System.IO
-
-Imports Microsoft.ML.Runtime.Learners
-Imports Microsoft.ML.Runtime.Data
+﻿Imports System.IO
 Imports Microsoft.ML
 Imports MulticlassClassification_Iris.DataStructures
 Imports Microsoft.ML.Data
+Imports Microsoft.ML.Core.Data
 
 Namespace MulticlassClassification_Iris
     Public Module Program
@@ -52,53 +49,76 @@ Namespace MulticlassClassification_Iris
             })
             Dim trainingDataView = textLoader.Read(TrainDataPath)
             Dim testDataView = textLoader.Read(TestDataPath)
-
             ' STEP 2: Common data process configuration with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.Concatenate("Features", "SepalLength", "SepalWidth", "PetalLength", "PetalWidth")
+            Dim dataProcessPipeline = mlContext.Transforms.Concatenate("Features", "SepalLength", "SepalWidth", "PetalLength", "PetalWidth").AppendCacheCheckpoint(mlContext)
 
-            ' STEP 3: Set the training algorithm, then create and config the modelBuilder                            
-            Dim modelBuilder = New Common.ModelBuilder(Of IrisData, IrisPrediction)(mlContext, dataProcessPipeline)
-            ' We apply our selected Trainer 
+            ' STEP 3: Set the training algorithm, then append the trainer to the pipeline  
             Dim trainer = mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn:="Label", featureColumn:="Features")
-            modelBuilder.AddTrainer(trainer)
+            Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
             ' STEP 4: Train the model fitting to the DataSet
-            'The pipeline is trained on the dataset that has been loaded and transformed.
+
+            'Measure training time
+            Dim watch = Stopwatch.StartNew()
+
             Console.WriteLine("=============== Training the model ===============")
-            modelBuilder.Train(trainingDataView)
+            Dim trainedModel As ITransformer = trainingPipeline.Fit(trainingDataView)
+
+            'Stop measuring time
+            watch.Stop()
+            Dim elapsedMs As Long = watch.ElapsedMilliseconds
+            Console.WriteLine($"***** Training time: {elapsedMs \ 1000} seconds *****")
+
 
             ' STEP 5: Evaluate the model and show accuracy stats
             Console.WriteLine("===== Evaluating Model's accuracy with Test data =====")
-            Dim metrics = modelBuilder.EvaluateMultiClassClassificationModel(testDataView, "Label")
+            Dim predictions = trainedModel.Transform(testDataView)
+            Dim metrics = mlContext.MulticlassClassification.Evaluate(predictions, "Label", "Score")
+
             Common.ConsoleHelper.PrintMultiClassClassificationMetrics(trainer.ToString(), metrics)
 
             ' STEP 6: Save/persist the trained model to a .ZIP file
-            Console.WriteLine("=============== Saving the model to a file ===============")
-            modelBuilder.SaveModelAsFile(ModelPath)
+            Using fs = New FileStream(ModelPath, FileMode.Create, FileAccess.Write, FileShare.Write)
+                mlContext.Model.Save(trainedModel, fs)
+            End Using
+
+            Console.WriteLine("The model is saved to {0}", ModelPath)
         End Sub
 
         Private Sub TestSomePredictions(ByVal mlContext As MLContext)
+
             'Test Classification Predictions with some hard-coded samples 
 
-            Dim modelScorer = New Common.ModelScorer(Of IrisData, IrisPrediction)(mlContext)
-            modelScorer.LoadModelFromZipFile(ModelPath)
+            Dim trainedModel As ITransformer
+            Using stream = New FileStream(ModelPath, FileMode.Open, FileAccess.Read, FileShare.Read)
+                trainedModel = mlContext.Model.Load(stream)
+            End Using
 
-            Dim prediction = modelScorer.PredictSingle(SampleIrisData.Iris1)
-            Console.WriteLine($"Actual: setosa.     Predicted probability: setosa:      {prediction.Score(0):0.####}")
-            Console.WriteLine($"                                           versicolor:  {prediction.Score(1):0.####}")
-            Console.WriteLine($"                                           virginica:   {prediction.Score(2):0.####}")
+            ' Create prediction engine related to the loaded trained model
+            Dim predEngine = trainedModel.CreatePredictionEngine(Of IrisData, IrisPrediction)(mlContext)
+
+            'Score sample 1
+            Dim resultprediction1 = predEngine.Predict(SampleIrisData.Iris1)
+
+            Console.WriteLine($"Actual: setosa.     Predicted probability: setosa:      {resultprediction1.Score(0):0.####}")
+            Console.WriteLine($"                                           versicolor:  {resultprediction1.Score(1):0.####}")
+            Console.WriteLine($"                                           virginica:   {resultprediction1.Score(2):0.####}")
             Console.WriteLine()
 
-            prediction = modelScorer.PredictSingle(SampleIrisData.Iris2)
-            Console.WriteLine($"Actual: virginica.  Predicted probability: setosa:      {prediction.Score(0):0.####}")
-            Console.WriteLine($"                                           versicolor:  {prediction.Score(1):0.####}")
-            Console.WriteLine($"                                           virginica:   {prediction.Score(2):0.####}")
+            'Score sample 2
+            Dim resultprediction2 = predEngine.Predict(SampleIrisData.Iris2)
+
+            Console.WriteLine($"Actual: setosa.     Predicted probability: setosa:      {resultprediction2.Score(0):0.####}")
+            Console.WriteLine($"                                           versicolor:  {resultprediction2.Score(1):0.####}")
+            Console.WriteLine($"                                           virginica:   {resultprediction2.Score(2):0.####}")
             Console.WriteLine()
 
-            prediction = modelScorer.PredictSingle(SampleIrisData.Iris3)
-            Console.WriteLine($"Actual: versicolor. Predicted probability: setosa:      {prediction.Score(0):0.####}")
-            Console.WriteLine($"                                           versicolor:  {prediction.Score(1):0.####}")
-            Console.WriteLine($"                                           virginica:   {prediction.Score(2):0.####}")
+            'Score sample 3
+            Dim resultprediction3 = predEngine.Predict(SampleIrisData.Iris3)
+
+            Console.WriteLine($"Actual: setosa.     Predicted probability: setosa:      {resultprediction3.Score(0):0.####}")
+            Console.WriteLine($"                                           versicolor:  {resultprediction3.Score(1):0.####}")
+            Console.WriteLine($"                                           virginica:   {resultprediction3.Score(2):0.####}")
             Console.WriteLine()
 
         End Sub
