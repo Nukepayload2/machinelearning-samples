@@ -1,4 +1,4 @@
-﻿Imports Microsoft.ML.Runtime.Api
+﻿Imports Microsoft.ML.Data
 
 Namespace GitHubLabeler.DataStructures
     Friend Class GitHubIssuePrediction

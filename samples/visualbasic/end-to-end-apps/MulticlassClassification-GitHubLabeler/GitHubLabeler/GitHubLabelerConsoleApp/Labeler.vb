@@ -1,14 +1,8 @@
-﻿Imports System
-Imports System.Collections.Generic
-Imports System.Linq
-Imports System.Threading.Tasks
-Imports Microsoft.ML.Core.Data
+﻿Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML
 Imports Octokit
 Imports System.IO
-Imports Microsoft.ML.Runtime.Data
 Imports GitHubLabeler.DataStructures
-Imports Common
 
 Namespace GitHubLabeler
 	'This "Labeler" class could be used in a different End-User application (Web app, other console app, desktop app, etc.)
@@ -19,92 +13,92 @@ Namespace GitHubLabeler
 		Private ReadOnly _modelPath As String
 		Private ReadOnly _mlContext As MLContext
 
-		Private ReadOnly _predFunction As PredictionFunction(Of GitHubIssue, GitHubIssuePrediction)
-		Private ReadOnly _trainedModel As ITransformer
+        Private ReadOnly _predEngine As PredictionEngine(Of GitHubIssue, GitHubIssuePrediction)
+        Private ReadOnly _trainedModel As ITransformer
 
-		Public Sub New(ByVal modelPath As String, Optional ByVal repoOwner As String = "", Optional ByVal repoName As String = "", Optional ByVal accessToken As String = "")
-			_modelPath = modelPath
-			_repoOwner = repoOwner
-			_repoName = repoName
+        Public Sub New(modelPath As String, Optional repoOwner As String = "", Optional repoName As String = "", Optional accessToken As String = "")
+            _modelPath = modelPath
+            _repoOwner = repoOwner
+            _repoName = repoName
 
-			_mlContext = New MLContext(seed:=1)
+            _mlContext = New MLContext(seed:=1)
 
-			'Load model from file
+            'Load model from file
 
-			Using stream = New FileStream(_modelPath, System.IO.FileMode.Open, FileAccess.Read, FileShare.Read)
-				_trainedModel = _mlContext.Model.Load(stream)
-			End Using
+            Using stream = New FileStream(_modelPath, System.IO.FileMode.Open, FileAccess.Read, FileShare.Read)
+                _trainedModel = _mlContext.Model.Load(stream)
+            End Using
 
-			' Create prediction engine related to the loaded trained model
-			_predFunction = _trainedModel.MakePredictionFunction(Of GitHubIssue, GitHubIssuePrediction)(_mlContext)
+            ' Create prediction engine related to the loaded trained model
+            _predEngine = _trainedModel.CreatePredictionEngine(Of GitHubIssue, GitHubIssuePrediction)(_mlContext)
 
-			'Configure Client to access a GitHub repo
-			If accessToken <> String.Empty Then
-				Dim productInformation = New ProductHeaderValue("MLGitHubLabeler")
-				_client = New GitHubClient(productInformation) With {.Credentials = New Credentials(accessToken)}
-			End If
-		End Sub
+            'Configure Client to access a GitHub repo
+            If accessToken <> String.Empty Then
+                Dim productInformation = New ProductHeaderValue("MLGitHubLabeler")
+                _client = New GitHubClient(productInformation) With {.Credentials = New Credentials(accessToken)}
+            End If
+        End Sub
 
-		Public Sub TestPredictionForSingleIssue()
-			Dim singleIssue As New GitHubIssue() With {
-				.ID = "Any-ID",
-				.Title = "Entity Framework crashes",
-				.Description = "When connecting to the database, EF is crashing"
-			}
+        Public Sub TestPredictionForSingleIssue()
+            Dim singleIssue As New GitHubIssue() With {
+                .ID = "Any-ID",
+                .Title = "Entity Framework crashes",
+                .Description = "When connecting to the database, EF is crashing"
+            }
 
-			'Predict label for single hard-coded issue
-			'Score
-			Dim prediction = _predFunction.Predict(singleIssue)
-			Console.WriteLine($"=============== Single Prediction - Result: {prediction.Area} ===============")
-		End Sub
+            'Predict label for single hard-coded issue
+            'Score
+            Dim prediction = _predEngine.Predict(singleIssue)
+            Console.WriteLine($"=============== Single Prediction - Result: {prediction.Area} ===============")
+        End Sub
 
-		' Label all issues that are not labeled yet
-		Public Async Function LabelAllNewIssuesInGitHubRepo() As Task
-			Dim newIssues = Await GetNewIssues()
+        ' Label all issues that are not labeled yet
+        Public Async Function LabelAllNewIssuesInGitHubRepo() As Task
+            Dim newIssues = Await GetNewIssues()
             For Each issue In newIssues.Where(Function(issue1) Not issue1.Labels.Any())
                 Dim label = PredictLabel(issue)
                 ApplyLabel(issue, label)
             Next issue
         End Function
 
-		Private Async Function GetNewIssues() As Task(Of IReadOnlyList(Of Issue))
-			Dim issueRequest = New RepositoryIssueRequest With {
-				.State = ItemStateFilter.Open,
-				.Filter = IssueFilter.All,
-				.Since = Date.Now.AddMinutes(-10)
-			}
+        Private Async Function GetNewIssues() As Task(Of IReadOnlyList(Of Issue))
+            Dim issueRequest = New RepositoryIssueRequest With {
+                .State = ItemStateFilter.Open,
+                .Filter = IssueFilter.All,
+                .Since = Date.Now.AddMinutes(-10)
+            }
 
-			Dim allIssues = Await _client.Issue.GetAllForRepository(_repoOwner, _repoName, issueRequest)
+            Dim allIssues = Await _client.Issue.GetAllForRepository(_repoOwner, _repoName, issueRequest)
 
-			' Filter out pull requests and issues that are older than minId
-			Return allIssues.Where(Function(i) Not i.HtmlUrl.Contains("/pull/")).ToList()
-		End Function
+            ' Filter out pull requests and issues that are older than minId
+            Return allIssues.Where(Function(i) Not i.HtmlUrl.Contains("/pull/")).ToList()
+        End Function
 
-		Private Function PredictLabel(ByVal issue As Octokit.Issue) As String
-			Dim corefxIssue = New GitHubIssue With {
-				.ID = issue.Number.ToString(),
-				.Title = issue.Title,
-				.Description = issue.Body
-			}
+        Private Function PredictLabel(issue As Octokit.Issue) As String
+            Dim corefxIssue = New GitHubIssue With {
+                .ID = issue.Number.ToString(),
+                .Title = issue.Title,
+                .Description = issue.Body
+            }
 
-			Dim predictedLabel = Predict(corefxIssue)
+            Dim predictedLabel = Predict(corefxIssue)
 
-			Return predictedLabel
-		End Function
+            Return predictedLabel
+        End Function
 
-		Public Function Predict(ByVal issue As GitHubIssue) As String
-			Dim prediction = _predFunction.Predict(issue)
+        Public Function Predict(issue As GitHubIssue) As String
+            Dim prediction = _predEngine.Predict(issue)
 
-			Return prediction.Area
-		End Function
+            Return prediction.Area
+        End Function
 
-		Private Sub ApplyLabel(ByVal issue As Issue, ByVal label As String)
-			Dim issueUpdate = New IssueUpdate()
-			issueUpdate.AddLabel(label)
+        Private Sub ApplyLabel(issue As Issue, label As String)
+            Dim issueUpdate = New IssueUpdate()
+            issueUpdate.AddLabel(label)
 
-			_client.Issue.Update(_repoOwner, _repoName, issue.Number, issueUpdate)
+            _client.Issue.Update(_repoOwner, _repoName, issue.Number, issueUpdate)
 
-			Console.WriteLine($"Issue {issue.Number} : ""{issue.Title}"" " & vbTab & " was labeled as: {label}")
-		End Sub
-	End Class
+            Console.WriteLine($"Issue {issue.Number} : ""{issue.Title}"" " & vbTab & " was labeled as: {label}")
+        End Sub
+    End Class
 End Namespace
