@@ -51,6 +51,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MovieRecommendation.Solutio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProductRecommendation.Solution", "ProductRecommendation.Solution", "{921952E9-F208-4C0A-A696-A40DA0DDB6E8}"
 EndProject
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "ImageClassification.Train", "getting-started\DeepLearning_TensorFlowEstimator\ImageClassification.Train\ImageClassification.Train.vbproj", "{1ABE1EB2-9914-46CF-AE69-74C451566E81}"
+EndProject
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "ImageClassification.Predict", "getting-started\DeepLearning_TensorFlowEstimator\ImageClassification.Predict\ImageClassification.Predict.vbproj", "{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82}"
+EndProject
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "MovieRecommendation", "getting-started\MatrixFactorization_MovieRecommendation\MovieRecommendation\MovieRecommendation.vbproj", "{A69A29B8-3A25-4336-A1E6-FC3F5A053739}"
+EndProject
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "ProductRecommender", "getting-started\MatrixFactorization_ProductRecommendation\ProductRecommender\ProductRecommender.vbproj", "{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +163,38 @@ Global
 		{B9FB4986-4027-4E7A-AAD8-F11E84991D65}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B9FB4986-4027-4E7A-AAD8-F11E84991D65}.Release|x64.ActiveCfg = Release|Any CPU
 		{B9FB4986-4027-4E7A-AAD8-F11E84991D65}.Release|x64.Build.0 = Release|Any CPU
+		{1ABE1EB2-9914-46CF-AE69-74C451566E81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ABE1EB2-9914-46CF-AE69-74C451566E81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ABE1EB2-9914-46CF-AE69-74C451566E81}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1ABE1EB2-9914-46CF-AE69-74C451566E81}.Debug|x64.Build.0 = Debug|Any CPU
+		{1ABE1EB2-9914-46CF-AE69-74C451566E81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ABE1EB2-9914-46CF-AE69-74C451566E81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ABE1EB2-9914-46CF-AE69-74C451566E81}.Release|x64.ActiveCfg = Release|Any CPU
+		{1ABE1EB2-9914-46CF-AE69-74C451566E81}.Release|x64.Build.0 = Release|Any CPU
+		{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82}.Debug|x64.Build.0 = Debug|Any CPU
+		{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82}.Release|x64.ActiveCfg = Release|Any CPU
+		{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82}.Release|x64.Build.0 = Release|Any CPU
+		{A69A29B8-3A25-4336-A1E6-FC3F5A053739}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A69A29B8-3A25-4336-A1E6-FC3F5A053739}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A69A29B8-3A25-4336-A1E6-FC3F5A053739}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A69A29B8-3A25-4336-A1E6-FC3F5A053739}.Debug|x64.Build.0 = Debug|Any CPU
+		{A69A29B8-3A25-4336-A1E6-FC3F5A053739}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A69A29B8-3A25-4336-A1E6-FC3F5A053739}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A69A29B8-3A25-4336-A1E6-FC3F5A053739}.Release|x64.ActiveCfg = Release|Any CPU
+		{A69A29B8-3A25-4336-A1E6-FC3F5A053739}.Release|x64.Build.0 = Release|Any CPU
+		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Debug|x64.ActiveCfg = Debug|x64
+		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Debug|x64.Build.0 = Debug|x64
+		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Release|x64.ActiveCfg = Release|x64
+		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -172,6 +212,10 @@ Global
 		{EE499FBB-9A08-462D-B612-42B650FAD6DC} = {F9578CB4-AC2F-46A5-8A2C-D73D9DED5FC0}
 		{9C74A757-32ED-4EB2-BE5B-8668BD903E45} = {F9578CB4-AC2F-46A5-8A2C-D73D9DED5FC0}
 		{B9FB4986-4027-4E7A-AAD8-F11E84991D65} = {885A3FD5-8413-42ED-AF7D-1C7B5685563C}
+		{1ABE1EB2-9914-46CF-AE69-74C451566E81} = {7F4BD05E-A719-4740-8CA4-DD1831E23EE5}
+		{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82} = {7F4BD05E-A719-4740-8CA4-DD1831E23EE5}
+		{A69A29B8-3A25-4336-A1E6-FC3F5A053739} = {A47A04B6-1E38-41D6-A776-8FA7345C69B0}
+		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293} = {921952E9-F208-4C0A-A696-A40DA0DDB6E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98369941-33DD-450C-A410-B9A91C8CDE91}

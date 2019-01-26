@@ -1,12 +1,13 @@
-﻿Imports System.IO
+﻿Imports System
+Imports System.IO
+Imports System.Threading.Tasks
 Imports ImageClassification.Model
 Imports ImageClassification.Model.ConsoleHelpers
 
 Namespace ImageClassification.Predict
     Module Program
-
         Sub Main(args() As String)
-            Dim assetsPath = GetAssetsPath("..\..\..\assets")
+            Dim assetsPath = ModelHelpers.GetAssetsPath("..\..\..\assets")
 
             Dim tagsTsv = Path.Combine(assetsPath, "inputs", "data", "tags.tsv")
             Dim imagesFolder = Path.Combine(assetsPath, "inputs", "data")

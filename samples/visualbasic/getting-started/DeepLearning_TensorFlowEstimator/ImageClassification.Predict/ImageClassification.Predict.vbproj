@@ -12,12 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Import Include="Microsoft.VisualBasic" />
-    <Import Include="System.Collections.Generic" />
-    <Import Include="System.Collections" />
-    <Import Include="System.Diagnostics" />
-    <Import Include="System.Linq" />
-    <Import Include="System" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\ImageClassification.Train\ImageData\ImageNetData.vb" Link="ImageData\ImageNetData.vb" />
