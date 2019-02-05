@@ -36,19 +36,9 @@ Namespace MulticlassClassification_Iris
 
         Private Sub BuildTrainEvaluateAndSaveModel(mlContext As MLContext)
             ' STEP 1: Common data loading configuration
-            Dim textLoader = mlContext.Data.CreateTextReader(New TextLoader.Arguments() With {
-                .Separator = vbTab,
-                .HasHeader = True,
-                .Column = {
-                    New TextLoader.Column("Label", DataKind.R4, 0),
-                    New TextLoader.Column("SepalLength", DataKind.R4, 1),
-                    New TextLoader.Column("SepalWidth", DataKind.R4, 2),
-                    New TextLoader.Column("PetalLength", DataKind.R4, 3),
-                    New TextLoader.Column("PetalWidth", DataKind.R4, 4)
-                }
-            })
-            Dim trainingDataView = textLoader.Read(TrainDataPath)
-            Dim testDataView = textLoader.Read(TestDataPath)
+            Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of IrisData)(TrainDataPath, hasHeader:=True)
+            Dim testDataView = mlContext.Data.ReadFromTextFile(Of IrisData)(TestDataPath, hasHeader:=True)
+
             ' STEP 2: Common data process configuration with pipeline data transformations
             Dim dataProcessPipeline = mlContext.Transforms.Concatenate("Features", "SepalLength", "SepalWidth", "PetalLength", "PetalWidth").AppendCacheCheckpoint(mlContext)
 
