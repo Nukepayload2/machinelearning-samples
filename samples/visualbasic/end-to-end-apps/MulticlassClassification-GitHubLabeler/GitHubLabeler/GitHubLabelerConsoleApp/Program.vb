@@ -59,17 +59,16 @@ Namespace GitHubLabeler
             Dim mlContext = New MLContext(seed:=0)
 
             ' STEP 1: Common data loading configuration
-            Dim textLoader As TextLoader = mlContext.Data.CreateTextReader(columns:={
-                New TextLoader.Column("ID", DataKind.Text, 0),
-                New TextLoader.Column("Area", DataKind.Text, 1),
-                New TextLoader.Column("Title", DataKind.Text, 2),
-                New TextLoader.Column("Description", DataKind.Text, 3)
-            }, hasHeader:=True, separatorChar:=vbTab)
-
-            Dim trainingDataView = textLoader.Read(DataSetLocation)
+            Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of GitHubIssue)(
+                                   DataSetLocation,
+                                   hasHeader:=True, separatorChar:=vbTab)
 
             ' STEP 2: Common data process configuration with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey("Area", "Label").Append(mlContext.Transforms.Text.FeaturizeText("Title", "TitleFeaturized")).Append(mlContext.Transforms.Text.FeaturizeText("Description", "DescriptionFeaturized")).Append(mlContext.Transforms.Concatenate("Features", "TitleFeaturized", "DescriptionFeaturized")).AppendCacheCheckpoint(mlContext) 'In this sample, only when using OVA (Not SDCA) the cache improves the training time, since OVA works multiple times/iterations over the same data
+            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey("Area", "Label").
+                Append(mlContext.Transforms.Text.FeaturizeText("Title", "TitleFeaturized")).
+                Append(mlContext.Transforms.Text.FeaturizeText("Description", "DescriptionFeaturized")).
+                Append(mlContext.Transforms.Concatenate("Features", "TitleFeaturized", "DescriptionFeaturized")).
+                AppendCacheCheckpoint(mlContext) 'In this sample, only when using OVA (Not SDCA) the cache improves the training time, since OVA works multiple times/iterations over the same data
 
             ' (OPTIONAL) Peek data (such as 2 records) in training DataView after applying the ProcessPipeline's transformations into "Features" 
             Common.ConsoleHelper.PeekDataViewInConsole(Of GitHubIssue)(mlContext, trainingDataView, dataProcessPipeline, 2)
@@ -158,7 +157,9 @@ Namespace GitHubLabeler
             Dim repoOwner = Configuration("GitHubRepoOwner") 'IMPORTANT: This can be a GitHub User or a GitHub Organization
             Dim repoName = Configuration("GitHubRepoName")
 
-            If String.IsNullOrEmpty(token) OrElse String.IsNullOrEmpty(repoOwner) OrElse String.IsNullOrEmpty(repoName) Then
+            If String.IsNullOrEmpty(token) OrElse token = "YOUR-GUID-GITHUB-TOKEN" OrElse
+                String.IsNullOrEmpty(repoOwner) OrElse repoOwner = "YOUR-REPO-USER-OWNER-OR-ORGANIZATION" OrElse
+                String.IsNullOrEmpty(repoName) OrElse repoName = "YOUR-REPO-SINGLE-NAME" Then
                 Console.Error.WriteLine()
                 Console.Error.WriteLine("Error: please configure the credentials in the appsettings.json file")
                 Console.ReadLine()
