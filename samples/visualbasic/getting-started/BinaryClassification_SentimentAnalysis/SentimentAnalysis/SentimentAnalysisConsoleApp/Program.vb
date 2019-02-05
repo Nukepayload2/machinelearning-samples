@@ -41,13 +41,8 @@ Namespace SentimentAnalysisConsoleApp
 
         Private Function BuildTrainEvaluateAndSaveModel(mlContext As MLContext) As ITransformer
             ' STEP 1: Common data loading configuration
-            Dim textLoader As TextLoader = mlContext.Data.CreateTextReader({
-                New TextLoader.Column("Label", DataKind.Bool, 0),
-                New TextLoader.Column("Text", DataKind.Text, 1)
-            }, hasHeader:=True, separatorChar:=vbTab)
-
-            Dim trainingDataView As IDataView = textLoader.Read(TrainDataPath)
-            Dim testDataView As IDataView = textLoader.Read(TestDataPath)
+            Dim trainingDataView As IDataView = mlContext.Data.ReadFromTextFile(Of SentimentIssue)(TrainDataPath, hasHeader:=True)
+            Dim testDataView As IDataView = mlContext.Data.ReadFromTextFile(Of SentimentIssue)(TestDataPath, hasHeader:=True)
 
             ' STEP 2: Common data process configuration with pipeline data transformations          
             Dim dataProcessPipeline = mlContext.Transforms.Text.FeaturizeText("Text", "Features")
