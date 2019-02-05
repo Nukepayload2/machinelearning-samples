@@ -9,9 +9,6 @@
     <OptionInfer>On</OptionInfer>
     <RootNamespace />
   </PropertyGroup>
-
-  <ItemGroup>
-  </ItemGroup>
   <ItemGroup>
     <None Remove="recommendation-movies.csv" />
     <None Remove="recommendation-ratings-test.csv" />

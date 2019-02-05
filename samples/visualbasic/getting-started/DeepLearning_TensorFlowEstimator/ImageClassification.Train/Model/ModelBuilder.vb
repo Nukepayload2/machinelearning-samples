@@ -40,25 +40,23 @@ Namespace ImageClassification.Model
 			Console.WriteLine($"Training file: {dataLocation}")
 			Console.WriteLine($"Default parameters: image size=({ImageNetSettings.imageWidth},{ImageNetSettings.imageHeight}), image mean: {ImageNetSettings.mean}")
 
+            Dim data = mlContext.Data.ReadFromTextFile(Of ImageNetData)(dataLocation, hasHeader:=True)
 
+            Dim pipeline = mlContext.Transforms.Conversion.MapValueToKey("Label", "LabelTokey").
+                Append(mlContext.Transforms.LoadImages(imagesFolder, ("ImagePath", "ImageReal"))).
+                Append(mlContext.Transforms.Resize("ImageReal", "ImageReal", ImageNetSettings.imageHeight, ImageNetSettings.imageWidth)).
+                Append(mlContext.Transforms.ExtractPixels(New ImagePixelExtractorTransform.ColumnInfo("ImageReal", "input", interleave:=ImageNetSettings.channelsLast, offset:=ImageNetSettings.mean))).
+                Append(mlContext.Transforms.ScoreTensorFlowModel(featurizerModelLocation, {"input"}, {"softmax2_pre_activation"})).
+                Append(mlContext.MulticlassClassification.Trainers.LogisticRegression("LabelTokey", "softmax2_pre_activation")).
+                Append(mlContext.Transforms.Conversion.MapKeyToValue(("PredictedLabel", "PredictedLabelValue")))
 
-			Dim loader = mlContext.Data.CreateTextReader(New TextLoader.Arguments With {
-				.Column = {
-					New TextLoader.Column("ImagePath", DataKind.Text, 0),
-					New TextLoader.Column("Label", DataKind.Text, 1)
-				}
-			})
+            ' Train the pipeline
+            ConsoleWriteHeader("Training classification model")
+            Dim model = pipeline.Fit(Data)
 
-			Dim pipeline = mlContext.Transforms.Conversion.MapValueToKey("Label", "LabelTokey").Append(mlContext.Transforms.LoadImages(imagesFolder, ("ImagePath", "ImageReal"))).Append(mlContext.Transforms.Resize("ImageReal", "ImageReal", ImageNetSettings.imageHeight, ImageNetSettings.imageWidth)).Append(mlContext.Transforms.ExtractPixels(New ImagePixelExtractorTransform.ColumnInfo("ImageReal", "input", interleave:= ImageNetSettings.channelsLast, offset:= ImageNetSettings.mean))).Append(mlContext.Transforms.ScoreTensorFlowModel(featurizerModelLocation, { "input" }, { "softmax2_pre_activation" })).Append(mlContext.MulticlassClassification.Trainers.LogisticRegression("LabelTokey", "softmax2_pre_activation")).Append(mlContext.Transforms.Conversion.MapKeyToValue(("PredictedLabel", "PredictedLabelValue")))
-
-			' Train the pipeline
-			ConsoleWriteHeader("Training classification model")
-			Dim data = loader.Read(dataLocation)
-			Dim model = pipeline.Fit(data)
-
-			' Process the training data through the model
-			' This is an optional step, but it's useful for debugging issues
-			Dim trainData = model.Transform(data)
+            ' Process the training data through the model
+            ' This is an optional step, but it's useful for debugging issues
+            Dim trainData = model.Transform(data)
 			Dim loadedModelOutputColumnNames = trainData.Schema.Where(Function(col) Not col.IsHidden).Select(Function(col) col.Name)
 			Dim trainData2 = trainData.AsEnumerable(Of ImageNetPipeline)(mlContext, False, True).ToList()
             trainData2.ForEach(Sub(pr) ConsoleWriteImagePrediction(pr.ImagePath, pr.PredictedLabelValue, pr.Score.Max()))

@@ -1,13 +1,14 @@
-﻿Imports System
-Imports System.Collections.Generic
-Imports System.Text
+﻿Imports Microsoft.ML.Data
 
 Namespace MovieRecommendationConsoleApp.DataStructures
-	Public Class MovieRating
-		Public userId As Single
+    Public Class MovieRating
+        <LoadColumn(0)>
+        Public userId As Single
 
-		Public movieId As Single
+        <LoadColumn(1)>
+        Public movieId As Single
 
-		Public Label As Single
-	End Class
+        <LoadColumn(2)>
+        Public Label As Single
+    End Class
 End Namespace
