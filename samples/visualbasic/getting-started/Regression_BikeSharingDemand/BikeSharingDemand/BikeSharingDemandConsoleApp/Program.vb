@@ -20,27 +20,12 @@ Namespace BikeSharingDemand
             Dim mlContext = New MLContext(seed:=0)
 
             ' 1. Common data loading configuration
-            Dim textLoader = mlContext.Data.CreateTextReader(columns:={
-                New TextLoader.Column("Season", DataKind.R4, 2),
-                New TextLoader.Column("Year", DataKind.R4, 3),
-                New TextLoader.Column("Month", DataKind.R4, 4),
-                New TextLoader.Column("Hour", DataKind.R4, 5),
-                New TextLoader.Column("Holiday", DataKind.R4, 6),
-                New TextLoader.Column("Weekday", DataKind.R4, 7),
-                New TextLoader.Column("WorkingDay", DataKind.R4, 8),
-                New TextLoader.Column("Weather", DataKind.R4, 9),
-                New TextLoader.Column("Temperature", DataKind.R4, 10),
-                New TextLoader.Column("NormalizedTemperature", DataKind.R4, 11),
-                New TextLoader.Column("Humidity", DataKind.R4, 12),
-                New TextLoader.Column("Windspeed", DataKind.R4, 13),
-                New TextLoader.Column("Count", DataKind.R4, 16)
-            }, hasHeader:=True, separatorChar:=","c)
-
-            Dim trainingDataView = textLoader.Read(TrainingDataLocation)
-            Dim testDataView = textLoader.Read(TestDataLocation)
+            Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of DemandObservation)(TrainingDataLocation, hasHeader:=True, separatorChar:=","c)
+            Dim testDataView = mlContext.Data.ReadFromTextFile(Of DemandObservation)(TestDataLocation, hasHeader:=True, separatorChar:=","c)
 
             ' 2. Common data pre-process with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.CopyColumns("Count", "Label").Append(mlContext.Transforms.Concatenate("Features", "Season", "Year", "Month", "Hour", "Holiday", "Weekday", "Weather", "Temperature", "NormalizedTemperature", "Humidity", "Windspeed"))
+            Dim dataProcessPipeline = mlContext.Transforms.CopyColumns("Count", "Label").
+                Append(mlContext.Transforms.Concatenate("Features", "Season", "Year", "Month", "Hour", "Holiday", "Weekday", "WorkingDay", "Weather", "Temperature", "NormalizedTemperature", "Humidity", "Windspeed"))
 
             ' (Optional) Peek data in training DataView after applying the ProcessPipeline's transformations  
             Common.ConsoleHelper.PeekDataViewInConsole(Of DemandObservation)(mlContext, trainingDataView, dataProcessPipeline, 10)

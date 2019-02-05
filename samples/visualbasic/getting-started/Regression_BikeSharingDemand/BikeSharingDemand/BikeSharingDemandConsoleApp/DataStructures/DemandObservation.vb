@@ -2,31 +2,34 @@
 
 Namespace BikeSharingDemand.DataStructures
     Public Class DemandObservation
-        <LoadColumn(0)>
-        Public Property Season() As Single
-        <LoadColumn(1)>
-        Public Property Year() As Single
+        ' Note that we're loading only some columns (certain indexes) starting on column number 2
+        ' Also, the label column is number 16. 
+        ' Columns 14, 15 are not being loaded from the file.
         <LoadColumn(2)>
-        Public Property Month() As Single
+        Public Property Season() As Single
         <LoadColumn(3)>
-        Public Property Hour() As Single
+        Public Property Year() As Single
         <LoadColumn(4)>
-        Public Property Holiday() As Single
+        Public Property Month() As Single
         <LoadColumn(5)>
-        Public Property Weekday() As Single
+        Public Property Hour() As Single
         <LoadColumn(6)>
-        Public Property WorkingDay() As Single
+        Public Property Holiday() As Single
         <LoadColumn(7)>
-        Public Property Weather() As Single
+        Public Property Weekday() As Single
         <LoadColumn(8)>
-        Public Property Temperature() As Single
+        Public Property WorkingDay() As Single
         <LoadColumn(9)>
-        Public Property NormalizedTemperature() As Single
+        Public Property Weather() As Single
         <LoadColumn(10)>
-        Public Property Humidity() As Single
+        Public Property Temperature() As Single
         <LoadColumn(11)>
-        Public Property Windspeed() As Single
+        Public Property NormalizedTemperature() As Single
         <LoadColumn(12)>
+        Public Property Humidity() As Single
+        <LoadColumn(13)>
+        Public Property Windspeed() As Single
+        <LoadColumn(16)>
         Public Property Count() As Single ' This is the observed count, to be used a "label" to predict
     End Class
 
