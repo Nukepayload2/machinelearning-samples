@@ -41,21 +41,8 @@ Namespace Regression_TaxiFarePrediction
 
         Private Function BuildTrainEvaluateAndSaveModel(mlContext As MLContext) As ITransformer
             ' STEP 1: Common data loading configuration
-            Dim textLoader As TextLoader = mlContext.Data.CreateTextReader({
-                    New TextLoader.Column("VendorId", DataKind.Text, 0),
-                    New TextLoader.Column("RateCode", DataKind.Text, 1),
-                    New TextLoader.Column("PassengerCount", DataKind.R4, 2),
-                    New TextLoader.Column("TripTime", DataKind.R4, 3),
-                    New TextLoader.Column("TripDistance", DataKind.R4, 4),
-                    New TextLoader.Column("PaymentType", DataKind.Text, 5),
-                    New TextLoader.Column("FareAmount", DataKind.R4, 6)
-                },
-                separatorChar:=","c,
-                hasHeader:=True
-            )
-
-            Dim baseTrainingDataView As IDataView = textLoader.Read(TrainDataPath)
-            Dim testDataView As IDataView = textLoader.Read(TestDataPath)
+            Dim baseTrainingDataView As IDataView = mlContext.Data.ReadFromTextFile(Of TaxiTrip)(TrainDataPath, hasHeader:=True, separatorChar:=","c)
+            Dim testDataView As IDataView = mlContext.Data.ReadFromTextFile(Of TaxiTrip)(TestDataPath, hasHeader:=True, separatorChar:=","c)
 
             'Sample code of removing extreme data like "outliers" for FareAmounts higher than $150 and lower than $1 which can be error-data 
             Dim cnt = baseTrainingDataView.GetColumn(Of Single)(mlContext, "FareAmount").Count()
