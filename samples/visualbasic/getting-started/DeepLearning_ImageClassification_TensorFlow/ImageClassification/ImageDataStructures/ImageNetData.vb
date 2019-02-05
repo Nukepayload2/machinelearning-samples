@@ -1,9 +1,12 @@
 ﻿Imports System.IO
+Imports Microsoft.ML.Data
 
 Namespace ImageClassification.ImageDataStructures
     Public Class ImageNetData
+        <LoadColumn(0)>
         Public ImagePath As String
 
+        <LoadColumn(1)>
         Public Label As String
 
         Public Shared Function ReadFromCsv(file As String, folder As String) As IEnumerable(Of ImageNetData)

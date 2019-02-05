@@ -47,25 +47,27 @@ Namespace ImageClassification.ModelScorer
 
         End Sub
 
-        Private Function LoadModel(dataLocation As String, imagesFolder As String, modelLocation As String) As PredictionEngine(Of ImageNetData, ImageNetPrediction)
+        Private Function LoadModel(ByVal dataLocation As String, ByVal imagesFolder As String, ByVal modelLocation As String) As PredictionEngine(Of ImageNetData, ImageNetPrediction)
             ConsoleWriteHeader("Read model")
             Console.WriteLine($"Model location: {modelLocation}")
             Console.WriteLine($"Images folder: {imagesFolder}")
             Console.WriteLine($"Training file: {dataLocation}")
             Console.WriteLine($"Default parameters: image size=({ImageNetSettings.imageWidth},{ImageNetSettings.imageHeight}), image mean: {ImageNetSettings.mean}")
 
-            Dim loader = New TextLoader(mlContext, {New TextLoader.Column("ImagePath", DataKind.Text, 0)})
+            Dim data = mlContext.Data.ReadFromTextFile(Of ImageNetData)(dataLocation, hasHeader:=True)
 
-            Dim data = loader.Read(New MultiFileSource(dataLocation))
-
-            Dim pipeline = mlContext.Transforms.LoadImages(imageFolder:=imagesFolder, ("ImagePath", "ImageReal")).Append(mlContext.Transforms.Resize("ImageReal", "ImageReal", ImageNetSettings.imageHeight, ImageNetSettings.imageWidth)).Append(mlContext.Transforms.ExtractPixels({New ImagePixelExtractorTransform.ColumnInfo("ImageReal", "input", interleave:=ImageNetSettings.channelsLast, offset:=ImageNetSettings.mean)})).Append(mlContext.Transforms.ScoreTensorFlowModel(modelLocation, {"input"}, {"softmax2"}))
+            Dim pipeline = mlContext.Transforms.LoadImages(imageFolder:=imagesFolder, ("ImagePath", "ImageReal")).
+                Append(mlContext.Transforms.Resize("ImageReal", "ImageReal", ImageNetSettings.imageHeight, ImageNetSettings.imageWidth)).
+                Append(mlContext.Transforms.ExtractPixels({New ImagePixelExtractorTransform.ColumnInfo("ImageReal", "input", interleave:=ImageNetSettings.channelsLast, offset:=ImageNetSettings.mean)})).
+                Append(mlContext.Transforms.ScoreTensorFlowModel(modelLocation, {"input"}, {"softmax2"}))
 
             Dim modeld = pipeline.Fit(data)
 
-            Dim predictionFunction = modeld.CreatePredictionEngine(Of ImageNetData, ImageNetPrediction)(mlContext)
+            Dim predictionEngine = modeld.CreatePredictionEngine(Of ImageNetData, ImageNetPrediction)(mlContext)
 
-            Return predictionFunction
+            Return predictionEngine
         End Function
+
 
         Protected Iterator Function PredictDataUsingModel(testLocation As String, imagesFolder As String, labelsLocation As String, model As PredictionEngine(Of ImageNetData, ImageNetPrediction)) As IEnumerable(Of ImageNetData)
             ConsoleWriteHeader("Classificate images")
