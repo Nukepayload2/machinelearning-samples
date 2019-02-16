@@ -46,7 +46,10 @@ namespace MulticlassClassification_Iris
             var dataProcessPipeline = mlContext.Transforms.Concatenate("Features", "SepalLength",
                                                                                    "SepalWidth",
                                                                                    "PetalLength",
-                                                                                   "PetalWidth").AppendCacheCheckpoint(mlContext);
+                                                                                   "PetalWidth")
+                                                                       .AppendCacheCheckpoint(mlContext); 
+                                                                       // Use in-memory cache for small/medium datasets to lower training time. 
+                                                                       // Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets. 
 
             // STEP 3: Set the training algorithm, then append the trainer to the pipeline  
             var trainer = mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn: "Label", featureColumn: "Features");
@@ -104,7 +107,7 @@ namespace MulticlassClassification_Iris
             //Score sample 2
             var resultprediction2 = predEngine.Predict(SampleIrisData.Iris2);
 
-            Console.WriteLine($"Actual: setosa.     Predicted probability: setosa:      {resultprediction2.Score[0]:0.####}");
+            Console.WriteLine($"Actual: Virginica.     Predicted probability: setosa:      {resultprediction2.Score[0]:0.####}");
             Console.WriteLine($"                                           versicolor:  {resultprediction2.Score[1]:0.####}");
             Console.WriteLine($"                                           virginica:   {resultprediction2.Score[2]:0.####}");
             Console.WriteLine();
