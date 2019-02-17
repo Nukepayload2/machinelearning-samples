@@ -33,14 +33,14 @@ Namespace MulticlassClassification_HeartDisease
 
         Private Sub BuildTrainEvaluateAndSaveModel(mlContext As MLContext)
 
-            Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of HeartDataImport)(TrainDataPath, hasHeader:=True, separatorChar:=","c)
-            Dim testDataView = mlContext.Data.ReadFromTextFile(Of HeartDataImport)(TestDataPath, hasHeader:=True, separatorChar:=","c)
+            Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of HeartDataImport)(path:=TrainDataPath, hasHeader:=True, separatorChar:=","c)
+            Dim testDataView = mlContext.Data.ReadFromTextFile(Of HeartDataImport)(path:=TestDataPath, hasHeader:=True, separatorChar:=","c)
 
-            Dim dataProcessPipeline = mlContext.Transforms.Concatenate("Features", "Age", "Sex", "Cp", "TrestBps", "Chol", "Fbs", "RestEcg", "Thalac", "Exang", "OldPeak", "Slope", "Ca", "Thal").AppendCacheCheckpoint(mlContext)
+            Dim dataProcessPipeline = mlContext.Transforms.Concatenate(DefaultColumnNames.Features, NameOf(HeartDataImport.Age), NameOf(HeartDataImport.Sex), NameOf(HeartDataImport.Cp), NameOf(HeartDataImport.TrestBps), NameOf(HeartDataImport.Chol), NameOf(HeartDataImport.Fbs), NameOf(HeartDataImport.RestEcg), NameOf(HeartDataImport.Thalac), NameOf(HeartDataImport.Exang), NameOf(HeartDataImport.OldPeak), NameOf(HeartDataImport.Slope), NameOf(HeartDataImport.Ca), NameOf(HeartDataImport.Thal)).AppendCacheCheckpoint(mlContext)
 
             ' (OPTIONAL) Peek data (such as 5 records) in training DataView after applying the ProcessPipeline's transformations into "Features" 
-            ConsoleHelper.PeekDataViewInConsole(Of HeartData)(mlContext, trainingDataView, dataProcessPipeline, 5)
-            ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, "Features", trainingDataView, dataProcessPipeline, 5)
+            ConsoleHelper.PeekDataViewInConsole(mlContext, trainingDataView, dataProcessPipeline, 5)
+            ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, DefaultColumnNames.Features, trainingDataView, dataProcessPipeline, 5)
 
             Dim trainer = mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn:=DefaultColumnNames.Label, featureColumn:=DefaultColumnNames.Features)
             Dim trainingPipeline = dataProcessPipeline.Append(trainer)
@@ -51,9 +51,9 @@ Namespace MulticlassClassification_HeartDisease
 
             Console.WriteLine("===== Evaluating Model's accuracy with Test data =====")
             Dim predictions = trainedModel.Transform(testDataView)
-            Dim metrics = mlContext.MulticlassClassification.Evaluate(predictions, "Label", "Score", "PredictedLabel", 0)
+            Dim metrics = mlContext.MulticlassClassification.Evaluate(data:=predictions, label:=DefaultColumnNames.Label, score:=DefaultColumnNames.Score, predictedLabel:=DefaultColumnNames.PredictedLabel, topK:=0)
 
-            Common.ConsoleHelper.PrintMultiClassClassificationMetrics(trainer.ToString(), metrics)
+            ConsoleHelper.PrintMultiClassClassificationMetrics(trainer.ToString(), metrics)
 
             Console.WriteLine("=============== Saving the model to a file ===============")
             Using fs = New FileStream(ModelPath, FileMode.Create, FileAccess.Write, FileShare.Write)
