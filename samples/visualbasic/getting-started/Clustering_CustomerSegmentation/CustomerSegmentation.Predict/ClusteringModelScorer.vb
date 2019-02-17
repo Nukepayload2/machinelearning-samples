@@ -33,18 +33,14 @@ Namespace CustomerSegmentation.Model
         End Function
 
         Public Sub CreateCustomerClusters()
-            Dim reader = New TextLoader(_mlContext, {
-                    New TextLoader.Column("Features", DataKind.R4, New TextLoader.Range() {New TextLoader.Range(0, 31)}),
-                    New TextLoader.Column("LastName", DataKind.Text, 32)
-                },
-                hasHeader:=True,
-                separatorChar:=","c
-            )
-
-            Dim data = reader.Read(_pivotDataLocation)
+            Dim data = _mlContext.Data.ReadFromTextFile(path:=_pivotDataLocation, columns:={
+                New TextLoader.Column("Features", DataKind.R4, {New TextLoader.Range(0, 31)}),
+                New TextLoader.Column(NameOf(PivotData.LastName), DataKind.Text, 32)
+            }, hasHeader:=True, separatorChar:=","c)
 
             'Apply data transformation to create predictions/clustering
-            Dim predictions = _trainedModel.Transform(data).AsEnumerable(Of ClusteringPrediction)(_mlContext, False).ToArray()
+            Dim tranfomedDataView = _trainedModel.Transform(data)
+            Dim predictions = _mlContext.CreateEnumerable(Of ClusteringPrediction)(tranfomedDataView, False).ToArray()
 
             'Generate data files with customer data grouped by clusters
             SaveCustomerSegmentationCSV(predictions, _csvlocation)
