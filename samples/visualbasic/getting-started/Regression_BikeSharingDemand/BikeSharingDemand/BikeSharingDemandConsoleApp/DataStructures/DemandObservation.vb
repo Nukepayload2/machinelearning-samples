@@ -29,7 +29,7 @@ Namespace BikeSharingDemand.DataStructures
         Public Property Humidity() As Single
         <LoadColumn(13)>
         Public Property Windspeed() As Single
-        <LoadColumn(16)>
+        <LoadColumn(16), ColumnName("Label")>
         Public Property Count() As Single ' This is the observed count, to be used a "label" to predict
     End Class
 

@@ -3,6 +3,7 @@
 Imports Microsoft.ML
 
 Imports BikeSharingDemand.DataStructures
+Imports System.Globalization
 
 Namespace BikeSharingDemand
     Public Module ModelScoringTester
@@ -23,19 +24,19 @@ Namespace BikeSharingDemand
         'This method is using regular .NET System.IO.File and LinQ to read just some sample data to test/predict with 
         Public Function ReadSampleDataFromCsvFile(dataLocation As String, numberOfRecordsToRead As Integer) As List(Of DemandObservation)
             Return File.ReadLines(dataLocation).Skip(1).Where(Function(x) Not String.IsNullOrWhiteSpace(x)).Select(Function(x) x.Split(","c)).Select(Function(x) New DemandObservation() With {
-                .Season = Single.Parse(x(2)),
-                .Year = Single.Parse(x(3)),
-                .Month = Single.Parse(x(4)),
-                .Hour = Single.Parse(x(5)),
-                .Holiday = Single.Parse(x(6)),
-                .Weekday = Single.Parse(x(7)),
-                .WorkingDay = Single.Parse(x(8)),
-                .Weather = Single.Parse(x(9)),
-                .Temperature = Single.Parse(x(10)),
-                .NormalizedTemperature = Single.Parse(x(11)),
-                .Humidity = Single.Parse(x(12)),
-                .Windspeed = Single.Parse(x(13)),
-                .Count = Single.Parse(x(16))
+                .Season = Single.Parse(x(2), CultureInfo.InvariantCulture),
+                .Year = Single.Parse(x(3), CultureInfo.InvariantCulture),
+                .Month = Single.Parse(x(4), CultureInfo.InvariantCulture),
+                .Hour = Single.Parse(x(5), CultureInfo.InvariantCulture),
+                .Holiday = Single.Parse(x(6), CultureInfo.InvariantCulture),
+                .Weekday = Single.Parse(x(7), CultureInfo.InvariantCulture),
+                .WorkingDay = Single.Parse(x(8), CultureInfo.InvariantCulture),
+                .Weather = Single.Parse(x(9), CultureInfo.InvariantCulture),
+                .Temperature = Single.Parse(x(10), CultureInfo.InvariantCulture),
+                .NormalizedTemperature = Single.Parse(x(11), CultureInfo.InvariantCulture),
+                .Humidity = Single.Parse(x(12), CultureInfo.InvariantCulture),
+                .Windspeed = Single.Parse(x(13), CultureInfo.InvariantCulture),
+                .Count = Single.Parse(x(16), CultureInfo.InvariantCulture)
             }).Take(numberOfRecordsToRead).ToList()
         End Function
     End Module
