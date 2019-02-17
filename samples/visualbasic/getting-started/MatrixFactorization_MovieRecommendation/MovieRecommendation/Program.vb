@@ -3,6 +3,9 @@
 Imports MovieRecommendationConsoleApp.DataStructures
 Imports MovieRecommendation.DataStructures
 Imports Microsoft.ML.Data
+Imports Microsoft.Data.DataView
+Imports Microsoft.ML.Trainers
+Imports Microsoft.ML.Core.Data
 
 Namespace MovieRecommendation
     Friend Class Program
@@ -14,10 +17,12 @@ Namespace MovieRecommendation
         Private Shared MoviesDataLocation As String = $"{DatasetsLocation}/movies.csv"
         Private Const predictionuserId As Single = 6
         Private Const predictionmovieId As Integer = 10
+        Private Shared userIdEncoded As String = NameOf(userIdEncoded)
+        Private Shared movieIdEncoded As String = NameOf(movieIdEncoded)
 
-        Shared Sub Main(args() As String)
+        Shared Sub Main(ByVal args() As String)
             'STEP 1: Create MLContext to be shared across the model creation workflow objects 
-            Dim mlcontext = New MLContext()
+            Dim mlcontext As New MLContext()
 
             'STEP 2: Read the training data which will be used to train the movie recommendation model    
             'The schema for training data is defined by type 'TInput' in ReadFromTextFile<TInput>() method.
@@ -25,26 +30,31 @@ Namespace MovieRecommendation
 
             'STEP 3: Transform your data by encoding the two features userId and movieID. These encoded features will be provided as input
             '        to our MatrixFactorizationTrainer.
-            Dim pipeline = mlcontext.Transforms.Conversion.MapValueToKey("userId", "userIdEncoded").
-                Append(mlcontext.Transforms.Conversion.MapValueToKey("movieId", "movieIdEncoded")).
-                Append(mlcontext.Recommendation().Trainers.MatrixFactorization("userIdEncoded", "movieIdEncoded", "Label",
-                                                           advancedSettings:=Sub(s)
-                                                                                 s.NumIterations = 20
-                                                                                 s.K = 100
-                                                                             End Sub))
+            Dim dataProcessingPipeline = mlcontext.Transforms.Conversion.MapValueToKey(outputColumnName:=userIdEncoded, inputColumnName:=NameOf(MovieRating.userId)).Append(mlcontext.Transforms.Conversion.MapValueToKey(outputColumnName:=movieIdEncoded, inputColumnName:=NameOf(MovieRating.movieId)))
 
-            'STEP 4: Train the model fitting to the DataSet
+            'Specify the options for MatrixFactorization trainer
+            Dim options As New MatrixFactorizationTrainer.Options()
+            options.MatrixColumnIndexColumnName = userIdEncoded
+            options.MatrixRowIndexColumnName = movieIdEncoded
+            options.LabelColumnName = DefaultColumnNames.Label
+            options.NumIterations = 20
+            options.K = 100
+
+            'STEP 4: Create the training pipeline 
+            Dim trainingPipeLine = dataProcessingPipeline.Append(mlcontext.Recommendation().Trainers.MatrixFactorization(options))
+
+            'STEP 5: Train the model fitting to the DataSet
             Console.WriteLine("=============== Training the model ===============")
-            Dim model = pipeline.Fit(trainingDataView)
+            Dim model As ITransformer = trainingPipeLine.Fit(trainingDataView)
 
-            'STEP 5: Evaluate the model performance 
+            'STEP 6: Evaluate the model performance 
             Console.WriteLine("=============== Evaluating the model ===============")
             Dim testDataView As IDataView = mlcontext.Data.ReadFromTextFile(Of MovieRating)(TestDataLocation, hasHeader:=True)
             Dim prediction = model.Transform(testDataView)
-            Dim metrics = mlcontext.Regression.Evaluate(prediction, label:="Label", score:="Score")
+            Dim metrics = mlcontext.Regression.Evaluate(prediction, label:=DefaultColumnNames.Label, score:=DefaultColumnNames.Score)
             'Console.WriteLine("The model evaluation metrics rms:" + Math.Round(float.Parse(metrics.Rms.ToString()), 1));
 
-            'STEP 6:  Try/test a single prediction by predicting a single movie rating for a specific user
+            'STEP 7:  Try/test a single prediction by predicting a single movie rating for a specific user
             Dim predictionengine = model.CreatePredictionEngine(Of MovieRating, MovieRatingPrediction)(mlcontext)
             '             Make a single movie rating prediction, the scores are for a particular user and will range from 1 - 5. 
             '               The higher the score the higher the likelyhood of a user liking a particular movie.
@@ -60,6 +70,6 @@ Namespace MovieRecommendation
             Console.WriteLine("=============== End of process, hit any key to finish ===============")
             Console.ReadLine()
         End Sub
-
     End Class
+
 End Namespace
