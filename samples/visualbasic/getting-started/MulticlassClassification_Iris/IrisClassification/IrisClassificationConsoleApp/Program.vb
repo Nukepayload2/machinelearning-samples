@@ -40,7 +40,10 @@ Namespace MulticlassClassification_Iris
             Dim testDataView = mlContext.Data.ReadFromTextFile(Of IrisData)(TestDataPath, hasHeader:=True)
 
             ' STEP 2: Common data process configuration with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.Concatenate("Features", "SepalLength", "SepalWidth", "PetalLength", "PetalWidth").AppendCacheCheckpoint(mlContext)
+            Dim dataProcessPipeline = mlContext.Transforms.Concatenate("Features", "SepalLength", "SepalWidth", "PetalLength", "PetalWidth").
+                AppendCacheCheckpoint(mlContext)
+            ' Use in-memory cache for small/medium datasets to lower training time. 
+            ' Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets.
 
             ' STEP 3: Set the training algorithm, then append the trainer to the pipeline  
             Dim trainer = mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn:="Label", featureColumn:="Features")
@@ -98,7 +101,7 @@ Namespace MulticlassClassification_Iris
             'Score sample 2
             Dim resultprediction2 = predEngine.Predict(SampleIrisData.Iris2)
 
-            Console.WriteLine($"Actual: setosa.     Predicted probability: setosa:      {resultprediction2.Score(0):0.####}")
+            Console.WriteLine($"Actual: virginica.     Predicted probability: setosa:      {resultprediction2.Score(0):0.####}")
             Console.WriteLine($"                                           versicolor:  {resultprediction2.Score(1):0.####}")
             Console.WriteLine($"                                           virginica:   {resultprediction2.Score(2):0.####}")
             Console.WriteLine()

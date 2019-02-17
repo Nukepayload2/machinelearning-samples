@@ -1,5 +1,5 @@
 ﻿Imports System.IO
-
+Imports Microsoft.Data.DataView
 Imports Microsoft.ML
 Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML.Data
@@ -38,7 +38,7 @@ Namespace Common
         Public Function PredictBatch(inputDataView As IDataView) As IEnumerable(Of TPrediction)
             CheckTrainedModelIsLoaded()
             Dim predictions = TrainedModel.Transform(inputDataView)
-            Return predictions.AsEnumerable(Of TPrediction)(_mlContext, reuseRowObject:=False)
+            Return _mlContext.CreateEnumerable(Of TPrediction)(predictions, reuseRowObject:=False)
         End Function
 
         Public Function LoadModelFromZipFile(modelPath As String) As ITransformer
