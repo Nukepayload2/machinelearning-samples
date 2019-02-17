@@ -3,7 +3,6 @@
 Imports ImageClassification.ImageDataStructures
 Imports ImageClassification.ModelScorer.ConsoleHelpers
 Imports ImageClassification.ModelScorer.ModelHelpers
-Imports Microsoft.ML.Data
 Imports Microsoft.ML.ImageAnalytics
 
 Namespace ImageClassification.ModelScorer
@@ -13,6 +12,7 @@ Namespace ImageClassification.ModelScorer
         Private ReadOnly modelLocation As String
         Private ReadOnly labelsLocation As String
         Private ReadOnly mlContext As MLContext
+        Private Shared ReadOnly ImageReal As String = NameOf(ImageReal)
 
         Public Sub New(dataLocation As String, imagesFolder As String, modelLocation As String, labelsLocation As String)
             Me.dataLocation = dataLocation
@@ -56,10 +56,10 @@ Namespace ImageClassification.ModelScorer
 
             Dim data = mlContext.Data.ReadFromTextFile(Of ImageNetData)(dataLocation, hasHeader:=True)
 
-            Dim pipeline = mlContext.Transforms.LoadImages(imageFolder:=imagesFolder, ("ImagePath", "ImageReal")).
-                Append(mlContext.Transforms.Resize("ImageReal", "ImageReal", ImageNetSettings.imageHeight, ImageNetSettings.imageWidth)).
-                Append(mlContext.Transforms.ExtractPixels({New ImagePixelExtractorTransform.ColumnInfo("ImageReal", "input", interleave:=ImageNetSettings.channelsLast, offset:=ImageNetSettings.mean)})).
-                Append(mlContext.Transforms.ScoreTensorFlowModel(modelLocation, {"input"}, {"softmax2"}))
+            Dim pipeline = mlContext.Transforms.LoadImages(imageFolder:=imagesFolder, (outputColumnName:=ImageReal, inputColumnName:=NameOf(ImageNetData.ImagePath))).
+                Append(mlContext.Transforms.Resize(outputColumnName:=ImageReal, imageWidth:=ImageNetSettings.imageWidth, imageHeight:=ImageNetSettings.imageHeight, inputColumnName:=ImageReal)).
+                Append(mlContext.Transforms.ExtractPixels({New ImagePixelExtractorTransformer.ColumnInfo(name:=InceptionSettings.inputTensorName, inputColumnName:=ImageReal, interleave:=ImageNetSettings.channelsLast, offset:=ImageNetSettings.mean)})).
+                Append(mlContext.Transforms.ScoreTensorFlowModel(modelLocation:=modelLocation, outputColumnNames:={InceptionSettings.outputTensorName}, inputColumnNames:={InceptionSettings.inputTensorName}))
 
             Dim modeld = pipeline.Fit(data)
 
