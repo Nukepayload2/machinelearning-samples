@@ -1,68 +1,62 @@
 ﻿Imports Microsoft.ML
 Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML.Data
-Imports System
 Imports System.IO
 Imports mnist.DataStructures
 
-
-
 Namespace mnist
-	Friend Class Program
+    Friend Class Program
 
-		Private Shared ReadOnly TrainDataPath As String = Path.Combine(Environment.CurrentDirectory, "Data", "optdigits-train.csv")
-		Private Shared ReadOnly ValidationDataPath As String = Path.Combine(Environment.CurrentDirectory, "Data", "optdigits-val.csv")
-		Private Shared ReadOnly ModelPath As String = Path.Combine(Environment.CurrentDirectory, "MLModels", "Model.zip")
+        Private Shared ReadOnly TrainDataPath As String = Path.Combine(Environment.CurrentDirectory, "Data", "optdigits-train.csv")
+        Private Shared ReadOnly TestDataPath As String = Path.Combine(Environment.CurrentDirectory, "Data", "optdigits-val.csv")
+        Private Shared ReadOnly ModelPath As String = Path.Combine(Environment.CurrentDirectory, "MLModels", "Model.zip")
 
-        Shared Sub Main(args() As String)
-            Dim env = New MLContext()
-            Train(env)
-            TestSomePredictions(env)
+        Shared Sub Main(ByVal args() As String)
+            Dim mLContext As New MLContext()
+            Train(mLContext)
+            TestSomePredictions(mLContext)
 
             Console.WriteLine("Hit any key to finish the app")
             Console.ReadKey()
         End Sub
 
-        Public Shared Sub Train(env As MLContext)
+        Public Shared Sub Train(ByVal mLContext As MLContext)
             Try
-                Dim classification = New MulticlassClassificationContext(env)
-
                 ' STEP 1: Common data loading configuration
-                Dim reader = env.Data.CreateTextReader(New TextLoader.Arguments() With {
-                    .Column = {
-                        New TextLoader.Column("PixelValues", DataKind.R4, 0, 63),
-                        New TextLoader.Column("Number", DataKind.R4, 64)
-                    },
-                    .Separator = ",",
-                    .HasHeader = False
-                })
+                Dim trainData = mLContext.Data.ReadFromTextFile(path:=TrainDataPath, columns:={
+                    New TextLoader.Column(NameOf(InputData.PixelValues), DataKind.R4, 0, 63),
+                    New TextLoader.Column("Number", DataKind.R4, 64)
+                }, hasHeader:=False, separatorChar:=","c)
 
-                Dim data = reader.Read(TrainDataPath)
-                Dim testData = reader.Read(ValidationDataPath)
+
+                Dim testData = mLContext.Data.ReadFromTextFile(path:=TestDataPath, columns:={
+                    New TextLoader.Column(NameOf(InputData.PixelValues), DataKind.R4, 0, 63),
+                    New TextLoader.Column("Number", DataKind.R4, 64)
+                }, hasHeader:=False, separatorChar:=","c)
 
                 ' STEP 2: Common data process configuration with pipeline data transformations
-                Dim dataProcessPipeline = env.Transforms.Concatenate("Features", "PixelValues").AppendCacheCheckpoint(env)
+                Dim dataProcessPipeline = mLContext.Transforms.Concatenate(DefaultColumnNames.Features, NameOf(InputData.PixelValues)).AppendCacheCheckpoint(mLContext)
 
                 ' STEP 3: Set the training algorithm, then create and config the modelBuilder
-                Dim trainer = env.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn:="Number", featureColumn:="Features")
+                Dim trainer = mLContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn:="Number", featureColumn:=DefaultColumnNames.Features)
                 Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
                 ' STEP 4: Train the model fitting to the DataSet
-                Dim watch = System.Diagnostics.Stopwatch.StartNew()
+                Dim watch = Stopwatch.StartNew()
                 Console.WriteLine("=============== Training the model ===============")
 
-                Dim trainedModel As ITransformer = trainingPipeline.Fit(data)
+                Dim trainedModel As ITransformer = trainingPipeline.Fit(trainData)
                 Dim elapsedMs As Long = watch.ElapsedMilliseconds
                 Console.WriteLine($"***** Training time: {elapsedMs \ 1000} seconds *****")
 
                 Console.WriteLine("===== Evaluating Model's accuracy with Test data =====")
                 Dim predictions = trainedModel.Transform(testData)
-                Dim metrics = env.MulticlassClassification.Evaluate(predictions, "Number", "Score")
+                Dim metrics = mLContext.MulticlassClassification.Evaluate(data:=predictions, label:="Number", score:=DefaultColumnNames.Score)
 
                 Common.ConsoleHelper.PrintMultiClassClassificationMetrics(trainer.ToString(), metrics)
 
                 Using fs = New FileStream(ModelPath, FileMode.Create, FileAccess.Write, FileShare.Write)
-                    env.Model.Save(trainedModel, fs)
+                    mLContext.Model.Save(trainedModel, fs)
                 End Using
 
                 Console.WriteLine("The model is saved to {0}", ModelPath)
@@ -73,7 +67,7 @@ Namespace mnist
         End Sub
 
 
-        Private Shared Sub TestSomePredictions(mlContext As MLContext)
+        Private Shared Sub TestSomePredictions(ByVal mlContext As MLContext)
             Dim trainedModel As ITransformer
             Using stream = New FileStream(ModelPath, FileMode.Open, FileAccess.Read, FileShare.Read)
                 trainedModel = mlContext.Model.Load(stream)
