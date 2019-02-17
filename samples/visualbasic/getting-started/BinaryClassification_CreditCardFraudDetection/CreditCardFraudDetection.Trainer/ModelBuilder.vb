@@ -3,6 +3,7 @@ Imports Microsoft.ML
 Imports Microsoft.ML.Transforms.Normalizers.NormalizingEstimator
 Imports System.IO
 Imports Microsoft.ML.Data
+Imports Microsoft.Data.DataView
 
 Namespace CreditCardFraudDetection.Trainer
     Public Class ModelBuilder
@@ -10,7 +11,7 @@ Namespace CreditCardFraudDetection.Trainer
         Private ReadOnly _dataSetFile As String
         Private ReadOnly _outputPath As String
 
-        Private _context As BinaryClassificationContext
+        Private _context As BinaryClassificationCatalog
         Private _reader As TextLoader
         Private _trainData As IDataView
         Private _testData As IDataView
@@ -37,13 +38,17 @@ Namespace CreditCardFraudDetection.Trainer
             'Create a flexible pipeline (composed by a chain of estimators) for building/traing the model.
 
             'Get all the column names for the Features (All except the Label and the StratificationColumn)
-            Dim featureColumnNames = _trainData.Schema.AsQueryable().Select(Function(column) column.Name).Where(Function(name) name <> "Label").Where(Function(name) name <> "StratificationColumn").ToArray()
+            Dim featureColumnNames = _trainData.Schema.AsQueryable().Select(Function(column) column.Name).
+                Where(Function(name) name <> "Label").
+                Where(Function(name) name <> "StratificationColumn").ToArray()
 
-            Dim pipeline = _mlContext.Transforms.Concatenate("Features", featureColumnNames).Append(_mlContext.Transforms.Normalize(inputName:="Features", outputName:="FeaturesNormalizedByMeanVar", mode:=NormalizerMode.MeanVariance)).Append(_mlContext.BinaryClassification.Trainers.FastTree(labelColumn:="Label", featureColumn:="Features", numLeaves:=20, numTrees:=100, minDatapointsInLeaves:=10, learningRate:=0.2))
+            Dim pipeline = _mlContext.Transforms.Concatenate(DefaultColumnNames.Features, featureColumnNames).
+                Append(_mlContext.Transforms.Normalize(inputColumnName:="Features", outputColumnName:="FeaturesNormalizedByMeanVar", mode:=NormalizerMode.MeanVariance)).
+                Append(_mlContext.BinaryClassification.Trainers.FastTree(labelColumn:="Label", featureColumn:="Features", numLeaves:=20, numTrees:=100, minDatapointsInLeaves:=10, learningRate:=0.2))
 
             Dim model = pipeline.Fit(_trainData)
 
-            Dim metrics = _context.Evaluate(model.Transform(_testData), "Label")
+            Dim metrics = _context.Evaluate(model.Transform(_testData), label:="Label")
 
             ConsoleWriteHeader($"Test Metrics:")
             Console.WriteLine("Acuracy: " & metrics.Accuracy)
@@ -56,7 +61,7 @@ Namespace CreditCardFraudDetection.Trainer
             Console.WriteLine("Saved model to " & Path.Combine(_outputPath, "fastTree.zip"))
         End Sub
 
-        Private Function PrepareData(mlContext As MLContext) As (context As BinaryClassificationContext, TextLoader, trainData As IDataView, testData As IDataView)
+        Private Function PrepareData(mlContext As MLContext) As (context As BinaryClassificationCatalog, TextLoader, trainData As IDataView, testData As IDataView)
 
             Dim data As IDataView = Nothing
             Dim trainData As IDataView = Nothing
@@ -98,7 +103,7 @@ Namespace CreditCardFraudDetection.Trainer
             Dim txtLoaderArgs As TextLoader.Arguments = New TextLoader.Arguments With {
                 .Column = columns,
                 .HasHeader = True,
-                .Separator = ","
+                .Separators = {","c}
             }
 
             ' Step one: read the data as an IDataView.
@@ -111,7 +116,7 @@ Namespace CreditCardFraudDetection.Trainer
             ' so we create a Binary Classification context:
             ' it will give us the algorithms we need,
             ' as well as the evaluation procedure.
-            Dim classification = New BinaryClassificationContext(mlContext)
+            Dim classification = New BinaryClassificationCatalog(mlContext)
 
             If Not File.Exists(Path.Combine(_outputPath, "testData.idv")) AndAlso Not File.Exists(Path.Combine(_outputPath, "trainData.idv")) Then
                 ' Split the data 80:20 into train and test sets, train and evaluate.
@@ -174,10 +179,10 @@ Namespace CreditCardFraudDetection.Trainer
                 }
 
                 ' Load splited data
-                trainData = mlContext.Data.ReadFromTextFile(Path.Combine(_outputPath, "trainData.csv"), columnsPlus, hasHeader:=txtLoaderArgs.HasHeader, separatorChar:=txtLoaderArgs.Separator.ToCharArray()(0))
+                trainData = mlContext.Data.ReadFromTextFile(Path.Combine(_outputPath, "trainData.csv"), columnsPlus, hasHeader:=txtLoaderArgs.HasHeader, separatorChar:=txtLoaderArgs.Separators(0))
 
 
-                testData = mlContext.Data.ReadFromTextFile(Path.Combine(_outputPath, "testData.csv"), columnsPlus, hasHeader:=txtLoaderArgs.HasHeader, separatorChar:=txtLoaderArgs.Separator.ToCharArray()(0))
+                testData = mlContext.Data.ReadFromTextFile(Path.Combine(_outputPath, "testData.csv"), columnsPlus, hasHeader:=txtLoaderArgs.HasHeader, separatorChar:=txtLoaderArgs.Separators(0))
             End If
 
             ConsoleWriteHeader("Show 4 transactions fraud (true) and 4 transactions not fraud (false) -  (traindata)")

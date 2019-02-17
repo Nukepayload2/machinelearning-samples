@@ -68,7 +68,7 @@ Namespace CreditCardFraudDetection.Predictor
 
             Dim predictionEngine = model.CreatePredictionEngine(Of TransactionObservation, TransactionFraudPrediction)(mlContext)
             ConsoleWriterSection($"Test {numberOfTransactions} transactions, from the test datasource, that should be predicted as fraud (true):")
-            dataTest.AsEnumerable(Of TransactionObservation)(mlContext, reuseRowObject:=False).
+            mlContext.CreateEnumerable(Of TransactionObservation)(dataTest, reuseRowObject:=False).
                 Where(Function(x) x.Label = True).
                 Take(numberOfTransactions).
                 Select(Function(testData) testData).ToList().ForEach(
@@ -80,7 +80,7 @@ Namespace CreditCardFraudDetection.Predictor
                 End Sub)
 
             ConsoleWriterSection($"Test {numberOfTransactions} transactions, from the test datasource, that should NOT be predicted as fraud (false):")
-            dataTest.AsEnumerable(Of TransactionObservation)(mlContext, reuseRowObject:=False).
+            mlContext.CreateEnumerable(Of TransactionObservation)(dataTest, reuseRowObject:=False).
                 Where(Function(x) x.Label = False).Take(numberOfTransactions).ToList().ForEach(
                 Sub(testData)
                     Console.WriteLine($"--- Transaction ---")

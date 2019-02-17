@@ -1,4 +1,5 @@
 ﻿Imports CreditCardFraudDetection.Common.DataModels
+Imports Microsoft.Data.DataView
 Imports Microsoft.ML
 Imports Microsoft.ML.Data
 Imports System.IO
@@ -94,15 +95,21 @@ Namespace CreditCardFraudDetection.Common
         End Sub
 
         Public Sub ShowObservations(env As MLContext, data As IDataView, Optional label As Boolean = True, Optional count As Integer = 2)
-            data.AsEnumerable(Of TransactionObservation)(env, reuseRowObject:=False).Where(Function(x) x.Label = label).Take(count).ToList().ForEach(Sub(row)
-                                                                                                                                                         row.PrintToConsole()
-                                                                                                                                                     End Sub)
+            env.CreateEnumerable(Of TransactionObservation)(data, reuseRowObject:=False).
+                Where(Function(x) x.Label = label).
+                Take(count).ToList().
+                ForEach(Sub(row)
+                            row.PrintToConsole()
+                        End Sub)
         End Sub
 
         Public Sub ShowPredictions(env As MLContext, data As IDataView, Optional label As Boolean = True, Optional count As Integer = 2)
-            data.AsEnumerable(Of TransactionFraudPrediction)(env, reuseRowObject:=False).Where(Function(x) x.PredictedLabel = label).Take(count).ToList().ForEach(Sub(row)
-                                                                                                                                                                      row.PrintToConsole()
-                                                                                                                                                                  End Sub)
+            env.CreateEnumerable(Of TransactionFraudPrediction)(data, reuseRowObject:=False).
+                Where(Function(x) x.PredictedLabel = label).
+                Take(count).ToList().
+                ForEach(Sub(row)
+                            row.PrintToConsole()
+                        End Sub)
         End Sub
 
         Public Sub UnZipDataSet(zipDataSet As String, destinationFile As String)
