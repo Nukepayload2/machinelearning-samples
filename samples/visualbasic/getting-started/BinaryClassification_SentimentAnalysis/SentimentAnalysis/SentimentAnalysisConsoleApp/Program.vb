@@ -4,23 +4,24 @@ Imports Microsoft.ML
 
 Imports SentimentAnalysisConsoleApp.DataStructures
 Imports Common
+Imports Microsoft.Data.DataView
 Imports Microsoft.ML.Data
 
 Namespace SentimentAnalysisConsoleApp
 
     Friend Module Program
-        Private ReadOnly Property AppPath() As String
+        Private ReadOnly Property AppPath As String
             Get
                 Return Path.GetDirectoryName(Environment.GetCommandLineArgs()(0))
             End Get
         End Property
 
-        Private BaseDatasetsLocation As String = "../../../../Data"
-        Private TrainDataPath As String = $"{BaseDatasetsLocation}/wikipedia-detox-250-line-data.tsv"
-        Private TestDataPath As String = $"{BaseDatasetsLocation}/wikipedia-detox-250-line-test.tsv"
+        Private ReadOnly BaseDatasetsLocation As String = "../../../../Data"
+        Private ReadOnly TrainDataPath As String = $"{BaseDatasetsLocation}/wikipedia-detox-250-line-data.tsv"
+        Private ReadOnly TestDataPath As String = $"{BaseDatasetsLocation}/wikipedia-detox-250-line-test.tsv"
 
-        Private BaseModelsPath As String = "../../../../MLModels"
-        Private ModelPath As String = $"{BaseModelsPath}/SentimentModel.zip"
+        Private ReadOnly BaseModelsPath As String = "../../../../MLModels"
+        Private ReadOnly ModelPath As String = $"{BaseModelsPath}/SentimentModel.zip"
 
         Sub Main(args() As String)
             'Create MLContext to be shared across the model creation workflow objects 
@@ -29,7 +30,7 @@ Namespace SentimentAnalysisConsoleApp
 
             ' Create, Train, Evaluate and Save a model
             BuildTrainEvaluateAndSaveModel(mlContext)
-            Common.ConsoleHelper.ConsoleWriteHeader("=============== End of training processh ===============")
+            Common.ConsoleHelper.ConsoleWriteHeader("=============== End of training process ===============")
 
             ' Make a single test prediction loding the model from .ZIP file
             TestSinglePrediction(mlContext)
@@ -45,11 +46,11 @@ Namespace SentimentAnalysisConsoleApp
             Dim testDataView As IDataView = mlContext.Data.ReadFromTextFile(Of SentimentIssue)(TestDataPath, hasHeader:=True)
 
             ' STEP 2: Common data process configuration with pipeline data transformations          
-            Dim dataProcessPipeline = mlContext.Transforms.Text.FeaturizeText("Text", "Features")
+            Dim dataProcessPipeline = mlContext.Transforms.Text.FeaturizeText(outputColumnName:=DefaultColumnNames.Features, inputColumnName:=NameOf(SentimentIssue.Text))
 
             ' (OPTIONAL) Peek data (such as 2 records) in training DataView after applying the ProcessPipeline's transformations into "Features" 
-            ConsoleHelper.PeekDataViewInConsole(Of SentimentIssue)(mlContext, trainingDataView, dataProcessPipeline, 2)
-            ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, "Features", trainingDataView, dataProcessPipeline, 1)
+            ConsoleHelper.PeekDataViewInConsole(mlContext, trainingDataView, dataProcessPipeline, 2)
+            ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, DefaultColumnNames.Features, trainingDataView, dataProcessPipeline, 1)
 
             ' STEP 3: Set the training algorithm, then create and config the modelBuilder                            
             Dim trainer = mlContext.BinaryClassification.Trainers.FastTree(labelColumn:="Label", featureColumn:="Features")
@@ -62,7 +63,7 @@ Namespace SentimentAnalysisConsoleApp
             ' STEP 5: Evaluate the model and show accuracy stats
             Console.WriteLine("===== Evaluating Model's accuracy with Test data =====")
             Dim predictions = trainedModel.Transform(testDataView)
-            Dim metrics = mlContext.BinaryClassification.Evaluate(predictions, "Label", "Score")
+            Dim metrics = mlContext.BinaryClassification.Evaluate(data:=predictions, label:="Label", score:="Score")
 
             ConsoleHelper.PrintBinaryClassificationMetrics(trainer.ToString(), metrics)
 
@@ -101,7 +102,6 @@ Namespace SentimentAnalysisConsoleApp
             Console.WriteLine($"=============== Single Prediction  ===============")
             Console.WriteLine($"Text: {sampleStatement.Text} | Prediction: {(If(Convert.ToBoolean(resultprediction.Prediction), "Toxic", "Nice"))} sentiment | Probability: {resultprediction.Probability} ")
             Console.WriteLine($"==================================================")
-            '
         End Sub
     End Module
 End Namespace
