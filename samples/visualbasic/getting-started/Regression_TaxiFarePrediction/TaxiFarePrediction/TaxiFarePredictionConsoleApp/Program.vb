@@ -6,10 +6,11 @@ Imports Microsoft.ML.Transforms.Normalizers.NormalizingEstimator
 Imports Regression_TaxiFarePrediction.DataStructures
 Imports Common
 Imports Microsoft.ML.Data
+Imports Microsoft.Data.DataView
 
 Namespace Regression_TaxiFarePrediction
     Friend Module Program
-        Private ReadOnly Property AppPath() As String
+        Private ReadOnly Property AppPath As String
             Get
                 Return Path.GetDirectoryName(Environment.GetCommandLineArgs()(0))
             End Get
@@ -21,6 +22,10 @@ Namespace Regression_TaxiFarePrediction
 
         Private BaseModelsPath As String = "../../../../MLModels"
         Private ModelPath As String = $"{BaseModelsPath}/TaxiFareModel.zip"
+
+        Private VendorIdEncoded As String = NameOf(VendorIdEncoded)
+        Private RateCodeEncoded As String = NameOf(RateCodeEncoded)
+        Private PaymentTypeEncoded As String = NameOf(PaymentTypeEncoded)
 
         Sub Main(args() As String) 'If args[0] == "svg" a vector-based chart will be created instead a .png chart
             'Create ML Context with seed for repeteable/deterministic results
@@ -39,25 +44,25 @@ Namespace Regression_TaxiFarePrediction
             Console.ReadLine()
         End Sub
 
-        Private Function BuildTrainEvaluateAndSaveModel(mlContext As MLContext) As ITransformer
+        Private Function BuildTrainEvaluateAndSaveModel(ByVal mlContext As MLContext) As ITransformer
             ' STEP 1: Common data loading configuration
             Dim baseTrainingDataView As IDataView = mlContext.Data.ReadFromTextFile(Of TaxiTrip)(TrainDataPath, hasHeader:=True, separatorChar:=","c)
             Dim testDataView As IDataView = mlContext.Data.ReadFromTextFile(Of TaxiTrip)(TestDataPath, hasHeader:=True, separatorChar:=","c)
 
             'Sample code of removing extreme data like "outliers" for FareAmounts higher than $150 and lower than $1 which can be error-data 
-            Dim cnt = baseTrainingDataView.GetColumn(Of Single)(mlContext, "FareAmount").Count()
-            Dim trainingDataView As IDataView = mlContext.Data.FilterByColumn(baseTrainingDataView, "FareAmount", lowerBound:=1, upperBound:=150)
-            Dim cnt2 = trainingDataView.GetColumn(Of Single)(mlContext, "FareAmount").Count()
+            Dim cnt = baseTrainingDataView.GetColumn(Of Single)(mlContext, NameOf(TaxiTrip.FareAmount)).Count()
+            Dim trainingDataView As IDataView = mlContext.Data.FilterByColumn(baseTrainingDataView, NameOf(TaxiTrip.FareAmount), lowerBound:=1, upperBound:=150)
+            Dim cnt2 = trainingDataView.GetColumn(Of Single)(mlContext, NameOf(TaxiTrip.FareAmount)).Count()
 
             ' STEP 2: Common data process configuration with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.CopyColumns("FareAmount", "Label").Append(mlContext.Transforms.Categorical.OneHotEncoding("VendorId", "VendorIdEncoded")).Append(mlContext.Transforms.Categorical.OneHotEncoding("RateCode", "RateCodeEncoded")).Append(mlContext.Transforms.Categorical.OneHotEncoding("PaymentType", "PaymentTypeEncoded")).Append(mlContext.Transforms.Normalize(inputName:="PassengerCount", mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Normalize(inputName:="TripTime", mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Normalize(inputName:="TripDistance", mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Concatenate("Features", "VendorIdEncoded", "RateCodeEncoded", "PaymentTypeEncoded", "PassengerCount", "TripTime", "TripDistance"))
+            Dim dataProcessPipeline = mlContext.Transforms.CopyColumns(outputColumnName:=DefaultColumnNames.Label, inputColumnName:=NameOf(TaxiTrip.FareAmount)).Append(mlContext.Transforms.Categorical.OneHotEncoding(outputColumnName:=VendorIdEncoded, inputColumnName:=NameOf(TaxiTrip.VendorId))).Append(mlContext.Transforms.Categorical.OneHotEncoding(outputColumnName:=RateCodeEncoded, inputColumnName:=NameOf(TaxiTrip.RateCode))).Append(mlContext.Transforms.Categorical.OneHotEncoding(outputColumnName:=PaymentTypeEncoded, inputColumnName:=NameOf(TaxiTrip.PaymentType))).Append(mlContext.Transforms.Normalize(outputColumnName:=NameOf(TaxiTrip.PassengerCount), mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Normalize(outputColumnName:=NameOf(TaxiTrip.TripTime), mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Normalize(outputColumnName:=NameOf(TaxiTrip.TripDistance), mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Concatenate(DefaultColumnNames.Features, VendorIdEncoded, RateCodeEncoded, PaymentTypeEncoded, NameOf(TaxiTrip.PassengerCount), NameOf(TaxiTrip.TripTime), NameOf(TaxiTrip.TripDistance)))
 
             ' (OPTIONAL) Peek data (such as 5 records) in training DataView after applying the ProcessPipeline's transformations into "Features" 
-            ConsoleHelper.PeekDataViewInConsole(Of TaxiTrip)(mlContext, trainingDataView, dataProcessPipeline, 5)
-            ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, "Features", trainingDataView, dataProcessPipeline, 5)
+            ConsoleHelper.PeekDataViewInConsole(mlContext, trainingDataView, dataProcessPipeline, 5)
+            ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, DefaultColumnNames.Features, trainingDataView, dataProcessPipeline, 5)
 
             ' STEP 3: Set the training algorithm, then create and config the modelBuilder - Selected Trainer (SDCA Regression algorithm)                            
-            Dim trainer = mlContext.Regression.Trainers.StochasticDualCoordinateAscent(labelColumn:="Label", featureColumn:="Features")
+            Dim trainer = mlContext.Regression.Trainers.StochasticDualCoordinateAscent(labelColumn:=DefaultColumnNames.Label, featureColumn:=DefaultColumnNames.Features)
             Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
             ' STEP 4: Train the model fitting to the DataSet
@@ -69,7 +74,7 @@ Namespace Regression_TaxiFarePrediction
             Console.WriteLine("===== Evaluating Model's accuracy with Test data =====")
 
             Dim predictions As IDataView = trainedModel.Transform(testDataView)
-            Dim metrics = mlContext.Regression.Evaluate(predictions, label:="Label", score:="Score")
+            Dim metrics = mlContext.Regression.Evaluate(predictions, label:=DefaultColumnNames.Label, score:=DefaultColumnNames.Score)
 
             Common.ConsoleHelper.PrintRegressionMetrics(trainer.ToString(), metrics)
 
@@ -84,7 +89,7 @@ Namespace Regression_TaxiFarePrediction
             Return trainedModel
         End Function
 
-        Private Sub TestSinglePrediction(mlContext As MLContext)
+        Private Sub TestSinglePrediction(ByVal mlContext As MLContext)
             'Sample: 
             'vendor_id,rate_code,passenger_count,trip_time_in_secs,trip_distance,payment_type,fare_amount
             'VTS,1,1,1140,3.75,CRD,15.5
@@ -117,14 +122,14 @@ Namespace Regression_TaxiFarePrediction
             Console.WriteLine($"**********************************************************************")
         End Sub
 
-        Private Sub PlotRegressionChart(mlContext As MLContext, testDataSetPath As String, numberOfRecordsToRead As Integer, args() As String)
+        Private Sub PlotRegressionChart(ByVal mlContext As MLContext, ByVal testDataSetPath As String, ByVal numberOfRecordsToRead As Integer, ByVal args() As String)
             Dim trainedModel As ITransformer
             Using stream = New FileStream(ModelPath, FileMode.Open, FileAccess.Read, FileShare.Read)
                 trainedModel = mlContext.Model.Load(stream)
             End Using
 
             ' Create prediction engine related to the loaded trained model
-            Dim predEngine = trainedModel.CreatePredictionEngine(Of TaxiTrip, TaxiTripFarePrediction)(mlContext)
+            Dim predFunction = trainedModel.CreatePredictionEngine(Of TaxiTrip, TaxiTripFarePrediction)(mlContext)
 
             Dim chartFileName As String = ""
             Using pl = New PLStream()
@@ -183,7 +188,7 @@ Namespace Regression_TaxiFarePrediction
                     Dim y = New Double(0) {}
 
                     'Make Prediction
-                    Dim FarePrediction = predEngine.Predict(testData(i))
+                    Dim FarePrediction = predFunction.Predict(testData(i))
 
                     x(0) = testData(i).FareAmount
                     y(0) = FarePrediction.FareAmount
@@ -263,7 +268,7 @@ Namespace Regression_TaxiFarePrediction
     End Module
 
     Public Class TaxiTripCsvReader
-        Public Function GetDataFromCsv(dataLocation As String, numMaxRecords As Integer) As IEnumerable(Of TaxiTrip)
+        Public Function GetDataFromCsv(ByVal dataLocation As String, ByVal numMaxRecords As Integer) As IEnumerable(Of TaxiTrip)
             Dim records As IEnumerable(Of TaxiTrip) = File.ReadAllLines(dataLocation).Skip(1).Select(Function(x) x.Split(","c)).Select(Function(x) New TaxiTrip() With {
                 .VendorId = x(0),
                 .RateCode = x(1),
