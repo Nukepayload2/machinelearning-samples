@@ -3,6 +3,7 @@ Imports Microsoft.ML.Data
 Imports Microsoft.ML
 
 Imports System.Reflection
+Imports Microsoft.Data.DataView
 
 Namespace Common
     Public Module ConsoleHelper
@@ -137,30 +138,28 @@ Namespace Common
             Console.WriteLine($"*************************************************")
         End Sub
 
-        Public Function PeekDataViewInConsole(Of TObservation As {Class, New})(mlContext As MLContext, dataView As IDataView, pipeline As IEstimator(Of ITransformer), Optional numberOfRows As Integer = 4) As List(Of TObservation)
-            Dim msg As String = String.Format("Peek data in DataView: Showing {0} rows with the columns specified by TObservation class", numberOfRows.ToString())
+        Public Sub PeekDataViewInConsole(mlContext As MLContext, dataView As IDataView, pipeline As IEstimator(Of ITransformer), Optional numberOfRows As Integer = 4)
+            Dim msg As String = String.Format("Peek data in DataView: Showing {0} rows with the columns", numberOfRows.ToString())
             ConsoleWriteHeader(msg)
 
             'https://github.com/dotnet/machinelearning/blob/master/docs/code/MlNetCookBook.md#how-do-i-look-at-the-intermediate-data
             Dim transformer = pipeline.Fit(dataView)
             Dim transformedData = transformer.Transform(dataView)
 
-            ' 'transformedData' is a 'promise' of data, lazy-loading. Let's actually read it.
-            ' Convert to an enumerable of user-defined type.
-            Dim someRows = transformedData.AsEnumerable(Of TObservation)(mlContext, reuseRowObject:=False).Take(numberOfRows).ToList()
+            ' 'transformedData' is a 'promise' of data, lazy-loading. call Preview  
+            'and iterate through the returned collection from preview.
 
-            someRows.ForEach(Sub(row)
-                                 Dim lineToPrint As String = "Row--> "
+            Dim preViewTransformedData = transformedData.Preview(maxRows:=numberOfRows)
 
-                                 Dim fieldsInRow = row.GetType().GetFields(BindingFlags.Instance Or BindingFlags.Static Or BindingFlags.NonPublic Or BindingFlags.Public)
-                                 For Each field As FieldInfo In fieldsInRow
-                                     lineToPrint += $"| {field.Name}: {field.GetValue(row)}"
-                                 Next field
-                                 Console.WriteLine(lineToPrint)
-                             End Sub)
-
-            Return someRows
-        End Function
+            For Each row In preViewTransformedData.RowView
+                Dim ColumnCollection = row.Values
+                Dim lineToPrint As String = "Row--> "
+                For Each column As KeyValuePair(Of String, Object) In ColumnCollection
+                    lineToPrint &= $"| {column.Key}:{column.Value}"
+                Next column
+                Console.WriteLine(lineToPrint & vbLf)
+            Next row
+        End Sub
 
         Public Function PeekVectorColumnDataInConsole(mlContext As MLContext, columnName As String, dataView As IDataView, pipeline As IEstimator(Of ITransformer), Optional numberOfRows As Integer = 4) As List(Of Single())
             Dim msg As String = String.Format("Peek data in DataView: : Show {0} rows with just the '{1}' column", numberOfRows, columnName)

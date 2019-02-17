@@ -14,7 +14,7 @@ Imports Microsoft.ML.Data
 
 Namespace GitHubLabeler
     Friend Module Program
-        Private ReadOnly Property AppPath() As String
+        Private ReadOnly Property AppPath As String
             Get
                 Return Path.GetDirectoryName(Environment.GetCommandLineArgs()(0))
             End Get
@@ -31,7 +31,7 @@ Namespace GitHubLabeler
             OVAAveragedPerceptronTrainer = 2
         End Enum
 
-        Public Property Configuration() As IConfiguration
+        Public Property Configuration As IConfiguration
 
         Sub Main(args() As String)
             MainAsync(args).GetAwaiter.GetResult()
@@ -59,20 +59,20 @@ Namespace GitHubLabeler
             Dim mlContext = New MLContext(seed:=0)
 
             ' STEP 1: Common data loading configuration
-            Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of GitHubIssue)(
-                                   DataSetLocation,
-                                   hasHeader:=True, separatorChar:=vbTab)
+            Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of GitHubIssue)(DataSetLocation, hasHeader:=True, separatorChar:=vbTab, supportSparse:=False)
 
             ' STEP 2: Common data process configuration with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey("Area", "Label").
-                Append(mlContext.Transforms.Text.FeaturizeText("Title", "TitleFeaturized")).
-                Append(mlContext.Transforms.Text.FeaturizeText("Description", "DescriptionFeaturized")).
-                Append(mlContext.Transforms.Concatenate("Features", "TitleFeaturized", "DescriptionFeaturized")).
-                AppendCacheCheckpoint(mlContext) 'In this sample, only when using OVA (Not SDCA) the cache improves the training time, since OVA works multiple times/iterations over the same data
+            Dim dataProcessPipeline = mlContext.Transforms.Conversion.
+                MapValueToKey(outputColumnName:=DefaultColumnNames.Label, inputColumnName:=NameOf(GitHubIssue.Area)).
+                Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="TitleFeaturized", inputColumnName:=NameOf(GitHubIssue.Title))).
+                Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="DescriptionFeaturized", inputColumnName:=NameOf(GitHubIssue.Description))).
+                Append(mlContext.Transforms.Concatenate(outputColumnName:=DefaultColumnNames.Features, "TitleFeaturized", "DescriptionFeaturized")).
+                AppendCacheCheckpoint(mlContext)
+            ' Use in-memory cache for small/medium datasets to lower training time. 
+            ' Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets.
 
             ' (OPTIONAL) Peek data (such as 2 records) in training DataView after applying the ProcessPipeline's transformations into "Features" 
-            Common.ConsoleHelper.PeekDataViewInConsole(Of GitHubIssue)(mlContext, trainingDataView, dataProcessPipeline, 2)
-            'Common.ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, "Features", trainingDataView, dataProcessPipeline, 2);
+            Common.ConsoleHelper.PeekDataViewInConsole(mlContext, trainingDataView, dataProcessPipeline, 2)
 
             ' STEP 3: Create the selected training algorithm/trainer
             Dim trainer As IEstimator(Of ITransformer) = Nothing
@@ -87,10 +87,13 @@ Namespace GitHubLabeler
                     ' which distinguishes that class from all other classes. Prediction is then performed by running these binary classifiers, "
                     ' and choosing the prediction with the highest confidence score.
                     trainer = mlContext.MulticlassClassification.Trainers.OneVersusAll(averagedPerceptronBinaryTrainer)
+
+                    Exit Select
+                Case Else
             End Select
 
             'Set the trainer/algorithm and map label to value (original readable state)
-            Dim trainingPipeline = dataProcessPipeline.Append(trainer).Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel"))
+            Dim trainingPipeline = dataProcessPipeline.Append(trainer).Append(mlContext.Transforms.Conversion.MapKeyToValue(DefaultColumnNames.PredictedLabel))
 
             ' STEP 4: Cross-Validate with single dataset (since we don't have two datasets, one for training and for evaluate)
             ' in order to evaluate and get the model's accuracy metrics
@@ -100,15 +103,13 @@ Namespace GitHubLabeler
             'Measure cross-validation time
             Dim watchCrossValTime = System.Diagnostics.Stopwatch.StartNew()
 
-            Dim crossValidationResults = mlContext.MulticlassClassification.CrossValidate(trainingDataView, trainingPipeline, numFolds:=6, labelColumn:="Label")
+            Dim crossValidationResults = mlContext.MulticlassClassification.CrossValidate(data:=trainingDataView, estimator:=trainingPipeline, numFolds:=6, labelColumn:=DefaultColumnNames.Label)
 
             'Stop measuring time
             watchCrossValTime.Stop()
             Dim elapsedMs As Long = watchCrossValTime.ElapsedMilliseconds
             Console.WriteLine($"Time Cross-Validating: {elapsedMs} miliSecs")
 
-            '(CDLTLL-Pending-TODO)
-            '
             ConsoleHelper.PrintMulticlassClassificationFoldsAverageMetrics(DirectCast(trainer, Object).ToString(), crossValidationResults)
 
             ' STEP 5: Train the model fitting to the DataSet
@@ -126,7 +127,7 @@ Namespace GitHubLabeler
             Console.WriteLine($"Time Training the model: {elapsedCrossValMs} miliSecs")
 
             ' (OPTIONAL) Try/test a single prediction with the "just-trained model" (Before saving the model)
-            Dim issue As New GitHubIssue With {
+            Dim issue As New GitHubIssue() With {
                 .ID = "Any-ID",
                 .Title = "WebSockets communication is slow in my machine",
                 .Description = "The WebSockets communication used under the covers by SignalR looks like is going slow in my development machine.."
