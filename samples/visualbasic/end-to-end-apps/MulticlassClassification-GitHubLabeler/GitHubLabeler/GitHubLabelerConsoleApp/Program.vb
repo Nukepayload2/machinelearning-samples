@@ -154,6 +154,8 @@ Namespace GitHubLabeler
         End Sub
 
         Private Async Function PredictLabelsAndUpdateGitHub(ModelPath As String) As Task
+            Console.WriteLine(".............Retrieving Issues from GITHUB repo, predicting label/s and assigning predicted label/s......")
+
             Dim token = Configuration("GitHubToken")
             Dim repoOwner = Configuration("GitHubRepoOwner") 'IMPORTANT: This can be a GitHub User or a GitHub Organization
             Dim repoName = Configuration("GitHubRepoName")
