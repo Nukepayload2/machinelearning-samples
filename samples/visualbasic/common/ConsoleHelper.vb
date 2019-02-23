@@ -4,6 +4,7 @@ Imports Microsoft.ML
 
 Imports System.Reflection
 Imports Microsoft.Data.DataView
+Imports System.IO
 
 Namespace Common
     Public Module ConsoleHelper
@@ -242,34 +243,34 @@ Namespace Common
         End Sub
 
         Public Function FindProjectFolderPath() As String
-			Dim assemblyPath = System.Reflection.Assembly.GetEntryAssembly().Location
-			Dim assemblyDirectory = Path.GetDirectoryName(assemblyPath)
+            Dim assemblyPath = Assembly.GetEntryAssembly().Location
+            Dim assemblyDirectory = Path.GetDirectoryName(assemblyPath)
 
-			Dim projectFolderPath As String
+            Dim projectFolderPath As String
 
-			If assemblyDirectory.Contains("\Debug") OrElse assemblyDirectory.Contains("\Release") Then
-				Dim projectFile As String = Path.GetFileNameWithoutExtension(assemblyPath) & ".vbproj"
+            If assemblyDirectory.Contains("\Debug") OrElse assemblyDirectory.Contains("\Release") Then
+                Dim projectFile As String = Path.GetFileNameWithoutExtension(assemblyPath) & ".vbproj"
 
-				Dim root = New DirectoryInfo(assemblyDirectory)
+                Dim root = New DirectoryInfo(assemblyDirectory)
 
-				Do While root.Parent IsNot Nothing
-					If File.Exists(Path.Combine(root.FullName, projectFile)) Then
-						Exit Do
-					End If
+                Do While root.Parent IsNot Nothing
+                    If File.Exists(Path.Combine(root.FullName, projectFile)) Then
+                        Exit Do
+                    End If
 
-					root = root.Parent
+                    root = root.Parent
 
-					If root.Parent Is Nothing Then ' we could not find it (should not happen)
-						projectFolderPath = assemblyDirectory
-					End If
-				Loop
+                    If root.Parent Is Nothing Then ' we could not find it (should not happen)
+                        projectFolderPath = assemblyDirectory
+                    End If
+                Loop
 
-				projectFolderPath = root.FullName
-			Else
-				projectFolderPath = assemblyDirectory
-			End If
+                projectFolderPath = root.FullName
+            Else
+                projectFolderPath = assemblyDirectory
+            End If
 
-			Return projectFolderPath
+            Return projectFolderPath
         End Function
 
     End Module
