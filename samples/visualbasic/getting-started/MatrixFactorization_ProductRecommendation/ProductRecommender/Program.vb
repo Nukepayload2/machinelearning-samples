@@ -2,19 +2,24 @@
 Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML.Data
 Imports Microsoft.ML.Trainers
+Imports System.IO
 
 Namespace ProductRecommender
-    Friend Module Program
+    Friend Class Program
         '1. Do remember to replace amazon0302.txt with dataset from https://snap.stanford.edu/data/amazon0302.html
         '2. Replace column names with ProductID and CoPurchaseProductID. It should look like this:
         '   ProductID	ProductID_Copurchased
         '   0	1
         '   0  2
-        Private TrainingDataLocation As String = $"./Data/Amazon0302.txt"
+        Private Shared BaseDataSetRelativePath As String = "../../../Data"
+        Private Shared TrainingDataRelativePath As String = $"{BaseDataSetRelativePath}/Amazon0302.txt"
+        Private Shared TrainingDataLocation As String = GetAbsolutePath(TrainingDataRelativePath)
 
-        Private ModelPath As String = $"./Model/model.zip"
+        Private Shared BaseModelRelativePath As String = "../../../Model"
+        Private Shared ModelRelativePath As String = $"{BaseModelRelativePath}/model.zip"
+        Private Shared ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
-        Sub Main(ByVal args() As String)
+        Shared Sub Main(ByVal args() As String)
             'STEP 1: Create MLContext to be shared across the model creation workflow objects 
             Dim mlContext As New MLContext()
 
@@ -59,6 +64,15 @@ Namespace ProductRecommender
             Console.ReadKey()
         End Sub
 
+        Public Shared Function GetAbsolutePath(ByVal relativeDatasetPath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativeDatasetPath)
+
+            Return fullPath
+        End Function
+
         Public Class Copurchase_prediction
             Public Property Score() As Single
         End Class
@@ -70,6 +84,5 @@ Namespace ProductRecommender
             <KeyType(Count:=262111)>
             Public Property CoPurchaseProductID() As UInteger
         End Class
-    End Module
-
+    End Class
 End Namespace
