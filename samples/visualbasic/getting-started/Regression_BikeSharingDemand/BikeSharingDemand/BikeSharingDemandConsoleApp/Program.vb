@@ -12,10 +12,13 @@ Namespace BikeSharingDemand
         Private ModelsLocation As String = "../../../../MLModels"
 
         Private DatasetsLocation As String = "../../../../Data"
-        Private TrainingDataLocation As String = $"{DatasetsLocation}/hour_train.csv"
-        Private TestDataLocation As String = $"{DatasetsLocation}/hour_test.csv"
+        Private TrainingDataRelativePath As String = $"{DatasetsLocation}/hour_train.csv"
+        Private TestDataRelativePath As String = $"{DatasetsLocation}/hour_test.csv"
 
-        Sub Main(ByVal args() As String)
+        Private TrainingDataLocation As String = GetAbsolutePath(TrainingDataRelativePath)
+        Private TestDataLocation As String = GetAbsolutePath(TestDataRelativePath)
+
+        Sub Main(args() As String)
             ' Create MLContext to be shared across the model creation workflow objects 
             ' Set a random seed for repeatable/deterministic results across multiple trainings.
             Dim mlContext = New MLContext(seed:=0)
@@ -28,6 +31,8 @@ Namespace BikeSharingDemand
 
             ' Concatenate all the numeric columns into a single features column
             Dim dataProcessPipeline = mlContext.Transforms.Concatenate(DefaultColumnNames.Features, NameOf(DemandObservation.Season), NameOf(DemandObservation.Year), NameOf(DemandObservation.Month), NameOf(DemandObservation.Hour), NameOf(DemandObservation.Holiday), NameOf(DemandObservation.Weekday), NameOf(DemandObservation.WorkingDay), NameOf(DemandObservation.Weather), NameOf(DemandObservation.Temperature), NameOf(DemandObservation.NormalizedTemperature), NameOf(DemandObservation.Humidity), NameOf(DemandObservation.Windspeed)).AppendCacheCheckpoint(mlContext)
+            ' Use in-memory cache for small/medium datasets to lower training time. 
+            ' Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets.
 
             ' (Optional) Peek data in training DataView after applying the ProcessPipeline's transformations  
             Common.ConsoleHelper.PeekDataViewInConsole(mlContext, trainingDataView, dataProcessPipeline, 10)
@@ -35,7 +40,7 @@ Namespace BikeSharingDemand
 
             ' Definition of regression trainers/algorithms to use
             'var regressionLearners = new (string name, IEstimator<ITransformer> value)[]
-            Dim regressionLearners As (name As String, value As IEstimator(Of ITransformer))() = {("FastTree", mlContext.Regression.Trainers.FastTree()), ("Poisson", mlContext.Regression.Trainers.PoissonRegression()), ("SDCA", mlContext.Regression.Trainers.StochasticDualCoordinateAscent()), ("FastTreeTweedie", mlContext.Regression.Trainers.FastTreeTweedie())}
+            Dim regressionLearners() As (name As String, value As IEstimator(Of ITransformer)) = {("FastTree", mlContext.Regression.Trainers.FastTree()), ("Poisson", mlContext.Regression.Trainers.PoissonRegression()), ("SDCA", mlContext.Regression.Trainers.StochasticDualCoordinateAscent()), ("FastTreeTweedie", mlContext.Regression.Trainers.FastTreeTweedie())}
 
             ' 3. Phase for Training, Evaluation and model file persistence
             ' Per each regression trainer: Train, Evaluate, and Save a different model
@@ -50,7 +55,8 @@ Namespace BikeSharingDemand
                 ConsoleHelper.PrintRegressionMetrics(trainer.value.ToString(), metrics)
 
                 'Save the model file that can be used by any application
-                Dim modelPath As String = $"{ModelsLocation}/{trainer.name}Model.zip"
+                Dim modelRelativeLocation As String = $"{ModelsLocation}/{trainer.name}Model.zip"
+                Dim modelPath As String = GetAbsolutePath(modelRelativeLocation)
                 Using fs = New FileStream(modelPath, FileMode.Create, FileAccess.Write, FileShare.Write)
                     mlContext.Model.Save(trainedModel, fs)
                 End Using
@@ -65,7 +71,8 @@ Namespace BikeSharingDemand
             For Each learner In regressionLearners
                 'Load current model from .ZIP file
                 Dim trainedModel As ITransformer
-                Dim modelPath As String = $"{ModelsLocation}/{learner.name}Model.zip"
+                Dim modelRelativeLocation As String = $"{ModelsLocation}/{learner.name}Model.zip"
+                Dim modelPath As String = GetAbsolutePath(modelRelativeLocation)
                 Using stream = New FileStream(modelPath, FileMode.Open, FileAccess.Read, FileShare.Read)
                     trainedModel = mlContext.Model.Load(stream)
                 End Using
@@ -79,7 +86,15 @@ Namespace BikeSharingDemand
             Next learner
 
             Common.ConsoleHelper.ConsolePressAnyKey()
-
         End Sub
+
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
     End Module
 End Namespace
