@@ -5,13 +5,20 @@ Imports System.IO
 Imports mnist.DataStructures
 
 Namespace mnist
-    Friend Class Program
+    Friend Module Program
+        Private BaseDatasetsRelativePath As String = "../../../Data"
+        Private TrianDataRealtivePath As String = $"{BaseDatasetsRelativePath}/optdigits-train.csv"
+        Private TestDataRealtivePath As String = $"{BaseDatasetsRelativePath}/optdigits-val.csv"
 
-        Private Shared ReadOnly TrainDataPath As String = Path.Combine(Environment.CurrentDirectory, "Data", "optdigits-train.csv")
-        Private Shared ReadOnly TestDataPath As String = Path.Combine(Environment.CurrentDirectory, "Data", "optdigits-val.csv")
-        Private Shared ReadOnly ModelPath As String = Path.Combine(Environment.CurrentDirectory, "MLModels", "Model.zip")
+        Private TrainDataPath As String = GetAbsolutePath(TrianDataRealtivePath)
+        Private TestDataPath As String = GetAbsolutePath(TestDataRealtivePath)
 
-        Shared Sub Main(ByVal args() As String)
+        Private BaseModelsRelativePath As String = "../../../MLModels"
+        Private ModelRelativePath As String = $"{BaseModelsRelativePath}/Model.zip"
+
+        Private ModelPath As String = GetAbsolutePath(ModelRelativePath)
+
+        Sub Main(args() As String)
             Dim mLContext As New MLContext()
             Train(mLContext)
             TestSomePredictions(mLContext)
@@ -20,7 +27,7 @@ Namespace mnist
             Console.ReadKey()
         End Sub
 
-        Public Shared Sub Train(ByVal mLContext As MLContext)
+        Public Sub Train(mLContext As MLContext)
             Try
                 ' STEP 1: Common data loading configuration
                 Dim trainData = mLContext.Data.ReadFromTextFile(path:=TrainDataPath, columns:={
@@ -35,6 +42,7 @@ Namespace mnist
                 }, hasHeader:=False, separatorChar:=","c)
 
                 ' STEP 2: Common data process configuration with pipeline data transformations
+                ' Use in-memory cache for small/medium datasets to lower training time. Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets.
                 Dim dataProcessPipeline = mLContext.Transforms.Concatenate(DefaultColumnNames.Features, NameOf(InputData.PixelValues)).AppendCacheCheckpoint(mLContext)
 
                 ' STEP 3: Set the training algorithm, then create and config the modelBuilder
@@ -42,7 +50,7 @@ Namespace mnist
                 Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
                 ' STEP 4: Train the model fitting to the DataSet
-                Dim watch = Stopwatch.StartNew()
+                Dim watch = System.Diagnostics.Stopwatch.StartNew()
                 Console.WriteLine("=============== Training the model ===============")
 
                 Dim trainedModel As ITransformer = trainingPipeline.Fit(trainData)
@@ -66,8 +74,16 @@ Namespace mnist
             End Try
         End Sub
 
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
 
-        Private Shared Sub TestSomePredictions(ByVal mlContext As MLContext)
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
+
+        Private Sub TestSomePredictions(mlContext As MLContext)
             Dim trainedModel As ITransformer
             Using stream = New FileStream(ModelPath, FileMode.Open, FileAccess.Read, FileShare.Read)
                 trainedModel = mlContext.Model.Load(stream)
@@ -121,5 +137,5 @@ Namespace mnist
             Console.WriteLine($"                                           nine:  {resultprediction3.Score(9):0.####}")
             Console.WriteLine()
         End Sub
-    End Class
+    End Module
 End Namespace
