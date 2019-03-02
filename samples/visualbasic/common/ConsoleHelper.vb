@@ -242,36 +242,5 @@ Namespace Common
             Next line
         End Sub
 
-        Public Function FindProjectFolderPath() As String
-            Dim assemblyPath = Assembly.GetEntryAssembly().Location
-            Dim assemblyDirectory = Path.GetDirectoryName(assemblyPath)
-
-            Dim projectFolderPath As String
-
-            If assemblyDirectory.Contains("\Debug") OrElse assemblyDirectory.Contains("\Release") Then
-                Dim projectFile As String = Path.GetFileNameWithoutExtension(assemblyPath) & ".vbproj"
-
-                Dim root = New DirectoryInfo(assemblyDirectory)
-
-                Do While root.Parent IsNot Nothing
-                    If File.Exists(Path.Combine(root.FullName, projectFile)) Then
-                        Exit Do
-                    End If
-
-                    root = root.Parent
-
-                    If root.Parent Is Nothing Then ' we could not find it (should not happen)
-                        projectFolderPath = assemblyDirectory
-                    End If
-                Loop
-
-                projectFolderPath = root.FullName
-            Else
-                projectFolderPath = assemblyDirectory
-            End If
-
-            Return projectFolderPath
-        End Function
-
     End Module
 End Namespace

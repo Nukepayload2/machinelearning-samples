@@ -20,11 +20,13 @@ Namespace GitHubLabeler
             End Get
         End Property
 
-        Private BaseDatasetsLocation As String = "../../../../Data"
-        Private DataSetLocation As String = $"{BaseDatasetsLocation}/corefx-issues-train.tsv"
+        Private BaseDatasetsRelativePath As String = "../../../../Data"
+        Private DataSetRelativePath As String = $"{BaseDatasetsRelativePath}/corefx-issues-train.tsv"
+        Private DataSetLocation As String = GetAbsolutePath(DataSetRelativePath)
 
-        Private BaseModelsPath As String = "../../../../MLModels"
-        Private ModelFilePathName As String = $"{BaseModelsPath}/GitHubLabelerModel.zip"
+        Private BaseModelsRelativePath As String = "../../../../MLModels"
+        Private ModelRelativePath As String = $"{BaseModelsRelativePath}/GitHubLabelerModel.zip"
+        Private ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
         Public Enum MyTrainerStrategy As Integer
             SdcaMultiClassTrainer = 1
@@ -41,14 +43,14 @@ Namespace GitHubLabeler
             SetupAppConfiguration()
 
             '1. ChainedBuilderExtensions and Train the model
-            BuildAndTrainModel(DataSetLocation, ModelFilePathName, MyTrainerStrategy.SdcaMultiClassTrainer)
+            BuildAndTrainModel(DataSetLocation, ModelPath, MyTrainerStrategy.SdcaMultiClassTrainer)
 
             '2. Try/test to predict a label for a single hard-coded Issue
-            TestSingleLabelPrediction(ModelFilePathName)
+            TestSingleLabelPrediction(ModelPath)
 
             '3. Predict Issue Labels and apply into a real GitHub repo
             ' (Comment the next line if no real access to GitHub repo) 
-            Await PredictLabelsAndUpdateGitHub(ModelFilePathName)
+            Await PredictLabelsAndUpdateGitHub(ModelPath)
 
             Common.ConsoleHelper.ConsolePressAnyKey()
         End Function
@@ -56,14 +58,13 @@ Namespace GitHubLabeler
         Public Sub BuildAndTrainModel(DataSetLocation As String, ModelPath As String, selectedStrategy As MyTrainerStrategy)
             ' Create MLContext to be shared across the model creation workflow objects 
             ' Set a random seed for repeatable/deterministic results across multiple trainings.
-            Dim mlContext = New MLContext(seed:=0)
+            Dim mlContext = New MLContext(seed:=1)
 
             ' STEP 1: Common data loading configuration
             Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of GitHubIssue)(DataSetLocation, hasHeader:=True, separatorChar:=vbTab, supportSparse:=False)
 
             ' STEP 2: Common data process configuration with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.Conversion.
-                MapValueToKey(outputColumnName:=DefaultColumnNames.Label, inputColumnName:=NameOf(GitHubIssue.Area)).
+            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey(outputColumnName:=DefaultColumnNames.Label, inputColumnName:=NameOf(GitHubIssue.Area)).
                 Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="TitleFeaturized", inputColumnName:=NameOf(GitHubIssue.Title))).
                 Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="DescriptionFeaturized", inputColumnName:=NameOf(GitHubIssue.Description))).
                 Append(mlContext.Transforms.Concatenate(outputColumnName:=DefaultColumnNames.Features, "TitleFeaturized", "DescriptionFeaturized")).
@@ -149,7 +150,7 @@ Namespace GitHubLabeler
         End Sub
 
         Private Sub TestSingleLabelPrediction(modelFilePathName As String)
-            Dim labeler = New Labeler(modelPath:=Program.ModelFilePathName)
+            Dim labeler = New Labeler(modelPath:=ModelPath)
             labeler.TestPredictionForSingleIssue()
         End Sub
 
@@ -160,9 +161,7 @@ Namespace GitHubLabeler
             Dim repoOwner = Configuration("GitHubRepoOwner") 'IMPORTANT: This can be a GitHub User or a GitHub Organization
             Dim repoName = Configuration("GitHubRepoName")
 
-            If String.IsNullOrEmpty(token) OrElse token = "YOUR-GUID-GITHUB-TOKEN" OrElse
-                String.IsNullOrEmpty(repoOwner) OrElse repoOwner = "YOUR-REPO-USER-OWNER-OR-ORGANIZATION" OrElse
-                String.IsNullOrEmpty(repoName) OrElse repoName = "YOUR-REPO-SINGLE-NAME" Then
+            If String.IsNullOrEmpty(token) OrElse token Is "YOUR - GUID - GITHUB - TOKEN" OrElse String.IsNullOrEmpty(repoOwner) OrElse repoOwner Is "YOUR-REPO-USER-OWNER-OR-ORGANIZATION" OrElse String.IsNullOrEmpty(repoName) OrElse repoName Is "YOUR-REPO-SINGLE-NAME" Then
                 Console.Error.WriteLine()
                 Console.Error.WriteLine("Error: please configure the credentials in the appsettings.json file")
                 Console.ReadLine()
@@ -183,5 +182,14 @@ Namespace GitHubLabeler
 
             Configuration = builder.Build()
         End Sub
+
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
     End Module
 End Namespace
