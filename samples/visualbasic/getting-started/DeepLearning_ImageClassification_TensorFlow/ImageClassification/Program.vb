@@ -2,9 +2,10 @@
 Imports System.IO
 
 Namespace ImageClassification
-    Public Class Program
-        Shared Sub Main(args() As String)
-            Dim assetsPath = ModelHelpers.GetAssetsPath("..\..\..\assets")
+    Module Program
+        Sub Main(args() As String)
+            Dim assetsRelativePath As String = "../../../assets"
+            Dim assetsPath As String = GetAbsolutePath(assetsRelativePath)
 
             Dim tagsTsv = Path.Combine(assetsPath, "inputs", "images", "tags.tsv")
             Dim imagesFolder = Path.Combine(assetsPath, "inputs", "images")
@@ -24,5 +25,14 @@ Namespace ImageClassification
 
             ConsoleHelpers.ConsolePressAnyKey()
         End Sub
-    End Class
+
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
+    End Module
 End Namespace
