@@ -39,16 +39,16 @@ Namespace CreditCardFraudDetection.Trainer
 
             'Get all the column names for the Features (All except the Label and the StratificationColumn)
             Dim featureColumnNames = _trainData.Schema.AsQueryable().Select(Function(column) column.Name).
-                Where(Function(name) name <> "Label").
+                Where(Function(name) name <> DefaultColumnNames.Label).
                 Where(Function(name) name <> "StratificationColumn").ToArray()
 
             Dim pipeline = _mlContext.Transforms.Concatenate(DefaultColumnNames.Features, featureColumnNames).
-                Append(_mlContext.Transforms.Normalize(inputColumnName:="Features", outputColumnName:="FeaturesNormalizedByMeanVar", mode:=NormalizerMode.MeanVariance)).
-                Append(_mlContext.BinaryClassification.Trainers.FastTree(labelColumn:="Label", featureColumn:="Features", numLeaves:=20, numTrees:=100, minDatapointsInLeaves:=10, learningRate:=0.2))
+                Append(_mlContext.Transforms.Normalize(inputColumnName:=DefaultColumnNames.Features, outputColumnName:="FeaturesNormalizedByMeanVar", mode:=NormalizerMode.MeanVariance)).
+                Append(_mlContext.BinaryClassification.Trainers.FastTree(labelColumn:=DefaultColumnNames.Label, featureColumn:=DefaultColumnNames.Features, numLeaves:=20, numTrees:=100, minDatapointsInLeaves:=10, learningRate:=0.2))
 
             Dim model = pipeline.Fit(_trainData)
 
-            Dim metrics = _context.Evaluate(model.Transform(_testData), label:="Label")
+            Dim metrics = _context.Evaluate(model.Transform(_testData), label:=DefaultColumnNames.Label)
 
             ConsoleWriteHeader($"Test Metrics:")
             Console.WriteLine("Acuracy: " & metrics.Accuracy)
@@ -68,7 +68,7 @@ Namespace CreditCardFraudDetection.Trainer
             Dim testData As IDataView = Nothing
 
             Dim columns() As TextLoader.Column = {
-                New TextLoader.Column("Label", DataKind.BL, 30),
+                New TextLoader.Column(DefaultColumnNames.Label, DataKind.BL, 30),
                 New TextLoader.Column("V1", DataKind.R4, 1),
                 New TextLoader.Column("V2", DataKind.R4, 2),
                 New TextLoader.Column("V3", DataKind.R4, 3),
@@ -145,7 +145,7 @@ Namespace CreditCardFraudDetection.Trainer
                 ' And Label is moved to column 0
 
                 Dim columnsPlus() As TextLoader.Column = {
-                    New TextLoader.Column("Label", DataKind.BL, 0),
+                    New TextLoader.Column(DefaultColumnNames.Label, DataKind.BL, 0),
                     New TextLoader.Column("V1", DataKind.R4, 1),
                     New TextLoader.Column("V2", DataKind.R4, 2),
                     New TextLoader.Column("V3", DataKind.R4, 3),

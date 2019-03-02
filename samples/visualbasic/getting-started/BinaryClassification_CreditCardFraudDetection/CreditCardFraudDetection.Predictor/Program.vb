@@ -2,40 +2,48 @@
 Imports System.IO
 
 Namespace CreditCardFraudDetection.Predictor
-	Friend Class Program
-		Shared Sub Main(args() As String)
-			Dim assetsPath = GetAssetsPath("..\..\..\assets")
-			Dim trainOutput = GetAssetsPath("..\..\..\..\CreditCardFraudDetection.Trainer\assets\output")
+    Module Program
+        Sub Main(args() As String)
+            Dim assetsPath As String = GetAbsolutePath("../../../assets")
+            Dim trainOutput As String = GetAbsolutePath("../../../../CreditCardFraudDetection.Trainer\assets\output")
+
+            If Not File.Exists(Path.Combine(trainOutput, "testData.csv")) OrElse Not File.Exists(Path.Combine(trainOutput, "fastTree.zip")) Then
+                ConsoleHelpers.ConsoleWriteWarning("YOU SHOULD RUN TRAIN PROJECT FIRST")
+                ConsoleHelpers.ConsolePressAnyKey()
+                Return
+            End If
+
+            ' copy files from train output
+            Directory.CreateDirectory(assetsPath)
+            For Each file In Directory.GetFiles(trainOutput)
+
+                Dim fileDestination = Path.Combine(Path.Combine(assetsPath, "input"), Path.GetFileName(file))
+                If System.IO.File.Exists(fileDestination) Then
+                    ConsoleHelpers.DeleteAssets(fileDestination)
+                End If
+
+                System.IO.File.Copy(file, Path.Combine(Path.Combine(assetsPath, "input"), Path.GetFileName(file)))
+            Next file
+
+            Dim dataSetFile = Path.Combine(assetsPath, "input", "testData.csv")
+            Dim modelFile = Path.Combine(assetsPath, "input", "fastTree.zip")
 
 
-			If Not File.Exists(Path.Combine(trainOutput, "testData.csv")) OrElse Not File.Exists(Path.Combine(trainOutput, "fastTree.zip")) Then
-                ConsoleWriteWarning("YOU SHOULD RUN TRAIN PROJECT FIRST")
-                ConsolePressAnyKey()
-				Return
-			End If
+            Dim modelEvaluator = New Predictor(modelFile, dataSetFile)
 
-			' copy files from train output
-			Directory.CreateDirectory(assetsPath)
-			For Each file In Directory.GetFiles(trainOutput)
+            Dim numberOfTransactions As Integer = 5
+            modelEvaluator.RunMultiplePredictions(numberOfTransactions)
 
-				Dim fileDestination = Path.Combine(Path.Combine(assetsPath, "input"), Path.GetFileName(file))
-				If IO.File.Exists(fileDestination) Then
-                    DeleteAssets(fileDestination)
-				End If
+            ConsoleHelpers.ConsolePressAnyKey()
+        End Sub
 
-                IO.File.Copy(file, Path.Combine(Path.Combine(assetsPath, "input"), Path.GetFileName(file)))
-			Next file
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
 
-			Dim dataSetFile = Path.Combine(assetsPath,"input", "testData.csv")
-			Dim modelFile = Path.Combine(assetsPath, "input", "fastTree.zip")
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
 
-
-			Dim modelEvaluator = New Predictor(modelFile,dataSetFile)
-
-			Dim numberOfTransactions As Integer = 5
-			modelEvaluator.RunMultiplePredictions(numberOfTransactions)
-
-            ConsolePressAnyKey()
-		End Sub
-	End Class
+            Return fullPath
+        End Function
+    End Module
 End Namespace
