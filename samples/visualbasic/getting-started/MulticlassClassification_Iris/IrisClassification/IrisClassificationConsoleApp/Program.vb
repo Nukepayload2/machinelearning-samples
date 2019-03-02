@@ -1,23 +1,29 @@
 ﻿Imports System.IO
+
 Imports Microsoft.ML
-Imports MulticlassClassification_Iris.DataStructures
-Imports Microsoft.ML.Data
 Imports Microsoft.ML.Core.Data
+Imports Microsoft.ML.Data
+Imports MulticlassClassification_Iris.DataStructures
 
 Namespace MulticlassClassification_Iris
     Public Module Program
-        Private ReadOnly Property AppPath() As String
+        Private ReadOnly Property AppPath As String
             Get
                 Return Path.GetDirectoryName(Environment.GetCommandLineArgs()(0))
             End Get
         End Property
 
-        Private BaseDatasetsLocation As String = "../../../../Data"
-        Private TrainDataPath As String = $"{BaseDatasetsLocation}/iris-train.txt"
-        Private TestDataPath As String = $"{BaseDatasetsLocation}/iris-test.txt"
+        Private BaseDatasetsRelativePath As String = "../../../../Data"
+        Private TrainDataRelativePath As String = $"{BaseDatasetsRelativePath}/iris-train.txt"
+        Private TestDataRelativePath As String = $"{BaseDatasetsRelativePath}/iris-test.txt"
 
-        Private BaseModelsPath As String = "../../../../MLModels"
-        Private ModelPath As String = $"{BaseModelsPath}/IrisClassificationModel.zip"
+        Private TrainDataPath As String = GetAbsolutePath(TrainDataRelativePath)
+        Private TestDataPath As String = GetAbsolutePath(TestDataRelativePath)
+
+        Private BaseModelsRelativePath As String = "../../../../MLModels"
+        Private ModelRelativePath As String = $"{BaseModelsRelativePath}/IrisClassificationModel.zip"
+
+        Private ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
         Public Sub Main(args() As String)
             ' Create MLContext to be shared across the model creation workflow objects 
@@ -39,20 +45,20 @@ Namespace MulticlassClassification_Iris
             Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of IrisData)(TrainDataPath, hasHeader:=True)
             Dim testDataView = mlContext.Data.ReadFromTextFile(Of IrisData)(TestDataPath, hasHeader:=True)
 
+
             ' STEP 2: Common data process configuration with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.Concatenate("Features", "SepalLength", "SepalWidth", "PetalLength", "PetalWidth").
-                AppendCacheCheckpoint(mlContext)
+            Dim dataProcessPipeline = mlContext.Transforms.Concatenate(DefaultColumnNames.Features, NameOf(IrisData.SepalLength), NameOf(IrisData.SepalWidth), NameOf(IrisData.PetalLength), NameOf(IrisData.PetalWidth)).AppendCacheCheckpoint(mlContext)
             ' Use in-memory cache for small/medium datasets to lower training time. 
-            ' Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets.
+            ' Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets. 
 
             ' STEP 3: Set the training algorithm, then append the trainer to the pipeline  
-            Dim trainer = mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn:="Label", featureColumn:="Features")
+            Dim trainer = mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn:=DefaultColumnNames.Label, featureColumn:=DefaultColumnNames.Features)
             Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
             ' STEP 4: Train the model fitting to the DataSet
 
             'Measure training time
-            Dim watch = Stopwatch.StartNew()
+            Dim watch = System.Diagnostics.Stopwatch.StartNew()
 
             Console.WriteLine("=============== Training the model ===============")
             Dim trainedModel As ITransformer = trainingPipeline.Fit(trainingDataView)
@@ -66,7 +72,7 @@ Namespace MulticlassClassification_Iris
             ' STEP 5: Evaluate the model and show accuracy stats
             Console.WriteLine("===== Evaluating Model's accuracy with Test data =====")
             Dim predictions = trainedModel.Transform(testDataView)
-            Dim metrics = mlContext.MulticlassClassification.Evaluate(predictions, "Label", "Score")
+            Dim metrics = mlContext.MulticlassClassification.Evaluate(predictions, DefaultColumnNames.Label, DefaultColumnNames.Score)
 
             Common.ConsoleHelper.PrintMultiClassClassificationMetrics(trainer.ToString(), metrics)
 
@@ -79,7 +85,6 @@ Namespace MulticlassClassification_Iris
         End Sub
 
         Private Sub TestSomePredictions(mlContext As MLContext)
-
             'Test Classification Predictions with some hard-coded samples 
 
             Dim trainedModel As ITransformer
@@ -101,7 +106,7 @@ Namespace MulticlassClassification_Iris
             'Score sample 2
             Dim resultprediction2 = predEngine.Predict(SampleIrisData.Iris2)
 
-            Console.WriteLine($"Actual: virginica.     Predicted probability: setosa:      {resultprediction2.Score(0):0.####}")
+            Console.WriteLine($"Actual: Virginica.     Predicted probability: setosa:      {resultprediction2.Score(0):0.####}")
             Console.WriteLine($"                                           versicolor:  {resultprediction2.Score(1):0.####}")
             Console.WriteLine($"                                           virginica:   {resultprediction2.Score(2):0.####}")
             Console.WriteLine()
@@ -115,5 +120,14 @@ Namespace MulticlassClassification_Iris
             Console.WriteLine()
 
         End Sub
+
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
     End Module
 End Namespace
