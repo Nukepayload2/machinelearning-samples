@@ -1,13 +1,11 @@
-﻿Imports System
-Imports System.IO
-Imports System.Threading.Tasks
+﻿Imports System.IO
 Imports ImageClassification.Model
-Imports ImageClassification.Model.ConsoleHelpers
 
 Namespace ImageClassification.Predict
-    Module Program
+    Friend Module Program
         Sub Main(args() As String)
-            Dim assetsPath = ModelHelpers.GetAssetsPath("..\..\..\assets")
+            Dim assetsRelativePath As String = "../../../assets"
+            Dim assetsPath As String = GetAbsolutePath(assetsRelativePath)
 
             Dim tagsTsv = Path.Combine(assetsPath, "inputs", "data", "tags.tsv")
             Dim imagesFolder = Path.Combine(assetsPath, "inputs", "data")
@@ -22,5 +20,14 @@ Namespace ImageClassification.Predict
 
             ConsolePressAnyKey()
         End Sub
+
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
     End Module
 End Namespace
