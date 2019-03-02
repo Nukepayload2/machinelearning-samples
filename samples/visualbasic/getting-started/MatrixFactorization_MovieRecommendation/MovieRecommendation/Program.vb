@@ -1,26 +1,35 @@
 ﻿Imports Microsoft.ML
+Imports Microsoft.ML.Trainers
 
 Imports MovieRecommendationConsoleApp.DataStructures
 Imports MovieRecommendation.DataStructures
 Imports Microsoft.ML.Data
 Imports Microsoft.Data.DataView
-Imports Microsoft.ML.Trainers
 Imports Microsoft.ML.Core.Data
+Imports System.IO
 
 Namespace MovieRecommendation
-    Friend Class Program
+    Friend Module Program
         ' Using the ml-latest-small.zip as dataset from https://grouplens.org/datasets/movielens/. 
-        Private Shared ModelsLocation As String = "../../../../MLModels"
-        Public Shared DatasetsLocation As String = "../../../../Data"
-        Private Shared TrainingDataLocation As String = $"{DatasetsLocation}/recommendation-ratings-train.csv"
-        Private Shared TestDataLocation As String = $"{DatasetsLocation}/recommendation-ratings-test.csv"
-        Private Shared MoviesDataLocation As String = $"{DatasetsLocation}/movies.csv"
+        Private ModelsRelativePath As String = "../../../../MLModels"
+        Public DatasetsRelativePath As String = "../../../../Data"
+
+        Private TrainingDataRelativePath As String = $"{DatasetsRelativePath}/recommendation-ratings-train.csv"
+        Private TestDataRelativePath As String = $"{DatasetsRelativePath}/recommendation-ratings-test.csv"
+        Private MoviesDataLocation As String = $"{DatasetsRelativePath}/movies.csv"
+
+        Private TrainingDataLocation As String = GetAbsolutePath(TrainingDataRelativePath)
+        Private TestDataLocation As String = GetAbsolutePath(TestDataRelativePath)
+
+        Private ModelPath As String = GetAbsolutePath(ModelsRelativePath)
+
         Private Const predictionuserId As Single = 6
         Private Const predictionmovieId As Integer = 10
-        Private Shared userIdEncoded As String = NameOf(userIdEncoded)
-        Private Shared movieIdEncoded As String = NameOf(movieIdEncoded)
 
-        Shared Sub Main(ByVal args() As String)
+        Private userIdEncoded As String = NameOf(userIdEncoded)
+        Private movieIdEncoded As String = NameOf(movieIdEncoded)
+
+        Sub Main(args() As String)
             'STEP 1: Create MLContext to be shared across the model creation workflow objects 
             Dim mlcontext As New MLContext()
 
@@ -49,10 +58,10 @@ Namespace MovieRecommendation
 
             'STEP 6: Evaluate the model performance 
             Console.WriteLine("=============== Evaluating the model ===============")
-            Dim testDataView As IDataView = mlcontext.Data.ReadFromTextFile(Of MovieRating)(TestDataLocation, hasHeader:=True)
+            Dim testDataView As IDataView = mlcontext.Data.ReadFromTextFile(Of MovieRating)(TestDataLocation, hasHeader:=True, separatorChar:=","c)
             Dim prediction = model.Transform(testDataView)
             Dim metrics = mlcontext.Regression.Evaluate(prediction, label:=DefaultColumnNames.Label, score:=DefaultColumnNames.Score)
-            'Console.WriteLine("The model evaluation metrics rms:" + Math.Round(float.Parse(metrics.Rms.ToString()), 1));
+            Console.WriteLine("The model evaluation metrics rms:" & metrics.Rms)
 
             'STEP 7:  Try/test a single prediction by predicting a single movie rating for a specific user
             Dim predictionengine = model.CreatePredictionEngine(Of MovieRating, MovieRatingPrediction)(mlcontext)
@@ -70,6 +79,14 @@ Namespace MovieRecommendation
             Console.WriteLine("=============== End of process, hit any key to finish ===============")
             Console.ReadLine()
         End Sub
-    End Class
 
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
+    End Module
 End Namespace

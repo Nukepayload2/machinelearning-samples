@@ -11,9 +11,11 @@ Namespace MovieRecommendation.DataStructures
 
 		Public movieTitle As String
 
-		Private Shared moviesdatasetpath As String = $"{Program.DatasetsLocation}/recommendation-movies.csv"
+        Private Shared moviesdatasetRelativepath As String = $"{Program.DatasetsRelativePath}/recommendation-movies.csv"
 
-		Public _movies As New Lazy(Of List(Of Movie))(Function() LoadMovieData(moviesdatasetpath))
+        Private Shared moviesdatasetpath As String = Program.GetAbsolutePath(moviesdatasetRelativepath)
+
+        Public _movies As New Lazy(Of List(Of Movie))(Function() LoadMovieData(moviesdatasetpath))
 
 		Public Sub New()
 		End Sub
