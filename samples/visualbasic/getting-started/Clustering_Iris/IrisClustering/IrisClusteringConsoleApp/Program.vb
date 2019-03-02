@@ -15,11 +15,15 @@ Namespace Clustering_Iris
             End Get
         End Property
 
-        Private BaseDatasetsLocation As String = "../../../../Data"
-        Private DataPath As String = $"{BaseDatasetsLocation}/iris-full.txt"
+        Private BaseDatasetsRelativePath As String = "../../../../Data"
+        Private DataSetRealtivePath As String = $"{BaseDatasetsRelativePath}/iris-full.txt"
 
-        Private BaseModelsPath As String = "../../../../MLModels"
-        Private ModelPath As String = $"{BaseModelsPath}/IrisModel.zip"
+        Private DataPath As String = GetAbsolutePath(DataSetRealtivePath)
+
+        Private BaseModelsRelativePath As String = "../../../../MLModels"
+        Private ModelRelativePath As String = $"{BaseModelsRelativePath}/IrisModel.zip"
+
+        Private ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
         Public Sub Main(args() As String)
             'Create the MLContext to share across components for deterministic results
@@ -36,6 +40,7 @@ Namespace Clustering_Iris
 
             'Split dataset in two parts: TrainingDataset (80%) and TestDataset (20%)
             Dim trainingDataView, testingDataView As IDataView
+
             With mlContext.Clustering.TrainTestSplit(fullData, testFraction:=0.2)
                 trainingDataView = .trainSet
                 testingDataView = .testSet
@@ -69,7 +74,7 @@ Namespace Clustering_Iris
             Console.WriteLine("=============== Predict a cluster for a single case (Single Iris data sample) ===============")
 
             ' Test with one sample text 
-            Dim sampleIrisData = New IrisData() With {
+            Dim sampleIrisData = New IrisData With {
                 .SepalLength = 3.3F,
                 .SepalWidth = 1.6F,
                 .PetalLength = 0.2F,
@@ -90,6 +95,15 @@ Namespace Clustering_Iris
             Console.WriteLine("=============== End of process, hit any key to finish ===============")
             Console.ReadKey()
         End Sub
+
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
     End Module
 
 End Namespace
