@@ -16,18 +16,23 @@ Namespace Regression_TaxiFarePrediction
             End Get
         End Property
 
-        Private BaseDatasetsLocation As String = "../../../../Data"
-        Private TrainDataPath As String = $"{BaseDatasetsLocation}/taxi-fare-train.csv"
-        Private TestDataPath As String = $"{BaseDatasetsLocation}/taxi-fare-test.csv"
+        Private BaseDatasetsRelativePath As String = "../../../../Data"
+        Private TrainDataRelativePath As String = $"{BaseDatasetsRelativePath}/taxi-fare-train.csv"
+        Private TestDataRelativePath As String = $"{BaseDatasetsRelativePath}/taxi-fare-test.csv"
 
-        Private BaseModelsPath As String = "../../../../MLModels"
-        Private ModelPath As String = $"{BaseModelsPath}/TaxiFareModel.zip"
+        Private TrainDataPath As String = GetAbsolutePath(TrainDataRelativePath)
+        Private TestDataPath As String = GetAbsolutePath(TestDataRelativePath)
+
+        Private BaseModelsRelativePath As String = "../../../../MLModels"
+        Private ModelRelativePath As String = $"{BaseModelsRelativePath}/TaxiFareModel.zip"
+
+        Private ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
         Private VendorIdEncoded As String = NameOf(VendorIdEncoded)
         Private RateCodeEncoded As String = NameOf(RateCodeEncoded)
         Private PaymentTypeEncoded As String = NameOf(PaymentTypeEncoded)
 
-        Sub Main(args() As String) 'If args[0] == "svg" a vector-based chart will be created instead a .png chart
+        Sub Main(args() As String) 'If args(0) = "svg" Then a vector-based chart will be created instead a .png chart
             'Create ML Context with seed for repeteable/deterministic results
             Dim mlContext As New MLContext(seed:=0)
 
@@ -44,7 +49,7 @@ Namespace Regression_TaxiFarePrediction
             Console.ReadLine()
         End Sub
 
-        Private Function BuildTrainEvaluateAndSaveModel(ByVal mlContext As MLContext) As ITransformer
+        Private Function BuildTrainEvaluateAndSaveModel(mlContext As MLContext) As ITransformer
             ' STEP 1: Common data loading configuration
             Dim baseTrainingDataView As IDataView = mlContext.Data.ReadFromTextFile(Of TaxiTrip)(TrainDataPath, hasHeader:=True, separatorChar:=","c)
             Dim testDataView As IDataView = mlContext.Data.ReadFromTextFile(Of TaxiTrip)(TestDataPath, hasHeader:=True, separatorChar:=","c)
@@ -89,7 +94,7 @@ Namespace Regression_TaxiFarePrediction
             Return trainedModel
         End Function
 
-        Private Sub TestSinglePrediction(ByVal mlContext As MLContext)
+        Private Sub TestSinglePrediction(mlContext As MLContext)
             'Sample: 
             'vendor_id,rate_code,passenger_count,trip_time_in_secs,trip_distance,payment_type,fare_amount
             'VTS,1,1,1140,3.75,CRD,15.5
@@ -122,7 +127,7 @@ Namespace Regression_TaxiFarePrediction
             Console.WriteLine($"**********************************************************************")
         End Sub
 
-        Private Sub PlotRegressionChart(ByVal mlContext As MLContext, ByVal testDataSetPath As String, ByVal numberOfRecordsToRead As Integer, ByVal args() As String)
+        Private Sub PlotRegressionChart(mlContext As MLContext, testDataSetPath As String, numberOfRecordsToRead As Integer, args() As String)
             Dim trainedModel As ITransformer
             Using stream = New FileStream(ModelPath, FileMode.Open, FileAccess.Read, FileShare.Read)
                 trainedModel = mlContext.Model.Load(stream)
@@ -250,7 +255,7 @@ Namespace Regression_TaxiFarePrediction
                 pl.eop()
 
                 ' output version of PLplot
-                Dim verText As Object
+                Dim verText As Object = Nothing
                 pl.gver(verText)
                 Console.WriteLine("PLplot version " & verText)
 
@@ -265,10 +270,18 @@ Namespace Regression_TaxiFarePrediction
             p.Start()
         End Sub
 
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
     End Module
 
     Public Class TaxiTripCsvReader
-        Public Function GetDataFromCsv(ByVal dataLocation As String, ByVal numMaxRecords As Integer) As IEnumerable(Of TaxiTrip)
+        Public Function GetDataFromCsv(dataLocation As String, numMaxRecords As Integer) As IEnumerable(Of TaxiTrip)
             Dim records As IEnumerable(Of TaxiTrip) = File.ReadAllLines(dataLocation).Skip(1).Select(Function(x) x.Split(","c)).Select(Function(x) New TaxiTrip() With {
                 .VendorId = x(0),
                 .RateCode = x(1),
