@@ -11,10 +11,17 @@ namespace mnist
 {
     class Program
     {
+        private static string BaseDatasetsRelativePath = @"../../../Data";
+        private static string TrianDataRealtivePath = $"{BaseDatasetsRelativePath}/optdigits-train.csv";
+        private static string TestDataRealtivePath = $"{BaseDatasetsRelativePath}/optdigits-val.csv";
 
-        static readonly string TrainDataPath = Path.Combine(Environment.CurrentDirectory, "Data", "optdigits-train.csv");
-        static readonly string TestDataPath = Path.Combine(Environment.CurrentDirectory, "Data", "optdigits-val.csv");
-        static readonly string ModelPath = Path.Combine(Environment.CurrentDirectory, "MLModels", "Model.zip");
+        private static string TrainDataPath = GetAbsolutePath(TrianDataRealtivePath);
+        private static string TestDataPath = GetAbsolutePath(TestDataRealtivePath);
+
+        private static string BaseModelsRelativePath = @"../../../MLModels";
+        private static string ModelRelativePath = $"{BaseModelsRelativePath}/Model.zip";
+
+        private static string ModelPath = GetAbsolutePath(ModelRelativePath);
 
         static void Main(string[] args)
         {
@@ -53,6 +60,7 @@ namespace mnist
                         );
 
                 // STEP 2: Common data process configuration with pipeline data transformations
+                // Use in-memory cache for small/medium datasets to lower training time. Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets.
                 var dataProcessPipeline = mLContext.Transforms.Concatenate(DefaultColumnNames.Features, nameof(InputData.PixelValues)).AppendCacheCheckpoint(mLContext);
 
                 // STEP 3: Set the training algorithm, then create and config the modelBuilder
@@ -85,6 +93,15 @@ namespace mnist
             }
         }
 
+        public static string GetAbsolutePath(string relativePath)
+        {
+            FileInfo _dataRoot = new FileInfo(typeof(Program).Assembly.Location);
+            string assemblyFolderPath = _dataRoot.Directory.FullName;
+
+            string fullPath = Path.Combine(assemblyFolderPath, relativePath);
+
+            return fullPath;
+        }
 
         private static void TestSomePredictions(MLContext mlContext)
         {

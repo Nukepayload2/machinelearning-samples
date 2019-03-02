@@ -14,11 +14,15 @@ namespace Clustering_Iris
     {
         private static string AppPath => Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
 
-        private static string BaseDatasetsLocation = @"../../../../Data";
-        private static string DataPath = $"{BaseDatasetsLocation}/iris-full.txt";
+        private static string BaseDatasetsRelativePath = @"../../../../Data";
+        private static string DataSetRealtivePath = $"{BaseDatasetsRelativePath}/iris-full.txt";
 
-        private static string BaseModelsPath = @"../../../../MLModels";
-        private static string ModelPath = $"{BaseModelsPath}/IrisModel.zip";
+        private static string DataPath = GetAbsolutePath(DataSetRealtivePath);
+
+        private static string BaseModelsRelativePath = @"../../../../MLModels";
+        private static string ModelRelativePath = $"{BaseModelsRelativePath}/IrisModel.zip";
+
+        private static string ModelPath = GetAbsolutePath(ModelRelativePath);
 
         private static void Main(string[] args)
         {
@@ -90,6 +94,16 @@ namespace Clustering_Iris
 
             Console.WriteLine("=============== End of process, hit any key to finish ===============");
             Console.ReadKey();           
+        }
+
+        public static string GetAbsolutePath(string relativePath)
+        {
+            FileInfo _dataRoot = new FileInfo(typeof(Program).Assembly.Location);
+            string assemblyFolderPath = _dataRoot.Directory.FullName;
+
+            string fullPath = Path.Combine(assemblyFolderPath, relativePath);
+
+            return fullPath;
         }
     }
 
