@@ -3,9 +3,11 @@ Imports System.IO
 Imports Microsoft.ML
 
 Namespace CustomerSegmentation
-    Public Class Program
-        Shared Sub Main(args() As String)
-            Dim assetsPath = "..\..\..\assets"
+    Public Module Program
+        Sub Main(args() As String)
+            Dim assetsRelativePath = "../../../assets"
+            Dim assetsPath As String = GetAbsolutePath(assetsRelativePath)
+
             Dim pivotCsv = Path.Combine(assetsPath, "inputs", "pivot.csv")
             Dim modelZipFilePath = Path.Combine(assetsPath, "inputs", "retailClustering.zip")
             Dim plotSvg = Path.Combine(assetsPath, "outputs", "customerSegmentation.svg")
@@ -25,5 +27,14 @@ Namespace CustomerSegmentation
 
             Common.ConsoleHelper.ConsolePressAnyKey()
         End Sub
-    End Class
+
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
+    End Module
 End Namespace

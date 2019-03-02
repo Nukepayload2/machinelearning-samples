@@ -12,12 +12,13 @@ Imports Microsoft.ML.Data
 Namespace CustomerSegmentation
     Public Module Program
         Sub Main(args() As String)
-            Dim assetsPath = PathHelper.GetAssetsPath("..\..\..\assets")
+            Dim assetsRelativePath As String = "../../../assets"
+            Dim assetsPath As String = GetAbsolutePath(assetsRelativePath)
 
-            Dim transactionsCsv = Path.Combine(assetsPath, "inputs", "transactions.csv")
-            Dim offersCsv = Path.Combine(assetsPath, "inputs", "offers.csv")
-            Dim pivotCsv = Path.Combine(assetsPath, "inputs", "pivot.csv")
-            Dim modelZip = Path.Combine(assetsPath, "outputs", "retailClustering.zip")
+            Dim transactionsCsv As String = Path.Combine(assetsPath, "inputs", "transactions.csv")
+            Dim offersCsv As String = Path.Combine(assetsPath, "inputs", "offers.csv")
+            Dim pivotCsv As String = Path.Combine(assetsPath, "inputs", "pivot.csv")
+            Dim modelZip As String = Path.Combine(assetsPath, "outputs", "retailClustering.zip")
 
             Try
                 'STEP 0: Special data pre-process in this sample creating the PivotTable csv file
@@ -28,17 +29,16 @@ Namespace CustomerSegmentation
 
                 ' STEP 1: Common data loading configuration
                 Dim pivotDataView = mlContext.Data.ReadFromTextFile(path:=pivotCsv, columns:={
-                    New TextLoader.Column("Features", DataKind.R4, New TextLoader.Range() {New TextLoader.Range(0, 31)}),
+                    New TextLoader.Column(DefaultColumnNames.Features, DataKind.R4, New TextLoader.Range() {New TextLoader.Range(0, 31)}),
                     New TextLoader.Column(NameOf(PivotData.LastName), DataKind.Text, 32)
                 }, hasHeader:=True, separatorChar:=","c)
 
                 'STEP 2: Configure data transformations in pipeline
-                Dim dataProcessPipeline = (New PrincipalComponentAnalysisEstimator(env:=mlContext, outputColumnName:="PCAFeatures", inputColumnName:="Features", rank:=2)).
-                    Append(New OneHotEncodingEstimator(mlContext, {New OneHotEncodingEstimator.ColumnInfo(name:="LastNameKey", inputColumnName:=NameOf(PivotData.LastName), OneHotEncodingTransformer.OutputKind.Ind)}))
+                Dim dataProcessPipeline = (New PrincipalComponentAnalysisEstimator(env:=mlContext, outputColumnName:="PCAFeatures", inputColumnName:=DefaultColumnNames.Features, rank:=2)).Append(New OneHotEncodingEstimator(mlContext, {New OneHotEncodingEstimator.ColumnInfo(name:="LastNameKey", inputColumnName:=NameOf(PivotData.LastName), OneHotEncodingTransformer.OutputKind.Ind)}))
 
                 ' (Optional) Peek data in training DataView after applying the ProcessPipeline's transformations  
-                ConsoleHelper.PeekDataViewInConsole(mlContext, pivotDataView, dataProcessPipeline, 10)
-                ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, "Features", pivotDataView, dataProcessPipeline, 10)
+                Common.ConsoleHelper.PeekDataViewInConsole(mlContext, pivotDataView, dataProcessPipeline, 10)
+                Common.ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, DefaultColumnNames.Features, pivotDataView, dataProcessPipeline, 10)
 
                 'STEP 3: Create the training pipeline                
                 Dim trainer = mlContext.Clustering.Trainers.KMeans(featureColumn:=DefaultColumnNames.Features, clustersCount:=3)
@@ -62,11 +62,19 @@ Namespace CustomerSegmentation
 
                 Console.WriteLine("The model is saved to {0}", modelZip)
             Catch ex As Exception
-                ConsoleHelper.ConsoleWriteException(ex.Message)
+                Common.ConsoleHelper.ConsoleWriteException(ex.Message)
             End Try
 
-            ConsoleHelper.ConsolePressAnyKey()
+            Common.ConsoleHelper.ConsolePressAnyKey()
         End Sub
 
+        Public Function GetAbsolutePath(relativePath As String) As String
+            Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+            Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+            Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
+
+            Return fullPath
+        End Function
     End Module
 End Namespace
