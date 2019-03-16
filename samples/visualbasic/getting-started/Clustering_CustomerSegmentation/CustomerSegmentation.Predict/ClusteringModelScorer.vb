@@ -1,5 +1,4 @@
-﻿Imports Microsoft.ML.Core.Data
-Imports OxyPlot
+﻿Imports OxyPlot
 Imports OxyPlot.Series
 Imports System.IO
 
@@ -33,14 +32,14 @@ Namespace CustomerSegmentation.Model
         End Function
 
         Public Sub CreateCustomerClusters()
-            Dim data = _mlContext.Data.ReadFromTextFile(path:=_pivotDataLocation, columns:={
-                New TextLoader.Column("Features", DataKind.R4, {New TextLoader.Range(0, 31)}),
-                New TextLoader.Column(NameOf(PivotData.LastName), DataKind.Text, 32)
+            Dim data = _mlContext.Data.LoadFromTextFile(path:=_pivotDataLocation, columns:={
+                New TextLoader.Column("Features", DataKind.Single, New TextLoader.Range() {New TextLoader.Range(0, 31)}),
+                New TextLoader.Column(NameOf(PivotData.LastName), DataKind.String, 32)
             }, hasHeader:=True, separatorChar:=","c)
 
             'Apply data transformation to create predictions/clustering
             Dim tranfomedDataView = _trainedModel.Transform(data)
-            Dim predictions = _mlContext.CreateEnumerable(Of ClusteringPrediction)(tranfomedDataView, False).ToArray()
+            Dim predictions = _mlContext.Data.CreateEnumerable(Of ClusteringPrediction)(tranfomedDataView, False).ToArray()
 
             'Generate data files with customer data grouped by clusters
             SaveCustomerSegmentationCSV(predictions, _csvlocation)

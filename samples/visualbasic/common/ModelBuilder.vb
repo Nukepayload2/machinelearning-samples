@@ -3,6 +3,7 @@ Imports Microsoft.Data.DataView
 Imports Microsoft.ML
 Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML.Data
+Imports Microsoft.ML.TrainCatalogBase
 
 Namespace Common
     Public Class ModelBuilder(Of TObservation As Class, TPrediction As {Class, New})
@@ -65,7 +66,7 @@ Namespace Common
             Return metrics
         End Function
 
-        Public Function CrossValidateAndEvaluateMulticlassClassificationModel(data As IDataView, Optional numFolds As Integer = 5, Optional labelColumn As String = "Label", Optional stratificationColumn As String = Nothing) As (metrics As MultiClassClassifierMetrics, model As ITransformer, scoredTestData As IDataView)()
+        Public Function CrossValidateAndEvaluateMulticlassClassificationModel(data As IDataView, Optional numFolds As Integer = 5, Optional labelColumn As String = "Label", Optional stratificationColumn As String = Nothing) As CrossValidationResult(Of MultiClassClassifierMetrics)()
             'CrossValidation happens actually before training, so no check here.
 
             'Cross validate

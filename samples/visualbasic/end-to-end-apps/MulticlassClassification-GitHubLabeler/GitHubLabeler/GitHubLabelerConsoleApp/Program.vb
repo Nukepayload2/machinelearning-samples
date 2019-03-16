@@ -11,7 +11,7 @@ Imports Microsoft.ML.TrainCatalogBase
 
 Namespace GitHubLabeler
     Friend Module Program
-        Private ReadOnly Property AppPath() As String
+        Private ReadOnly Property AppPath As String
             Get
                 Return Path.GetDirectoryName(Environment.GetCommandLineArgs()(0))
             End Get
@@ -31,7 +31,7 @@ Namespace GitHubLabeler
             OVAAveragedPerceptronTrainer = 2
         End Enum
 
-        Public Property Configuration() As IConfiguration
+        Public Property Configuration As IConfiguration
 
         Sub Main(ByVal args() As String)
             MainAsync(args).GetAwaiter.GetResult()

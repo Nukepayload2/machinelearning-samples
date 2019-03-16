@@ -2,15 +2,31 @@
 Imports System.IO
 
 Namespace CreditCardFraudDetection.Predictor
-    Module Program
-        Sub Main(args() As String)
+    Friend Class Program
+        Shared Sub Main(args() As String)
             Dim assetsPath As String = GetAbsolutePath("../../../assets")
             Dim trainOutput As String = GetAbsolutePath("../../../../CreditCardFraudDetection.Trainer\assets\output")
 
+            CopyModelAndDatasetFromTrainingProject(trainOutput, assetsPath)
+
+            Dim inputDatasetForPredictions = Path.Combine(assetsPath, "input", "testData.csv")
+            Dim modelFilePath = Path.Combine(assetsPath, "input", "fastTree.zip")
+
+            ' Create model predictor to perform a few predictions
+            Dim modelPredictor = New Predictor(modelFilePath, inputDatasetForPredictions)
+
+            modelPredictor.RunMultiplePredictions(numberOfPredictions:=5)
+
+            Console.WriteLine("=============== Press any key ===============")
+            Console.ReadKey()
+        End Sub
+
+        Public Shared Sub CopyModelAndDatasetFromTrainingProject(trainOutput As String, assetsPath As String)
             If Not File.Exists(Path.Combine(trainOutput, "testData.csv")) OrElse Not File.Exists(Path.Combine(trainOutput, "fastTree.zip")) Then
-                ConsoleHelpers.ConsoleWriteWarning("YOU SHOULD RUN TRAIN PROJECT FIRST")
-                ConsoleHelpers.ConsolePressAnyKey()
-                Return
+                Console.WriteLine("***** YOU NEED TO RUN THE TRAINING PROJECT IN THE FIRST PLACE *****")
+                Console.WriteLine("=============== Press any key ===============")
+                Console.ReadKey()
+                Environment.Exit(0)
             End If
 
             ' copy files from train output
@@ -18,26 +34,16 @@ Namespace CreditCardFraudDetection.Predictor
             For Each file In Directory.GetFiles(trainOutput)
 
                 Dim fileDestination = Path.Combine(Path.Combine(assetsPath, "input"), Path.GetFileName(file))
-                If System.IO.File.Exists(fileDestination) Then
-                    ConsoleHelpers.DeleteAssets(fileDestination)
+                If IO.File.Exists(fileDestination) Then
+                    LocalConsoleHelper.DeleteAssets(fileDestination)
                 End If
 
-                System.IO.File.Copy(file, Path.Combine(Path.Combine(assetsPath, "input"), Path.GetFileName(file)))
+                IO.File.Copy(file, Path.Combine(Path.Combine(assetsPath, "input"), Path.GetFileName(file)))
             Next file
 
-            Dim dataSetFile = Path.Combine(assetsPath, "input", "testData.csv")
-            Dim modelFile = Path.Combine(assetsPath, "input", "fastTree.zip")
-
-
-            Dim modelEvaluator = New Predictor(modelFile, dataSetFile)
-
-            Dim numberOfTransactions As Integer = 5
-            modelEvaluator.RunMultiplePredictions(numberOfTransactions)
-
-            ConsoleHelpers.ConsolePressAnyKey()
         End Sub
 
-        Public Function GetAbsolutePath(relativePath As String) As String
+        Public Shared Function GetAbsolutePath(relativePath As String) As String
             Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
             Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
 
@@ -45,5 +51,5 @@ Namespace CreditCardFraudDetection.Predictor
 
             Return fullPath
         End Function
-    End Module
+    End Class
 End Namespace

@@ -1,5 +1,4 @@
 ﻿Imports Microsoft.ML
-Imports Microsoft.ML.Core.Data
 Imports System.IO
 Imports Microsoft.ML.Data
 
@@ -24,8 +23,8 @@ Namespace BikeSharingDemand
             Dim mlContext = New MLContext(seed:=0)
 
             ' 1. Common data loading configuration
-            Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of DemandObservation)(path:=TrainingDataLocation, hasHeader:=True, separatorChar:=","c)
-            Dim testDataView = mlContext.Data.ReadFromTextFile(Of DemandObservation)(path:=TestDataLocation, hasHeader:=True, separatorChar:=","c)
+            Dim trainingDataView = mlContext.Data.LoadFromTextFile(Of DemandObservation)(path:=TrainingDataLocation, hasHeader:=True, separatorChar:=","c)
+            Dim testDataView = mlContext.Data.LoadFromTextFile(Of DemandObservation)(path:=TestDataLocation, hasHeader:=True, separatorChar:=","c)
 
             ' 2. Common data pre-process with pipeline data transformations
 
@@ -40,7 +39,7 @@ Namespace BikeSharingDemand
 
             ' Definition of regression trainers/algorithms to use
             'var regressionLearners = new (string name, IEstimator<ITransformer> value)[]
-            Dim regressionLearners() As (name As String, value As IEstimator(Of ITransformer)) = {("FastTree", mlContext.Regression.Trainers.FastTree()), ("Poisson", mlContext.Regression.Trainers.PoissonRegression()), ("SDCA", mlContext.Regression.Trainers.StochasticDualCoordinateAscent()), ("FastTreeTweedie", mlContext.Regression.Trainers.FastTreeTweedie())}
+            Dim regressionLearners As (name As String, value As IEstimator(Of ITransformer))() = {("FastTree", mlContext.Regression.Trainers.FastTree()), ("Poisson", mlContext.Regression.Trainers.PoissonRegression()), ("SDCA", mlContext.Regression.Trainers.StochasticDualCoordinateAscent()), ("FastTreeTweedie", mlContext.Regression.Trainers.FastTreeTweedie())}
 
             ' 3. Phase for Training, Evaluation and model file persistence
             ' Per each regression trainer: Train, Evaluate, and Save a different model

@@ -1,5 +1,4 @@
-﻿Imports Microsoft.ML.Core.Data
-Imports Microsoft.ML
+﻿Imports Microsoft.ML
 Imports Octokit
 Imports System.IO
 Imports GitHubLabeler.DataStructures
@@ -85,22 +84,14 @@ Namespace GitHubLabeler
         Private Sub GetIndexesOfTopThreeScores(scores() As Single, n As Integer, ByRef index0 As Integer, ByRef index1 As Integer, ByRef index2 As Integer)
             Dim i As Integer
             Dim first, second, third As Single
-            'INSTANT VB WARNING: An assignment within expression was extracted from the following statement:
-            'ORIGINAL LINE: index0 = index1 = index2 = 0;
             index2 = 0
-            'INSTANT VB WARNING: An assignment within expression was extracted from the following statement:
-            'ORIGINAL LINE: index0 = index1 = index2
             index1 = index2
             index0 = index1
             If n < 3 Then
                 Console.WriteLine("Invalid Input")
                 Return
             End If
-            'INSTANT VB WARNING: An assignment within expression was extracted from the following statement:
-            'ORIGINAL LINE: third = first = second = 000;
             second = 0
-            'INSTANT VB WARNING: An assignment within expression was extracted from the following statement:
-            'ORIGINAL LINE: third = first = second
             first = second
             third = first
             For i = 0 To n - 1

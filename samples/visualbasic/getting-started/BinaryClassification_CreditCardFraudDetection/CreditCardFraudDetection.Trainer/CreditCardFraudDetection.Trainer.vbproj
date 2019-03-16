@@ -22,6 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\common\ConsoleHelper.vb" Link="Common\ConsoleHelper.vb" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="assets\output\" />
   </ItemGroup>
 

@@ -21,8 +21,6 @@
 
   <ItemGroup>
     <Compile Include="..\..\..\..\common\ConsoleHelper.vb" Link="Common\ConsoleHelper.vb" />
-    <Compile Include="..\..\..\..\common\ModelBuilder.vb" Link="Common\ModelBuilder.vb" />
-    <Compile Include="..\..\..\..\common\ModelScorer.vb" Link="Common\ModelScorer.vb" />
   </ItemGroup>
 
   <ItemGroup>

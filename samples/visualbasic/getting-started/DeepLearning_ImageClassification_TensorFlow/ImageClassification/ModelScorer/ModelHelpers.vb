@@ -59,7 +59,7 @@ Namespace ImageClassification.ModelScorer
         End Function
 
         Public Function ColumnsDateTime(Of T As Class)() As String()
-            Return Columns(Of T, Date)().ToArray()
+            Return Columns(Of T, DateTime)().ToArray()
         End Function
     End Module
 End Namespace

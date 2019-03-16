@@ -12,7 +12,7 @@ Namespace ImageClassification.ModelScorer
         Private ReadOnly modelLocation As String
         Private ReadOnly labelsLocation As String
         Private ReadOnly mlContext As MLContext
-        Private Shared ReadOnly ImageReal As String = NameOf(ImageReal)
+        Private Shared ImageReal As String = NameOf(ImageReal)
 
         Public Sub New(dataLocation As String, imagesFolder As String, modelLocation As String, labelsLocation As String)
             Me.dataLocation = dataLocation
@@ -47,7 +47,7 @@ Namespace ImageClassification.ModelScorer
 
         End Sub
 
-        Private Function LoadModel(ByVal dataLocation As String, ByVal imagesFolder As String, ByVal modelLocation As String) As PredictionEngine(Of ImageNetData, ImageNetPrediction)
+        Private Function LoadModel(dataLocation As String, imagesFolder As String, modelLocation As String) As PredictionEngine(Of ImageNetData, ImageNetPrediction)
             ConsoleWriteHeader("Read model")
             Console.WriteLine($"Model location: {modelLocation}")
             Console.WriteLine($"Images folder: {imagesFolder}")
@@ -56,10 +56,7 @@ Namespace ImageClassification.ModelScorer
 
             Dim data = mlContext.Data.ReadFromTextFile(Of ImageNetData)(dataLocation, hasHeader:=True)
 
-            Dim pipeline = mlContext.Transforms.LoadImages(imageFolder:=imagesFolder, (outputColumnName:=ImageReal, inputColumnName:=NameOf(ImageNetData.ImagePath))).
-                Append(mlContext.Transforms.Resize(outputColumnName:=ImageReal, imageWidth:=ImageNetSettings.imageWidth, imageHeight:=ImageNetSettings.imageHeight, inputColumnName:=ImageReal)).
-                Append(mlContext.Transforms.ExtractPixels({New ImagePixelExtractorTransformer.ColumnInfo(name:=InceptionSettings.inputTensorName, inputColumnName:=ImageReal, interleave:=ImageNetSettings.channelsLast, offset:=ImageNetSettings.mean)})).
-                Append(mlContext.Transforms.ScoreTensorFlowModel(modelLocation:=modelLocation, outputColumnNames:={InceptionSettings.outputTensorName}, inputColumnNames:={InceptionSettings.inputTensorName}))
+            Dim pipeline = mlContext.Transforms.LoadImages(imageFolder:=imagesFolder, (outputColumnName:=ImageReal, inputColumnName:=NameOf(ImageNetData.ImagePath))).Append(mlContext.Transforms.Resize(outputColumnName:=ImageReal, imageWidth:=ImageNetSettings.imageWidth, imageHeight:=ImageNetSettings.imageHeight, inputColumnName:=ImageReal)).Append(mlContext.Transforms.ExtractPixels({New ImagePixelExtractorTransformer.ColumnInfo(name:=InceptionSettings.inputTensorName, inputColumnName:=ImageReal, interleave:=ImageNetSettings.channelsLast, offset:=ImageNetSettings.mean)})).Append(mlContext.Transforms.ScoreTensorFlowModel(modelLocation:=modelLocation, outputColumnNames:={InceptionSettings.outputTensorName}, inputColumnNames:={InceptionSettings.inputTensorName}))
 
             Dim modeld = pipeline.Fit(data)
 
@@ -67,7 +64,6 @@ Namespace ImageClassification.ModelScorer
 
             Return predictionEngine
         End Function
-
 
         Protected Iterator Function PredictDataUsingModel(testLocation As String, imagesFolder As String, labelsLocation As String, model As PredictionEngine(Of ImageNetData, ImageNetPrediction)) As IEnumerable(Of ImageNetData)
             ConsoleWriteHeader("Classificate images")

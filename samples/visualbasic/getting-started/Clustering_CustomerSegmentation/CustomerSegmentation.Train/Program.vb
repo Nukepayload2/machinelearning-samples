@@ -1,17 +1,13 @@
 ﻿Imports System.IO
-
 Imports Microsoft.ML
-Imports Microsoft.ML.Core.Data
-Imports Microsoft.ML.Transforms.Categorical
-Imports Microsoft.ML.Transforms.Projections
-
 Imports CustomerSegmentation.DataStructures
 Imports Common
 Imports Microsoft.ML.Data
+Imports Microsoft.ML.Transforms
 
 Namespace CustomerSegmentation
-    Public Module Program
-        Sub Main(args() As String)
+    Public Class Program
+        Shared Sub Main(args() As String)
             Dim assetsRelativePath As String = "../../../assets"
             Dim assetsPath As String = GetAbsolutePath(assetsRelativePath)
 
@@ -28,20 +24,20 @@ Namespace CustomerSegmentation
                 Dim mlContext As New MLContext(seed:=1) 'Seed set to any number so you have a deterministic environment
 
                 ' STEP 1: Common data loading configuration
-                Dim pivotDataView = mlContext.Data.ReadFromTextFile(path:=pivotCsv, columns:={
-                    New TextLoader.Column(DefaultColumnNames.Features, DataKind.R4, New TextLoader.Range() {New TextLoader.Range(0, 31)}),
-                    New TextLoader.Column(NameOf(PivotData.LastName), DataKind.Text, 32)
+                Dim pivotDataView = mlContext.Data.LoadFromTextFile(path:=pivotCsv, columns:={
+                    New TextLoader.Column(DefaultColumnNames.Features, DataKind.Single, New TextLoader.Range() {New TextLoader.Range(0, 31)}),
+                    New TextLoader.Column(NameOf(PivotData.LastName), DataKind.String, 32)
                 }, hasHeader:=True, separatorChar:=","c)
 
                 'STEP 2: Configure data transformations in pipeline
-                Dim dataProcessPipeline = (New PrincipalComponentAnalysisEstimator(env:=mlContext, outputColumnName:="PCAFeatures", inputColumnName:=DefaultColumnNames.Features, rank:=2)).Append(New OneHotEncodingEstimator(mlContext, {New OneHotEncodingEstimator.ColumnInfo(name:="LastNameKey", inputColumnName:=NameOf(PivotData.LastName), OneHotEncodingTransformer.OutputKind.Ind)}))
+                Dim dataProcessPipeline = mlContext.Transforms.Projection.ProjectToPrincipalComponents(outputColumnName:="PCAFeatures", inputColumnName:=DefaultColumnNames.Features, rank:=2).Append(mlContext.Transforms.Categorical.OneHotEncoding({New OneHotEncodingEstimator.ColumnOptions(name:="LastNameKey", inputColumnName:=NameOf(PivotData.LastName), OneHotEncodingTransformer.OutputKind.Ind)}))
 
                 ' (Optional) Peek data in training DataView after applying the ProcessPipeline's transformations  
                 Common.ConsoleHelper.PeekDataViewInConsole(mlContext, pivotDataView, dataProcessPipeline, 10)
                 Common.ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, DefaultColumnNames.Features, pivotDataView, dataProcessPipeline, 10)
 
                 'STEP 3: Create the training pipeline                
-                Dim trainer = mlContext.Clustering.Trainers.KMeans(featureColumn:=DefaultColumnNames.Features, clustersCount:=3)
+                Dim trainer = mlContext.Clustering.Trainers.KMeans(featureColumnName:=DefaultColumnNames.Features, clustersCount:=3)
                 Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
                 'STEP 4: Train the model fitting to the pivotDataView
@@ -66,9 +62,9 @@ Namespace CustomerSegmentation
             End Try
 
             Common.ConsoleHelper.ConsolePressAnyKey()
-        End Sub
 
-        Public Function GetAbsolutePath(relativePath As String) As String
+        End Sub
+        Public Shared Function GetAbsolutePath(relativePath As String) As String
             Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
             Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
 
@@ -76,5 +72,5 @@ Namespace CustomerSegmentation
 
             Return fullPath
         End Function
-    End Module
+    End Class
 End Namespace

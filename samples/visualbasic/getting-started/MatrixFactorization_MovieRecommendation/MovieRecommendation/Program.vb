@@ -5,49 +5,45 @@ Imports MovieRecommendationConsoleApp.DataStructures
 Imports MovieRecommendation.DataStructures
 Imports Microsoft.ML.Data
 Imports Microsoft.Data.DataView
-Imports Microsoft.ML.Core.Data
 Imports System.IO
 
 Namespace MovieRecommendation
-    Friend Module Program
+    Friend Class Program
         ' Using the ml-latest-small.zip as dataset from https://grouplens.org/datasets/movielens/. 
-        Private ModelsRelativePath As String = "../../../../MLModels"
-        Public DatasetsRelativePath As String = "../../../../Data"
+        Private Shared ModelsRelativePath As String = "../../../../MLModels"
+        Public Shared DatasetsRelativePath As String = "../../../../Data"
 
-        Private TrainingDataRelativePath As String = $"{DatasetsRelativePath}/recommendation-ratings-train.csv"
-        Private TestDataRelativePath As String = $"{DatasetsRelativePath}/recommendation-ratings-test.csv"
-        Private MoviesDataLocation As String = $"{DatasetsRelativePath}/movies.csv"
+        Private Shared TrainingDataRelativePath As String = $"{DatasetsRelativePath}/recommendation-ratings-train.csv"
+        Private Shared TestDataRelativePath As String = $"{DatasetsRelativePath}/recommendation-ratings-test.csv"
+        Private Shared MoviesDataLocation As String = $"{DatasetsRelativePath}/movies.csv"
 
-        Private TrainingDataLocation As String = GetAbsolutePath(TrainingDataRelativePath)
-        Private TestDataLocation As String = GetAbsolutePath(TestDataRelativePath)
+        Private Shared TrainingDataLocation As String = GetAbsolutePath(TrainingDataRelativePath)
+        Private Shared TestDataLocation As String = GetAbsolutePath(TestDataRelativePath)
 
-        Private ModelPath As String = GetAbsolutePath(ModelsRelativePath)
+        Private Shared ModelPath As String = GetAbsolutePath(ModelsRelativePath)
 
         Private Const predictionuserId As Single = 6
         Private Const predictionmovieId As Integer = 10
 
-        Private userIdEncoded As String = NameOf(userIdEncoded)
-        Private movieIdEncoded As String = NameOf(movieIdEncoded)
-
-        Sub Main(args() As String)
+        Shared Sub Main(args() As String)
             'STEP 1: Create MLContext to be shared across the model creation workflow objects 
             Dim mlcontext As New MLContext()
 
             'STEP 2: Read the training data which will be used to train the movie recommendation model    
-            'The schema for training data is defined by type 'TInput' in ReadFromTextFile<TInput>() method.
-            Dim trainingDataView As IDataView = mlcontext.Data.ReadFromTextFile(Of MovieRating)(TrainingDataLocation, hasHeader:=True, separatorChar:=","c)
+            'The schema for training data is defined by type 'TInput' in LoadFromTextFile<TInput>() method.
+            Dim trainingDataView As IDataView = mlcontext.Data.LoadFromTextFile(Of MovieRating)(TrainingDataLocation, hasHeader:=True, separatorChar:=","c)
 
             'STEP 3: Transform your data by encoding the two features userId and movieID. These encoded features will be provided as input
             '        to our MatrixFactorizationTrainer.
-            Dim dataProcessingPipeline = mlcontext.Transforms.Conversion.MapValueToKey(outputColumnName:=userIdEncoded, inputColumnName:=NameOf(MovieRating.userId)).Append(mlcontext.Transforms.Conversion.MapValueToKey(outputColumnName:=movieIdEncoded, inputColumnName:=NameOf(MovieRating.movieId)))
+            Dim dataProcessingPipeline = mlcontext.Transforms.Conversion.MapValueToKey(outputColumnName:="userIdEncoded", inputColumnName:=NameOf(MovieRating.userId)).Append(mlcontext.Transforms.Conversion.MapValueToKey(outputColumnName:="movieIdEncoded", inputColumnName:=NameOf(MovieRating.movieId)))
 
             'Specify the options for MatrixFactorization trainer
             Dim options As New MatrixFactorizationTrainer.Options()
-            options.MatrixColumnIndexColumnName = userIdEncoded
-            options.MatrixRowIndexColumnName = movieIdEncoded
+            options.MatrixColumnIndexColumnName = "userIdEncoded"
+            options.MatrixRowIndexColumnName = "movieIdEncoded"
             options.LabelColumnName = DefaultColumnNames.Label
-            options.NumIterations = 20
-            options.K = 100
+            options.NumberOfIterations = 20
+            options.ApproximationRank = 100
 
             'STEP 4: Create the training pipeline 
             Dim trainingPipeLine = dataProcessingPipeline.Append(mlcontext.Recommendation().Trainers.MatrixFactorization(options))
@@ -58,7 +54,7 @@ Namespace MovieRecommendation
 
             'STEP 6: Evaluate the model performance 
             Console.WriteLine("=============== Evaluating the model ===============")
-            Dim testDataView As IDataView = mlcontext.Data.ReadFromTextFile(Of MovieRating)(TestDataLocation, hasHeader:=True, separatorChar:=","c)
+            Dim testDataView As IDataView = mlcontext.Data.LoadFromTextFile(Of MovieRating)(TestDataLocation, hasHeader:=True, separatorChar:=","c)
             Dim prediction = model.Transform(testDataView)
             Dim metrics = mlcontext.Regression.Evaluate(prediction, label:=DefaultColumnNames.Label, score:=DefaultColumnNames.Score)
             Console.WriteLine("The model evaluation metrics rms:" & metrics.Rms)
@@ -80,7 +76,7 @@ Namespace MovieRecommendation
             Console.ReadLine()
         End Sub
 
-        Public Function GetAbsolutePath(relativePath As String) As String
+        Public Shared Function GetAbsolutePath(relativePath As String) As String
             Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
             Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
 
@@ -88,5 +84,5 @@ Namespace MovieRecommendation
 
             Return fullPath
         End Function
-    End Module
+    End Class
 End Namespace

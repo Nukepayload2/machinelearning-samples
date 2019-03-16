@@ -1,12 +1,11 @@
 ﻿Imports System.IO
 Imports PLplot
 Imports Microsoft.ML
-Imports Microsoft.ML.Core.Data
-Imports Microsoft.ML.Transforms.Normalizers.NormalizingEstimator
 Imports Regression_TaxiFarePrediction.DataStructures
 Imports Common
 Imports Microsoft.ML.Data
 Imports Microsoft.Data.DataView
+Imports Microsoft.ML.Transforms.NormalizingEstimator
 
 Namespace Regression_TaxiFarePrediction
     Friend Module Program
@@ -28,11 +27,7 @@ Namespace Regression_TaxiFarePrediction
 
         Private ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
-        Private VendorIdEncoded As String = NameOf(VendorIdEncoded)
-        Private RateCodeEncoded As String = NameOf(RateCodeEncoded)
-        Private PaymentTypeEncoded As String = NameOf(PaymentTypeEncoded)
-
-        Sub Main(args() As String) 'If args(0) = "svg" Then a vector-based chart will be created instead a .png chart
+        Sub Main(args() As String) 'If args[0] == "svg" a vector-based chart will be created instead a .png chart
             'Create ML Context with seed for repeteable/deterministic results
             Dim mlContext As New MLContext(seed:=0)
 
@@ -51,23 +46,23 @@ Namespace Regression_TaxiFarePrediction
 
         Private Function BuildTrainEvaluateAndSaveModel(mlContext As MLContext) As ITransformer
             ' STEP 1: Common data loading configuration
-            Dim baseTrainingDataView As IDataView = mlContext.Data.ReadFromTextFile(Of TaxiTrip)(TrainDataPath, hasHeader:=True, separatorChar:=","c)
-            Dim testDataView As IDataView = mlContext.Data.ReadFromTextFile(Of TaxiTrip)(TestDataPath, hasHeader:=True, separatorChar:=","c)
+            Dim baseTrainingDataView As IDataView = mlContext.Data.LoadFromTextFile(Of TaxiTrip)(TrainDataPath, hasHeader:=True, separatorChar:=","c)
+            Dim testDataView As IDataView = mlContext.Data.LoadFromTextFile(Of TaxiTrip)(TestDataPath, hasHeader:=True, separatorChar:=","c)
 
             'Sample code of removing extreme data like "outliers" for FareAmounts higher than $150 and lower than $1 which can be error-data 
             Dim cnt = baseTrainingDataView.GetColumn(Of Single)(mlContext, NameOf(TaxiTrip.FareAmount)).Count()
-            Dim trainingDataView As IDataView = mlContext.Data.FilterByColumn(baseTrainingDataView, NameOf(TaxiTrip.FareAmount), lowerBound:=1, upperBound:=150)
+            Dim trainingDataView As IDataView = mlContext.Data.FilterRowsByColumn(baseTrainingDataView, NameOf(TaxiTrip.FareAmount), lowerBound:=1, upperBound:=150)
             Dim cnt2 = trainingDataView.GetColumn(Of Single)(mlContext, NameOf(TaxiTrip.FareAmount)).Count()
 
             ' STEP 2: Common data process configuration with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.CopyColumns(outputColumnName:=DefaultColumnNames.Label, inputColumnName:=NameOf(TaxiTrip.FareAmount)).Append(mlContext.Transforms.Categorical.OneHotEncoding(outputColumnName:=VendorIdEncoded, inputColumnName:=NameOf(TaxiTrip.VendorId))).Append(mlContext.Transforms.Categorical.OneHotEncoding(outputColumnName:=RateCodeEncoded, inputColumnName:=NameOf(TaxiTrip.RateCode))).Append(mlContext.Transforms.Categorical.OneHotEncoding(outputColumnName:=PaymentTypeEncoded, inputColumnName:=NameOf(TaxiTrip.PaymentType))).Append(mlContext.Transforms.Normalize(outputColumnName:=NameOf(TaxiTrip.PassengerCount), mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Normalize(outputColumnName:=NameOf(TaxiTrip.TripTime), mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Normalize(outputColumnName:=NameOf(TaxiTrip.TripDistance), mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Concatenate(DefaultColumnNames.Features, VendorIdEncoded, RateCodeEncoded, PaymentTypeEncoded, NameOf(TaxiTrip.PassengerCount), NameOf(TaxiTrip.TripTime), NameOf(TaxiTrip.TripDistance)))
+            Dim dataProcessPipeline = mlContext.Transforms.CopyColumns(outputColumnName:=DefaultColumnNames.Label, inputColumnName:=NameOf(TaxiTrip.FareAmount)).Append(mlContext.Transforms.Categorical.OneHotEncoding(outputColumnName:="VendorIdEncoded", inputColumnName:=NameOf(TaxiTrip.VendorId))).Append(mlContext.Transforms.Categorical.OneHotEncoding(outputColumnName:="RateCodeEncoded", inputColumnName:=NameOf(TaxiTrip.RateCode))).Append(mlContext.Transforms.Categorical.OneHotEncoding(outputColumnName:="PaymentTypeEncoded", inputColumnName:=NameOf(TaxiTrip.PaymentType))).Append(mlContext.Transforms.Normalize(outputColumnName:=NameOf(TaxiTrip.PassengerCount), mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Normalize(outputColumnName:=NameOf(TaxiTrip.TripTime), mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Normalize(outputColumnName:=NameOf(TaxiTrip.TripDistance), mode:=NormalizerMode.MeanVariance)).Append(mlContext.Transforms.Concatenate(DefaultColumnNames.Features, "VendorIdEncoded", "RateCodeEncoded", "PaymentTypeEncoded", NameOf(TaxiTrip.PassengerCount), NameOf(TaxiTrip.TripTime), NameOf(TaxiTrip.TripDistance)))
 
             ' (OPTIONAL) Peek data (such as 5 records) in training DataView after applying the ProcessPipeline's transformations into "Features" 
             ConsoleHelper.PeekDataViewInConsole(mlContext, trainingDataView, dataProcessPipeline, 5)
             ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, DefaultColumnNames.Features, trainingDataView, dataProcessPipeline, 5)
 
             ' STEP 3: Set the training algorithm, then create and config the modelBuilder - Selected Trainer (SDCA Regression algorithm)                            
-            Dim trainer = mlContext.Regression.Trainers.StochasticDualCoordinateAscent(labelColumn:=DefaultColumnNames.Label, featureColumn:=DefaultColumnNames.Features)
+            Dim trainer = mlContext.Regression.Trainers.StochasticDualCoordinateAscent(labelColumnName:=DefaultColumnNames.Label, featureColumnName:=DefaultColumnNames.Features)
             Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
             ' STEP 4: Train the model fitting to the DataSet
@@ -255,7 +250,7 @@ Namespace Regression_TaxiFarePrediction
                 pl.eop()
 
                 ' output version of PLplot
-                Dim verText As Object = Nothing
+                Dim verText As Object
                 pl.gver(verText)
                 Console.WriteLine("PLplot version " & verText)
 

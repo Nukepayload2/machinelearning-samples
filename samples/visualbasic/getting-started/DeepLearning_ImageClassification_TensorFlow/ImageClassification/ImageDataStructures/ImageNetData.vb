@@ -1,5 +1,5 @@
-﻿Imports System.IO
-Imports Microsoft.ML.Data
+﻿Imports Microsoft.ML.Data
+Imports System.IO
 
 Namespace ImageClassification.ImageDataStructures
     Public Class ImageNetData
@@ -21,6 +21,6 @@ Namespace ImageClassification.ImageDataStructures
         Inherits ImageNetData
 
         Public PredictedLabel As String
-        Public Property Probability() As Single
+        Public Property Probability As Single
     End Class
 End Namespace

@@ -1,7 +1,6 @@
 ﻿Imports System.IO
 
 Imports Microsoft.ML
-Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML.Data
 Imports MulticlassClassification_Iris.DataStructures
 
@@ -42,8 +41,8 @@ Namespace MulticlassClassification_Iris
 
         Private Sub BuildTrainEvaluateAndSaveModel(mlContext As MLContext)
             ' STEP 1: Common data loading configuration
-            Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of IrisData)(TrainDataPath, hasHeader:=True)
-            Dim testDataView = mlContext.Data.ReadFromTextFile(Of IrisData)(TestDataPath, hasHeader:=True)
+            Dim trainingDataView = mlContext.Data.LoadFromTextFile(Of IrisData)(TrainDataPath, hasHeader:=True)
+            Dim testDataView = mlContext.Data.LoadFromTextFile(Of IrisData)(TestDataPath, hasHeader:=True)
 
 
             ' STEP 2: Common data process configuration with pipeline data transformations
@@ -52,7 +51,7 @@ Namespace MulticlassClassification_Iris
             ' Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets. 
 
             ' STEP 3: Set the training algorithm, then append the trainer to the pipeline  
-            Dim trainer = mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumn:=DefaultColumnNames.Label, featureColumn:=DefaultColumnNames.Features)
+            Dim trainer = mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(labelColumnName:=DefaultColumnNames.Label, featureColumnName:=DefaultColumnNames.Features)
             Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
             ' STEP 4: Train the model fitting to the DataSet

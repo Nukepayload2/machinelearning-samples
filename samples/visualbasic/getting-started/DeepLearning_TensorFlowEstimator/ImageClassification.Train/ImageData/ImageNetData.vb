@@ -1,8 +1,5 @@
-﻿Imports System
-Imports System.Collections.Generic
+﻿Imports Microsoft.ML.Data
 Imports System.IO
-Imports System.Linq
-Imports Microsoft.ML.Data
 
 Namespace ImageClassification.ImageData
     Public Class ImageNetData
@@ -13,8 +10,7 @@ Namespace ImageClassification.ImageData
         Public Label As String
 
         Public Shared Function ReadFromCsv(file As String, folder As String) As IEnumerable(Of ImageNetData)
-            Return System.IO.File.ReadAllLines(file).Select(Function(x) x.Split(vbTab)).
-                Select(Function(x) New ImageNetData() With {
+            Return System.IO.File.ReadAllLines(file).Select(Function(x) x.Split(vbTab)).Select(Function(x) New ImageNetData() With {
                 .ImagePath = Path.Combine(folder, x(0)),
                 .Label = x(1)
             })
@@ -24,7 +20,7 @@ Namespace ImageClassification.ImageData
     Public Class ImageNetDataProbability
         Inherits ImageNetData
 
-        Public Property Probability() As Single
+        Public Property Probability As Single
 
 
         Public Sub ConsoleWriteLine()

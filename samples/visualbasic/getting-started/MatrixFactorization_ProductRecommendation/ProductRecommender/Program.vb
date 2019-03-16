@@ -1,5 +1,4 @@
 ﻿Imports Microsoft.ML
-Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML.Data
 Imports Microsoft.ML.Trainers
 Imports System.IO
@@ -19,16 +18,16 @@ Namespace ProductRecommender
         Private Shared ModelRelativePath As String = $"{BaseModelRelativePath}/model.zip"
         Private Shared ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
-        Shared Sub Main(ByVal args() As String)
+        Shared Sub Main(args() As String)
             'STEP 1: Create MLContext to be shared across the model creation workflow objects 
             Dim mlContext As New MLContext()
 
             'STEP 2: Read the trained data using TextLoader by defining the schema for reading the product co-purchase dataset
             '        Do remember to replace amazon0302.txt with dataset from https://snap.stanford.edu/data/amazon0302.html
-            Dim traindata = mlContext.Data.ReadFromTextFile(path:=TrainingDataLocation, columns:={
-                New TextLoader.Column(DefaultColumnNames.Label, DataKind.R4, 0),
-                New TextLoader.Column(name:=NameOf(ProductEntry.ProductID), type:=DataKind.U4, source:=New TextLoader.Range() {New TextLoader.Range(0)}, keyCount:=New KeyCount(262111)),
-                New TextLoader.Column(name:=NameOf(ProductEntry.CoPurchaseProductID), type:=DataKind.U4, source:=New TextLoader.Range() {New TextLoader.Range(1)}, keyCount:=New KeyCount(262111))
+            Dim traindata = mlContext.Data.LoadFromTextFile(path:=TrainingDataLocation, columns:={
+                New TextLoader.Column(DefaultColumnNames.Label, DataKind.Single, 0),
+                New TextLoader.Column(name:=NameOf(ProductEntry.ProductID), dataKind:=DataKind.UInt32, source:=New TextLoader.Range() {New TextLoader.Range(0)}, keyCount:=New KeyCount(262111)),
+                New TextLoader.Column(name:=NameOf(ProductEntry.CoPurchaseProductID), dataKind:=DataKind.UInt32, source:=New TextLoader.Range() {New TextLoader.Range(1)}, keyCount:=New KeyCount(262111))
             }, hasHeader:=True, separatorChar:=vbTab)
 
             'STEP 3: Your data is already encoded so all you need to do is specify options for MatrxiFactorizationTrainer with a few extra hyperparameters
@@ -64,7 +63,7 @@ Namespace ProductRecommender
             Console.ReadKey()
         End Sub
 
-        Public Shared Function GetAbsolutePath(ByVal relativeDatasetPath As String) As String
+        Public Shared Function GetAbsolutePath(relativeDatasetPath As String) As String
             Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
             Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
 
@@ -74,15 +73,15 @@ Namespace ProductRecommender
         End Function
 
         Public Class Copurchase_prediction
-            Public Property Score() As Single
+            Public Property Score As Single
         End Class
 
         Public Class ProductEntry
-            <KeyType(Count:=262111)>
-            Public Property ProductID() As UInteger
+            <KeyType(262111)>
+            Public Property ProductID As UInteger
 
-            <KeyType(Count:=262111)>
-            Public Property CoPurchaseProductID() As UInteger
+            <KeyType(262111)>
+            Public Property CoPurchaseProductID As UInteger
         End Class
     End Class
 End Namespace

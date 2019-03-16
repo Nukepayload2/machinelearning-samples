@@ -1,5 +1,4 @@
 ﻿Imports System.IO
-Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML
 Imports Microsoft.ML.Data
 
@@ -16,11 +15,9 @@ Namespace SentimentAnalysisConsoleApp
         End Property
 
         Private ReadOnly BaseDatasetsRelativePath As String = "../../../../Data"
-        Private ReadOnly TrainDataRelativePath As String = $"{BaseDatasetsRelativePath}/wikipedia-detox-250-line-data.tsv"
-        Private ReadOnly TestDataRelativePath As String = $"{BaseDatasetsRelativePath}/wikipedia-detox-250-line-test.tsv"
+        Private ReadOnly DataRelativePath As String = $"{BaseDatasetsRelativePath}/wikiDetoxAnnotated40kRows.tsv"
 
-        Private TrainDataPath As String = GetAbsolutePath(TrainDataRelativePath)
-        Private TestDataPath As String = GetAbsolutePath(TestDataRelativePath)
+        Private DataPath As String = GetAbsolutePath(DataRelativePath)
 
         Private ReadOnly BaseModelsRelativePath As String = "../../../../MLModels"
         Private ReadOnly ModelRelativePath As String = $"{BaseModelsRelativePath}/SentimentModel.zip"
@@ -46,27 +43,28 @@ Namespace SentimentAnalysisConsoleApp
 
         Private Function BuildTrainEvaluateAndSaveModel(mlContext As MLContext) As ITransformer
             ' STEP 1: Common data loading configuration
-            Dim trainingDataView As IDataView = mlContext.Data.ReadFromTextFile(Of SentimentIssue)(TrainDataPath, hasHeader:=True)
-            Dim testDataView As IDataView = mlContext.Data.ReadFromTextFile(Of SentimentIssue)(TestDataPath, hasHeader:=True)
+            Dim dataView As IDataView = mlContext.Data.LoadFromTextFile(Of SentimentIssue)(DataPath, hasHeader:=True)
+
+            Dim testTrainSplit = mlContext.BinaryClassification.TrainTestSplit(dataView, testFraction:=0.2)
 
             ' STEP 2: Common data process configuration with pipeline data transformations          
             Dim dataProcessPipeline = mlContext.Transforms.Text.FeaturizeText(outputColumnName:=DefaultColumnNames.Features, inputColumnName:=NameOf(SentimentIssue.Text))
 
             ' (OPTIONAL) Peek data (such as 2 records) in training DataView after applying the ProcessPipeline's transformations into "Features" 
-            ConsoleHelper.PeekDataViewInConsole(mlContext, trainingDataView, dataProcessPipeline, 2)
-            ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, DefaultColumnNames.Features, trainingDataView, dataProcessPipeline, 1)
+            ConsoleHelper.PeekDataViewInConsole(mlContext, dataView, dataProcessPipeline, 2)
+            ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, DefaultColumnNames.Features, dataView, dataProcessPipeline, 1)
 
             ' STEP 3: Set the training algorithm, then create and config the modelBuilder                            
-            Dim trainer = mlContext.BinaryClassification.Trainers.FastTree(labelColumn:=DefaultColumnNames.Label, featureColumn:=DefaultColumnNames.Features)
+            Dim trainer = mlContext.BinaryClassification.Trainers.FastTree(labelColumnName:=DefaultColumnNames.Label, featureColumnName:=DefaultColumnNames.Features)
             Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
             ' STEP 4: Train the model fitting to the DataSet
             Console.WriteLine("=============== Training the model ===============")
-            Dim trainedModel As ITransformer = trainingPipeline.Fit(trainingDataView)
+            Dim trainedModel As ITransformer = trainingPipeline.Fit(testTrainSplit.TrainSet)
 
             ' STEP 5: Evaluate the model and show accuracy stats
             Console.WriteLine("===== Evaluating Model's accuracy with Test data =====")
-            Dim predictions = trainedModel.Transform(testDataView)
+            Dim predictions = trainedModel.Transform(testTrainSplit.TestSet)
             Dim metrics = mlContext.BinaryClassification.Evaluate(data:=predictions, label:=DefaultColumnNames.Label, score:=DefaultColumnNames.Score)
 
             ConsoleHelper.PrintBinaryClassificationMetrics(trainer.ToString(), metrics)
@@ -98,7 +96,7 @@ Namespace SentimentAnalysisConsoleApp
             Dim resultprediction = predEngine.Predict(sampleStatement)
 
             Console.WriteLine($"=============== Single Prediction  ===============")
-            Console.WriteLine($"Text: {sampleStatement.Text} | Prediction: {(If(Convert.ToBoolean(resultprediction.Prediction), "Negative", "Nice"))} sentiment | Probability: {resultprediction.Probability} ")
+            Console.WriteLine($"Text: {sampleStatement.Text} | Prediction: {(If(Convert.ToBoolean(resultprediction.Prediction), "Toxic", "Non Toxic"))} sentiment | Probability: {resultprediction.Probability} ")
             Console.WriteLine($"==================================================")
         End Sub
 

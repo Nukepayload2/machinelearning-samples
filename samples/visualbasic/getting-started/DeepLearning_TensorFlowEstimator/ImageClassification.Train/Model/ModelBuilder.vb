@@ -1,11 +1,8 @@
-﻿Imports System
-Imports System.IO
-Imports System.Linq
+﻿Imports System.IO
 Imports Microsoft.ML
 Imports Microsoft.ML.Data
 Imports Microsoft.ML.ImageAnalytics
 Imports ImageClassification.ImageData
-Imports ImageClassification.Model.ConsoleHelpers
 Imports Microsoft.ML.Core.Data
 
 Namespace ImageClassification.Model
@@ -19,7 +16,7 @@ Namespace ImageClassification.Model
         Private Shared ImageReal As String = NameOf(ImageReal)
         Private Shared PredictedLabelValue As String = NameOf(PredictedLabelValue)
 
-        Public Sub New(ByVal dataLocation As String, ByVal imagesFolder As String, ByVal inputModelLocation As String, ByVal outputModelLocation As String)
+        Public Sub New(dataLocation As String, imagesFolder As String, inputModelLocation As String, outputModelLocation As String)
             Me.dataLocation = dataLocation
             Me.imagesFolder = imagesFolder
             Me.inputModelLocation = inputModelLocation
@@ -46,7 +43,7 @@ Namespace ImageClassification.Model
 
 
 
-            Dim data = mlContext.Data.ReadFromTextFile(Of ImageNetData)(path:=dataLocation, hasHeader:=True)
+            Dim data = mlContext.Data.ReadFromTextFile(Of ImageNetData)(path:=dataLocation, hasHeader:=False)
 
             Dim pipeline = mlContext.Transforms.Conversion.MapValueToKey(outputColumnName:=LabelTokey, inputColumnName:=DefaultColumnNames.Label).Append(mlContext.Transforms.LoadImages(imagesFolder, (ImageReal, NameOf(ImageNetData.ImagePath)))).Append(mlContext.Transforms.Resize(outputColumnName:=ImageReal, imageWidth:=ImageNetSettings.imageWidth, imageHeight:=ImageNetSettings.imageHeight, inputColumnName:=ImageReal)).Append(mlContext.Transforms.ExtractPixels(New ImagePixelExtractorTransformer.ColumnInfo(name:="input", inputColumnName:=ImageReal, interleave:=ImageNetSettings.channelsLast, offset:=ImageNetSettings.mean))).Append(mlContext.Transforms.ScoreTensorFlowModel(modelLocation:=featurizerModelLocation, outputColumnNames:={"softmax2_pre_activation"}, inputColumnNames:={"input"})).Append(mlContext.MulticlassClassification.Trainers.LogisticRegression(labelColumn:=LabelTokey, featureColumn:="softmax2_pre_activation")).Append(mlContext.Transforms.Conversion.MapKeyToValue((PredictedLabelValue, DefaultColumnNames.PredictedLabel)))
 
@@ -79,5 +76,4 @@ Namespace ImageClassification.Model
         End Sub
 
     End Class
-
 End Namespace

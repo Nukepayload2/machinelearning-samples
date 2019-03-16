@@ -3,8 +3,8 @@ Imports ImageClassification.Model
 Imports ImageClassification.Model.ConsoleHelpers
 
 Namespace ImageClassification.Train
-    Module Program
-        Sub Main(args() As String)
+    Public Class Program
+        Shared Sub Main(args() As String)
             Dim assetsRelativePath As String = "../../../assets"
             Dim assetsPath As String = GetAbsolutePath(assetsRelativePath)
 
@@ -23,7 +23,7 @@ Namespace ImageClassification.Train
             ConsolePressAnyKey()
         End Sub
 
-        Public Function GetAbsolutePath(relativePath As String) As String
+        Public Shared Function GetAbsolutePath(relativePath As String) As String
             Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
             Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
 
@@ -31,5 +31,5 @@ Namespace ImageClassification.Train
 
             Return fullPath
         End Function
-    End Module
+    End Class
 End Namespace

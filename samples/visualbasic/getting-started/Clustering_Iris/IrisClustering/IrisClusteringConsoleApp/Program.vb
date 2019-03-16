@@ -3,7 +3,6 @@
 Imports Microsoft.ML
 Imports Common
 Imports Clustering_Iris.DataStructures
-Imports Microsoft.ML.Core.Data
 Imports Microsoft.ML.Data
 Imports Microsoft.Data.DataView
 
@@ -24,27 +23,26 @@ Namespace Clustering_Iris
         Private ModelRelativePath As String = $"{BaseModelsRelativePath}/IrisModel.zip"
 
         Private ModelPath As String = GetAbsolutePath(ModelRelativePath)
+        Private trainingDataView As IDataView
+        Private testingDataView As IDataView
 
         Public Sub Main(args() As String)
             'Create the MLContext to share across components for deterministic results
             Dim mlContext As New MLContext(seed:=1) 'Seed set to any number so you have a deterministic environment
 
             ' STEP 1: Common data loading configuration            
-            Dim fullData As IDataView = mlContext.Data.ReadFromTextFile(path:=DataPath, columns:={
-                New TextLoader.Column(DefaultColumnNames.Label, DataKind.R4, 0),
-                New TextLoader.Column(NameOf(IrisData.SepalLength), DataKind.R4, 1),
-                New TextLoader.Column(NameOf(IrisData.SepalWidth), DataKind.R4, 2),
-                New TextLoader.Column(NameOf(IrisData.PetalLength), DataKind.R4, 3),
-                New TextLoader.Column(NameOf(IrisData.PetalWidth), DataKind.R4, 4)
+            Dim fullData As IDataView = mlContext.Data.LoadFromTextFile(path:=DataPath, columns:={
+                New TextLoader.Column(DefaultColumnNames.Label, DataKind.Single, 0),
+                New TextLoader.Column(NameOf(IrisData.SepalLength), DataKind.Single, 1),
+                New TextLoader.Column(NameOf(IrisData.SepalWidth), DataKind.Single, 2),
+                New TextLoader.Column(NameOf(IrisData.PetalLength), DataKind.Single, 3),
+                New TextLoader.Column(NameOf(IrisData.PetalWidth), DataKind.Single, 4)
             }, hasHeader:=True, separatorChar:=vbTab)
 
             'Split dataset in two parts: TrainingDataset (80%) and TestDataset (20%)
-            Dim trainingDataView, testingDataView As IDataView
-
-            With mlContext.Clustering.TrainTestSplit(fullData, testFraction:=0.2)
-                trainingDataView = .trainSet
-                testingDataView = .testSet
-            End With
+            Dim trainTestData As TrainCatalogBase.TrainTestData = mlContext.Clustering.TrainTestSplit(fullData, testFraction:=0.2)
+            trainingDataView = trainTestData.TrainSet
+            testingDataView = trainTestData.TestSet
 
             'STEP 2: Process data transformations in pipeline
             Dim dataProcessPipeline = mlContext.Transforms.Concatenate(DefaultColumnNames.Features, NameOf(IrisData.SepalLength), NameOf(IrisData.SepalWidth), NameOf(IrisData.PetalLength), NameOf(IrisData.PetalWidth))
@@ -54,7 +52,7 @@ Namespace Clustering_Iris
             Common.ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, DefaultColumnNames.Features, trainingDataView, dataProcessPipeline, 10)
 
             ' STEP 3: Create and train the model     
-            Dim trainer = mlContext.Clustering.Trainers.KMeans(featureColumn:=DefaultColumnNames.Features, clustersCount:=3)
+            Dim trainer = mlContext.Clustering.Trainers.KMeans(featureColumnName:=DefaultColumnNames.Features, clustersCount:=3)
             Dim trainingPipeline = dataProcessPipeline.Append(trainer)
             Dim trainedModel = trainingPipeline.Fit(trainingDataView)
 
@@ -74,7 +72,7 @@ Namespace Clustering_Iris
             Console.WriteLine("=============== Predict a cluster for a single case (Single Iris data sample) ===============")
 
             ' Test with one sample text 
-            Dim sampleIrisData = New IrisData With {
+            Dim sampleIrisData = New IrisData() With {
                 .SepalLength = 3.3F,
                 .SepalWidth = 1.6F,
                 .PetalLength = 0.2F,
@@ -89,7 +87,7 @@ Namespace Clustering_Iris
                 'Score
                 Dim resultprediction = predEngine.Predict(sampleIrisData)
 
-                Console.WriteLine($"Cluster assigned for setosa flowers:" & resultprediction.SelectedClusterId)
+                Console.WriteLine($"Cluster assigned for setosa flowers:" + resultprediction.SelectedClusterId)
             End Using
 
             Console.WriteLine("=============== End of process, hit any key to finish ===============")
