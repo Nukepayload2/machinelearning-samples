@@ -1,28 +1,24 @@
-﻿Imports Microsoft.ML.Core.Data
-Imports Microsoft.ML.Data
+﻿Imports Microsoft.ML.Data
 Imports Microsoft.ML
-
-Imports System.Reflection
 Imports Microsoft.Data.DataView
-Imports System.IO
+Imports Microsoft.ML.TrainCatalogBase
 
 Namespace Common
     Public Module ConsoleHelper
-        Public Sub PrintPrediction(prediction As String)
+        Public Sub PrintPrediction(ByVal prediction As String)
             Console.WriteLine($"*************************************************")
             Console.WriteLine($"Predicted : {prediction}")
             Console.WriteLine($"*************************************************")
         End Sub
 
-        Public Sub PrintRegressionPredictionVersusObserved(predictionCount As String, observedCount As String)
+        Public Sub PrintRegressionPredictionVersusObserved(ByVal predictionCount As String, ByVal observedCount As String)
             Console.WriteLine($"-------------------------------------------------")
             Console.WriteLine($"Predicted : {predictionCount}")
             Console.WriteLine($"Actual:     {observedCount}")
             Console.WriteLine($"-------------------------------------------------")
         End Sub
 
-
-        Public Sub PrintRegressionMetrics(name As String, metrics As RegressionMetrics)
+        Public Sub PrintRegressionMetrics(ByVal name As String, ByVal metrics As RegressionMetrics)
             Console.WriteLine($"*************************************************")
             Console.WriteLine($"*       Metrics for {name} regression model      ")
             Console.WriteLine($"*------------------------------------------------")
@@ -34,7 +30,7 @@ Namespace Common
             Console.WriteLine($"*************************************************")
         End Sub
 
-        Public Sub PrintBinaryClassificationMetrics(name As String, metrics As CalibratedBinaryClassificationMetrics)
+        Public Sub PrintBinaryClassificationMetrics(ByVal name As String, ByVal metrics As CalibratedBinaryClassificationMetrics)
             Console.WriteLine($"************************************************************")
             Console.WriteLine($"*       Metrics for {name} binary classification model      ")
             Console.WriteLine($"*-----------------------------------------------------------")
@@ -51,7 +47,7 @@ Namespace Common
             Console.WriteLine($"************************************************************")
         End Sub
 
-        Public Sub PrintMultiClassClassificationMetrics(name As String, metrics As MultiClassClassifierMetrics)
+        Public Sub PrintMultiClassClassificationMetrics(ByVal name As String, ByVal metrics As MultiClassClassifierMetrics)
             Console.WriteLine($"************************************************************")
             Console.WriteLine($"*    Metrics for {name} multi-class classification model   ")
             Console.WriteLine($"*-----------------------------------------------------------")
@@ -64,13 +60,12 @@ Namespace Common
             Console.WriteLine($"************************************************************")
         End Sub
 
-        Public Sub PrintRegressionFoldsAverageMetrics(algorithmName As String, crossValidationResults() As _
-                (metrics As RegressionMetrics, model As ITransformer, scoredTestData As IDataView))
-            Dim L1 = From r In crossValidationResults Select l = r.metrics.L1
-            Dim L2 = From r In crossValidationResults Select l = r.metrics.L2
-            Dim RMS = From r In crossValidationResults Select l = r.metrics.L1
-            Dim lossFunction = From r In crossValidationResults Select r.metrics.LossFn
-            Dim R2 = From r In crossValidationResults Select r.metrics.RSquared
+        Public Sub PrintRegressionFoldsAverageMetrics(ByVal algorithmName As String, ByVal crossValidationResults() As CrossValidationResult(Of RegressionMetrics))
+            Dim L1 = crossValidationResults.Select(Function(r) r.Metrics.L1)
+            Dim L2 = crossValidationResults.Select(Function(r) r.Metrics.L2)
+            Dim RMS = crossValidationResults.Select(Function(r) r.Metrics.L1)
+            Dim lossFunction = crossValidationResults.Select(Function(r) r.Metrics.LossFn)
+            Dim R2 = crossValidationResults.Select(Function(r) r.Metrics.RSquared)
 
             Console.WriteLine($"*************************************************************************************************************")
             Console.WriteLine($"*       Metrics for {algorithmName} Regression model      ")
@@ -83,9 +78,8 @@ Namespace Common
             Console.WriteLine($"*************************************************************************************************************")
         End Sub
 
-        Public Sub PrintMulticlassClassificationFoldsAverageMetrics(algorithmName As String, crossValResults() As _
-               (metrics As MultiClassClassifierMetrics, model As ITransformer, scoredTestData As IDataView))
-            Dim metricsInMultipleFolds = crossValResults.Select(Function(r) r.metrics)
+        Public Sub PrintMulticlassClassificationFoldsAverageMetrics(ByVal algorithmName As String, ByVal crossValResults() As CrossValidationResult(Of MultiClassClassifierMetrics))
+            Dim metricsInMultipleFolds = crossValResults.Select(Function(r) r.Metrics)
 
             Dim microAccuracyValues = metricsInMultipleFolds.Select(Function(m) m.AccuracyMicro)
             Dim microAccuracyAverage = microAccuracyValues.Average()
@@ -118,19 +112,19 @@ Namespace Common
 
         End Sub
 
-        Public Function CalculateStandardDeviation(values As IEnumerable(Of Double)) As Double
+        Public Function CalculateStandardDeviation(ByVal values As IEnumerable(Of Double)) As Double
             Dim average As Double = values.Average()
             Dim sumOfSquaresOfDifferences As Double = values.Select(Function(val) (val - average) * (val - average)).Sum()
             Dim standardDeviation As Double = Math.Sqrt(sumOfSquaresOfDifferences / (values.Count() - 1))
             Return standardDeviation
         End Function
 
-        Public Function CalculateConfidenceInterval95(values As IEnumerable(Of Double)) As Double
+        Public Function CalculateConfidenceInterval95(ByVal values As IEnumerable(Of Double)) As Double
             Dim confidenceInterval95 As Double = 1.96 * CalculateStandardDeviation(values) / Math.Sqrt((values.Count() - 1))
             Return confidenceInterval95
         End Function
 
-        Public Sub PrintClusteringMetrics(name As String, metrics As ClusteringMetrics)
+        Public Sub PrintClusteringMetrics(ByVal name As String, ByVal metrics As ClusteringMetrics)
             Console.WriteLine($"*************************************************")
             Console.WriteLine($"*       Metrics for {name} clustering model      ")
             Console.WriteLine($"*------------------------------------------------")
@@ -139,7 +133,23 @@ Namespace Common
             Console.WriteLine($"*************************************************")
         End Sub
 
-        Public Sub PeekDataViewInConsole(mlContext As MLContext, dataView As IDataView, pipeline As IEstimator(Of ITransformer), Optional numberOfRows As Integer = 4)
+        Public Sub ShowDataViewInConsole(ByVal mlContext As MLContext, ByVal dataView As IDataView, Optional ByVal numberOfRows As Integer = 4)
+            Dim msg As String = String.Format("Show data in DataView: Showing {0} rows with the columns", numberOfRows.ToString())
+            ConsoleWriteHeader(msg)
+
+            Dim preViewTransformedData = dataView.Preview(maxRows:=numberOfRows)
+
+            For Each row In preViewTransformedData.RowView
+                Dim ColumnCollection = row.Values
+                Dim lineToPrint As String = "Row--> "
+                For Each column As KeyValuePair(Of String, Object) In ColumnCollection
+                    lineToPrint &= $"| {column.Key}:{column.Value}"
+                Next column
+                Console.WriteLine(lineToPrint & vbLf)
+            Next row
+        End Sub
+
+        Public Sub PeekDataViewInConsole(ByVal mlContext As MLContext, ByVal dataView As IDataView, ByVal pipeline As IEstimator(Of ITransformer), Optional ByVal numberOfRows As Integer = 4)
             Dim msg As String = String.Format("Peek data in DataView: Showing {0} rows with the columns", numberOfRows.ToString())
             ConsoleWriteHeader(msg)
 
@@ -162,7 +172,7 @@ Namespace Common
             Next row
         End Sub
 
-        Public Function PeekVectorColumnDataInConsole(mlContext As MLContext, columnName As String, dataView As IDataView, pipeline As IEstimator(Of ITransformer), Optional numberOfRows As Integer = 4) As List(Of Single())
+        Public Function PeekVectorColumnDataInConsole(ByVal mlContext As MLContext, ByVal columnName As String, ByVal dataView As IDataView, ByVal pipeline As IEstimator(Of ITransformer), Optional ByVal numberOfRows As Integer = 4) As List(Of Single())
             Dim msg As String = String.Format("Peek data in DataView: : Show {0} rows with just the '{1}' column", numberOfRows, columnName)
             ConsoleWriteHeader(msg)
 
@@ -184,7 +194,7 @@ Namespace Common
             Return someColumnData
         End Function
 
-        Public Sub ConsoleWriteHeader(ParamArray lines() As String)
+        Public Sub ConsoleWriteHeader(ParamArray ByVal lines() As String)
             Dim defaultColor = Console.ForegroundColor
             Console.ForegroundColor = ConsoleColor.Yellow
             Console.WriteLine(" ")
@@ -196,7 +206,7 @@ Namespace Common
             Console.ForegroundColor = defaultColor
         End Sub
 
-        Public Sub ConsoleWriterSection(ParamArray lines() As String)
+        Public Sub ConsoleWriterSection(ParamArray ByVal lines() As String)
             Dim defaultColor = Console.ForegroundColor
             Console.ForegroundColor = ConsoleColor.Blue
             Console.WriteLine(" ")
@@ -216,7 +226,7 @@ Namespace Common
             Console.ReadKey()
         End Sub
 
-        Public Sub ConsoleWriteException(ParamArray lines() As String)
+        Public Sub ConsoleWriteException(ParamArray ByVal lines() As String)
             Dim defaultColor = Console.ForegroundColor
             Console.ForegroundColor = ConsoleColor.Red
             Const exceptionTitle As String = "EXCEPTION"
@@ -229,7 +239,7 @@ Namespace Common
             Next line
         End Sub
 
-        Public Sub ConsoleWriteWarning(ParamArray lines() As String)
+        Public Sub ConsoleWriteWarning(ParamArray ByVal lines() As String)
             Dim defaultColor = Console.ForegroundColor
             Console.ForegroundColor = ConsoleColor.DarkMagenta
             Const warningTitle As String = "WARNING"
@@ -241,6 +251,5 @@ Namespace Common
                 Console.WriteLine(line)
             Next line
         End Sub
-
     End Module
 End Namespace

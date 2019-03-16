@@ -1,20 +1,17 @@
 ﻿Imports System.IO
-
 ' Requires following NuGet packages
 ' NuGet package -> Microsoft.Extensions.Configuration
 ' NuGet package -> Microsoft.Extensions.Configuration.Json
 Imports Microsoft.Extensions.Configuration
-
 Imports Microsoft.ML
-Imports Microsoft.ML.Core.Data
-
 Imports Common
 Imports GitHubLabeler.DataStructures
 Imports Microsoft.ML.Data
+Imports Microsoft.ML.TrainCatalogBase
 
 Namespace GitHubLabeler
     Friend Module Program
-        Private ReadOnly Property AppPath As String
+        Private ReadOnly Property AppPath() As String
             Get
                 Return Path.GetDirectoryName(Environment.GetCommandLineArgs()(0))
             End Get
@@ -28,18 +25,19 @@ Namespace GitHubLabeler
         Private ModelRelativePath As String = $"{BaseModelsRelativePath}/GitHubLabelerModel.zip"
         Private ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
+
         Public Enum MyTrainerStrategy As Integer
             SdcaMultiClassTrainer = 1
             OVAAveragedPerceptronTrainer = 2
         End Enum
 
-        Public Property Configuration As IConfiguration
+        Public Property Configuration() As IConfiguration
 
-        Sub Main(args() As String)
+        Sub Main(ByVal args() As String)
             MainAsync(args).GetAwaiter.GetResult()
         End Sub
 
-        Public Async Function MainAsync(args() As String) As Task
+        Public Async Function MainAsync(ByVal args() As String) As Task
             SetupAppConfiguration()
 
             '1. ChainedBuilderExtensions and Train the model
@@ -55,20 +53,16 @@ Namespace GitHubLabeler
             Common.ConsoleHelper.ConsolePressAnyKey()
         End Function
 
-        Public Sub BuildAndTrainModel(DataSetLocation As String, ModelPath As String, selectedStrategy As MyTrainerStrategy)
+        Public Sub BuildAndTrainModel(ByVal DataSetLocation As String, ByVal ModelPath As String, ByVal selectedStrategy As MyTrainerStrategy)
             ' Create MLContext to be shared across the model creation workflow objects 
             ' Set a random seed for repeatable/deterministic results across multiple trainings.
             Dim mlContext = New MLContext(seed:=1)
 
             ' STEP 1: Common data loading configuration
-            Dim trainingDataView = mlContext.Data.ReadFromTextFile(Of GitHubIssue)(DataSetLocation, hasHeader:=True, separatorChar:=vbTab, supportSparse:=False)
+            Dim trainingDataView = mlContext.Data.LoadFromTextFile(Of GitHubIssue)(DataSetLocation, hasHeader:=True, separatorChar:=vbTab, allowSparse:=False)
 
             ' STEP 2: Common data process configuration with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey(outputColumnName:=DefaultColumnNames.Label, inputColumnName:=NameOf(GitHubIssue.Area)).
-                Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="TitleFeaturized", inputColumnName:=NameOf(GitHubIssue.Title))).
-                Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="DescriptionFeaturized", inputColumnName:=NameOf(GitHubIssue.Description))).
-                Append(mlContext.Transforms.Concatenate(outputColumnName:=DefaultColumnNames.Features, "TitleFeaturized", "DescriptionFeaturized")).
-                AppendCacheCheckpoint(mlContext)
+            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey(outputColumnName:=DefaultColumnNames.Label, inputColumnName:=NameOf(GitHubIssue.Area)).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="TitleFeaturized", inputColumnName:=NameOf(GitHubIssue.Title))).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="DescriptionFeaturized", inputColumnName:=NameOf(GitHubIssue.Description))).Append(mlContext.Transforms.Concatenate(outputColumnName:=DefaultColumnNames.Features, "TitleFeaturized", "DescriptionFeaturized")).AppendCacheCheckpoint(mlContext)
             ' Use in-memory cache for small/medium datasets to lower training time. 
             ' Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets.
 
@@ -104,7 +98,7 @@ Namespace GitHubLabeler
             'Measure cross-validation time
             Dim watchCrossValTime = System.Diagnostics.Stopwatch.StartNew()
 
-            Dim crossValidationResults = mlContext.MulticlassClassification.CrossValidate(data:=trainingDataView, estimator:=trainingPipeline, numFolds:=6, labelColumn:=DefaultColumnNames.Label)
+            Dim crossValidationResults() As CrossValidationResult(Of MultiClassClassifierMetrics) = mlContext.MulticlassClassification.CrossValidate(data:=trainingDataView, estimator:=trainingPipeline, numFolds:=6, labelColumn:=DefaultColumnNames.Label)
 
             'Stop measuring time
             watchCrossValTime.Stop()
@@ -149,12 +143,12 @@ Namespace GitHubLabeler
             Common.ConsoleHelper.ConsoleWriteHeader("Training process finalized")
         End Sub
 
-        Private Sub TestSingleLabelPrediction(modelFilePathName As String)
+        Private Sub TestSingleLabelPrediction(ByVal modelFilePathName As String)
             Dim labeler = New Labeler(modelPath:=ModelPath)
             labeler.TestPredictionForSingleIssue()
         End Sub
 
-        Private Async Function PredictLabelsAndUpdateGitHub(ModelPath As String) As Task
+        Private Async Function PredictLabelsAndUpdateGitHub(ByVal ModelPath As String) As Task
             Console.WriteLine(".............Retrieving Issues from GITHUB repo, predicting label/s and assigning predicted label/s......")
 
             Dim token = Configuration("GitHubToken")
@@ -183,7 +177,7 @@ Namespace GitHubLabeler
             Configuration = builder.Build()
         End Sub
 
-        Public Function GetAbsolutePath(relativePath As String) As String
+        Public Function GetAbsolutePath(ByVal relativePath As String) As String
             Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
             Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
 

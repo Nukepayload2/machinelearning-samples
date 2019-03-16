@@ -54,6 +54,8 @@ Namespace GitHubLabeler
 
             _fullPredictions = GetBestThreePredictions(prediction)
 
+            Console.WriteLine("==== Displaying prediction of Issue with Title = {0} and Description = {1} ====", singleIssue.Title, singleIssue.Description)
+
             Console.WriteLine("1st Label: " & _fullPredictions(0).PredictedLabel & " with score: " & _fullPredictions(0).Score)
             Console.WriteLine("2nd Label: " & _fullPredictions(1).PredictedLabel & " with score: " & _fullPredictions(1).Score)
             Console.WriteLine("3rd Label: " & _fullPredictions(2).PredictedLabel & " with score: " & _fullPredictions(2).Score)
