@@ -11,17 +11,17 @@ Imports SpamDetectionConsoleApp.MLDataStructures
 
 Namespace SpamDetectionConsoleApp
 	Friend Class Program
-		Private Shared ReadOnly Property AppPath() As String
+		Private Shared ReadOnly Property AppPath As String
 			Get
 				Return Path.GetDirectoryName(Environment.GetCommandLineArgs()(0))
 			End Get
 		End Property
-		Private Shared ReadOnly Property DataDirectoryPath() As String
+		Private Shared ReadOnly Property DataDirectoryPath As String
 			Get
 				Return Path.Combine(AppPath, "..", "..", "..", "Data", "spamfolder")
 			End Get
 		End Property
-		Private Shared ReadOnly Property TrainDataPath() As String
+		Private Shared ReadOnly Property TrainDataPath As String
 			Get
 				Return Path.Combine(AppPath, "..", "..", "..", "Data", "spamfolder", "SMSSpamCollection")
 			End Get
@@ -30,7 +30,7 @@ Namespace SpamDetectionConsoleApp
 		Shared Sub Main(args() As String)
 			' Download the dataset if it doesn't exist.
 			If Not File.Exists(TrainDataPath) Then
-				Using client = New WebClient()
+				Using client = New WebClient
 					'The code below will download a dataset from a third-party, UCI (link), and may be governed by separate third-party terms. 
 					'By proceeding, you agree to those separate terms.
 					client.DownloadFile("https://archive.ics.uci.edu/ml/machine-learning-databases/00228/smsspamcollection.zip", "spam.zip")
@@ -39,14 +39,14 @@ Namespace SpamDetectionConsoleApp
 				ZipFile.ExtractToDirectory("spam.zip", DataDirectoryPath)
 			End If
 
-			' Set up the MLContext, which is a catalog of components in ML.NET.
-			Dim mlContext As New MLContext()
+            ' Set up the MLContext, which is a catalog of components in ML.NET.
+            Dim mlContext As New MLContext
 
-			' Specify the schema for spam data and read it into DataView.
-			Dim data = mlContext.Data.ReadFromTextFile(Of SpamInput)(path:= TrainDataPath, hasHeader:= True, separatorChar:= ControlChars.Tab)
+            ' Specify the schema for spam data and read it into DataView.
+            Dim data = mlContext.Data.ReadFromTextFile(Of SpamInput)(path:=TrainDataPath, hasHeader:=True, separatorChar:=vbTab)
 
-			' Create the estimator which converts the text label to boolean, featurizes the text, and adds a linear trainer.
-			Dim dataProcessPipeLine = mlContext.Transforms.CustomMapping(Of MyInput, MyOutput)(mapAction:= AddressOf MyLambda.MyAction, contractName:= "MyLambda").Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:= DefaultColumnNames.Features, inputColumnName:= NameOf(SpamInput.Message)))
+            ' Create the estimator which converts the text label to boolean, featurizes the text, and adds a linear trainer.
+            Dim dataProcessPipeLine = mlContext.Transforms.CustomMapping(Of MyInput, MyOutput)(mapAction:= AddressOf MyLambda.MyAction, contractName:= "MyLambda").Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:= DefaultColumnNames.Features, inputColumnName:= NameOf(SpamInput.Message)))
 
 			'Create the training pipeline
 			Console.WriteLine("=============== Training the model ===============")
@@ -90,19 +90,23 @@ Namespace SpamDetectionConsoleApp
 		End Sub
 
 		Public Class MyInput
-			Public Property Label() As String
+			Public Property Label As String
 		End Class
 
 		Public Class MyOutput
-			Public Property Label() As Boolean
+			Public Property Label As Boolean
 		End Class
 
 		Public Class MyLambda
-			<Export("MyLambda")>
-			Public MyTransformer As Function(ITransformer) ML.Transforms.CustomMappingTransformer(Of MyInput, MyOutput)(AddressOf MyAction, "MyLambda")
+            <Export("MyLambda")>
+            Public ReadOnly Property MyTransformer As ITransformer
+                Get
+                    Return ML.Transforms.CustomMappingTransformer(Of MyInput, MyOutput)(AddressOf MyAction, "MyLambda")
+                End Get
+            End Property
 
-			<Import>
-			Public Property ML() As MLContext
+            <Import>
+			Public Property ML As MLContext
 
 			Public Shared Sub MyAction(input As MyInput, output As MyOutput)
 				output.Label = If(input.Label = "spam", True, False)

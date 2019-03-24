@@ -1,6 +1,4 @@
-﻿<EmbeddedResource Include="**\*.resx" />
-<Compile Include="**\*.vb" />
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -10,16 +8,9 @@
     <OptionCompare>Binary</OptionCompare>
     <OptionStrict>Off</OptionStrict>
     <OptionInfer>On</OptionInfer>
+    <RootNamespace />
   </PropertyGroup>
 
-  <ItemGroup>
-    <Import Include="Microsoft.VisualBasic" />
-    <Import Include="System.Collections.Generic" />
-    <Import Include="System.Collections" />
-    <Import Include="System.Diagnostics" />
-    <Import Include="System.Linq" />
-    <Import Include="System" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Remove="MLModels\**" />
     <EmbeddedResource Remove="MLModels\**" />
@@ -42,6 +33,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="0.11.0" />
   </ItemGroup>
-
 
 </Project>
