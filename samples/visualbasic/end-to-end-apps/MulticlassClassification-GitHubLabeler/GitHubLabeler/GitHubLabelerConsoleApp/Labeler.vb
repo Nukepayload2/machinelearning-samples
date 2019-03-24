@@ -23,7 +23,7 @@ Namespace GitHubLabeler
             _repoOwner = repoOwner
             _repoName = repoName
 
-            _mlContext = New MLContext(seed:=1)
+            _mlContext = New MLContext()
 
             'Load model from file
 

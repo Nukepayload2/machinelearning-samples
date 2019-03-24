@@ -59,6 +59,10 @@ Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "MovieRecommendation", "gett
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "ProductRecommender", "getting-started\MatrixFactorization_ProductRecommendation\ProductRecommender\ProductRecommender.vbproj", "{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ShampooSales.Solution", "ShampooSales.Solution", "{308EBDA2-6C8D-41C9-BC3A-CD7B9404F93B}"
+EndProject
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "ShampooSales", "getting-started\SpikeDetection_ShampooSales\ShampooSales\ShampooSalesConsoleApp\ShampooSales.vbproj", "{98054272-357D-4899-BBDB-7EA62CF4B198}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -195,6 +199,14 @@ Global
 		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Release|x64.ActiveCfg = Release|x64
 		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293}.Release|x64.Build.0 = Release|x64
+		{98054272-357D-4899-BBDB-7EA62CF4B198}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98054272-357D-4899-BBDB-7EA62CF4B198}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98054272-357D-4899-BBDB-7EA62CF4B198}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{98054272-357D-4899-BBDB-7EA62CF4B198}.Debug|x64.Build.0 = Debug|Any CPU
+		{98054272-357D-4899-BBDB-7EA62CF4B198}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98054272-357D-4899-BBDB-7EA62CF4B198}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98054272-357D-4899-BBDB-7EA62CF4B198}.Release|x64.ActiveCfg = Release|Any CPU
+		{98054272-357D-4899-BBDB-7EA62CF4B198}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -216,6 +228,7 @@ Global
 		{689EE784-BC9A-48D4-8F9E-3DF74B1A3C82} = {7F4BD05E-A719-4740-8CA4-DD1831E23EE5}
 		{A69A29B8-3A25-4336-A1E6-FC3F5A053739} = {A47A04B6-1E38-41D6-A776-8FA7345C69B0}
 		{C0D5382B-2DC4-4E7B-9ACA-97ACE0FE0293} = {921952E9-F208-4C0A-A696-A40DA0DDB6E8}
+		{98054272-357D-4899-BBDB-7EA62CF4B198} = {308EBDA2-6C8D-41C9-BC3A-CD7B9404F93B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98369941-33DD-450C-A410-B9A91C8CDE91}

@@ -30,18 +30,18 @@ Namespace ImageClassification.Model
             ' Make prediction function (input = ImageNetData, output = ImageNetPrediction)
             Dim predictor = loadedModel.CreatePredictionEngine(Of ImageNetData, ImageNetPrediction)(mlContext)
             ' Read csv file into List<ImageNetData>
-            Dim testData = ImageNetData.ReadFromCsv(dataLocation, imagesFolder).ToList()
+            Dim imageListToPredict = ImageNetData.ReadFromCsv(dataLocation, imagesFolder).ToList()
 
             ConsoleWriteHeader("Making classifications")
             ' There is a bug (https://github.com/dotnet/machinelearning/issues/1138), 
             ' that always buffers the response from the predictor
             ' so we have to make a copy-by-value op everytime we get a response
             ' from the predictor
-            testData.Select(Function(td) New With {
+            imageListToPredict.Select(Function(td) New With {
                 Key td,
                 Key .pred = predictor.Predict(td)
-            }).Select(Function(pr) (pr.td.ImagePath, pr.pred.PredictedLabelValue, pr.pred.Score)).ToList().ForEach(
-            Sub(pr) ConsoleWriteImagePrediction(pr.ImagePath, pr.PredictedLabelValue, pr.Score.Max()))
+            }).Select(Function(pr) (pr.td.ImagePath, pr.pred.PredictedLabelValue, pr.pred.Score)).ToList().
+            ForEach(Sub(pr) ConsoleWriteImagePrediction(pr.ImagePath, pr.PredictedLabelValue, pr.Score.Max()))
         End Sub
     End Class
 End Namespace

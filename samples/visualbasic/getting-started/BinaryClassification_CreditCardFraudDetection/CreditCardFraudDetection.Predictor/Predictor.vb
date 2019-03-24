@@ -20,9 +20,9 @@ Namespace CreditCardFraudDetection.Predictor
             _dasetFile = dasetFile
         End Sub
 
-        Public Sub RunMultiplePredictions(numberOfPredictions As Integer, Optional seed As Integer? = 1)
+        Public Sub RunMultiplePredictions(numberOfPredictions As Integer)
 
-            Dim mlContext = New MLContext(seed)
+            Dim mlContext As New MLContext
 
             'Load data sa input for predictions
             Dim inputDataForPredictions As IDataView = mlContext.Data.LoadFromTextFile(Of TransactionObservation)(_dasetFile, separatorChar:=","c, hasHeader:=True)

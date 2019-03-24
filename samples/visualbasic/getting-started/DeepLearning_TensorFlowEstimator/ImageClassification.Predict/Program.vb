@@ -8,7 +8,7 @@ Namespace ImageClassification.Predict
             Dim assetsRelativePath As String = "../../../assets"
             Dim assetsPath As String = GetAbsolutePath(assetsRelativePath)
 
-            Dim tagsTsv = Path.Combine(assetsPath, "inputs", "data", "tags.tsv")
+            Dim tagsTsv = Path.Combine(assetsPath, "inputs", "data", "images_list.tsv")
             Dim imagesFolder = Path.Combine(assetsPath, "inputs", "data")
             Dim imageClassifierZip = Path.Combine(assetsPath, "inputs", "imageClassifier.zip")
 

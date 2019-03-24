@@ -14,7 +14,7 @@ Namespace CustomerSegmentation
             Dim plotCsv = Path.Combine(assetsPath, "outputs", "customerSegmentation.csv")
 
             Try
-                Dim mlContext As New MLContext(seed:=1) 'Seed set to any number so you have a deterministic results
+                Dim mlContext As New MLContext 'Seed set to any number so you have a deterministic results
 
                 'Create the clusters: Create data files and plot a chart
                 Dim clusteringModelScorer = New ClusteringModelScorer(mlContext, pivotCsv, plotSvg, plotCsv)

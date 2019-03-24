@@ -59,9 +59,9 @@ Namespace ImageClassification.Model
             trainData2.ForEach(Sub(pr) ConsoleWriteImagePrediction(pr.ImagePath, pr.PredictedLabelValue, pr.Score.Max()))
 
             ' Get some performance metric on the model using training data            
-            Dim sdcaContext = New MulticlassClassificationCatalog(mlContext)
+            Dim classificationContext = New MulticlassClassificationCatalog(mlContext)
             ConsoleWriteHeader("Classification metrics")
-            Dim metrics = sdcaContext.Evaluate(trainData, label:=LabelTokey, predictedLabel:=DefaultColumnNames.PredictedLabel)
+            Dim metrics = classificationContext.Evaluate(trainData, label:=LabelTokey, predictedLabel:=DefaultColumnNames.PredictedLabel)
             Console.WriteLine($"LogLoss is: {metrics.LogLoss}")
             Console.WriteLine($"PerClassLogLoss is: {String.Join(", ", metrics.PerClassLogLoss.Select(Function(c) c.ToString()))}")
 
