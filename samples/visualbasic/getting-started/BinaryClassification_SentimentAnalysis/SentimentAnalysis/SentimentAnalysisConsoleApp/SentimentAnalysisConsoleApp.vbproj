@@ -10,9 +10,6 @@
     <OptionInfer>On</OptionInfer>
     <RootNamespace />
   </PropertyGroup>
-
-  <ItemGroup>
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\..\..\common\ConsoleHelper.vb" Link="Common\ConsoleHelper.vb" />
   </ItemGroup>

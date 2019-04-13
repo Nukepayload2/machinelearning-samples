@@ -12,15 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Import Include="Microsoft.VisualBasic" />
-    <Import Include="System.Collections.Generic" />
-    <Import Include="System.Collections" />
-    <Import Include="System.Diagnostics" />
-    <Import Include="System.Linq" />
-    <Import Include="System" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <Compile Include="..\ImageClassification.Train\ImageData\ImageNetData.vb" Link="ImageData\ImageNetData.vb" />
     <Compile Include="..\ImageClassification.Train\ImageData\ImageNetPrediction.vb" Link="ImageData\ImageNetPrediction.vb" />
     <Compile Include="..\ImageClassification.Train\Model\ConsoleHelpers.vb" Link="Model\ConsoleHelpers.vb" />
@@ -30,7 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
     <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="$(MicrosoftMLVersion)" />
-    <PackageReference Include="Microsoft.ML.TensorFlow" Version="$(MicrosoftMLVersion)" />
+    <PackageReference Include="Microsoft.ML.TensorFlow" Version="0.12.0-preview" />
   </ItemGroup>
 
   <ItemGroup>

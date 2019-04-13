@@ -1,4 +1,9 @@
-﻿Imports System.IO
+﻿Option Infer On
+
+Imports Microsoft.VisualBasic
+Imports System
+Imports System.Threading.Tasks
+Imports System.IO
 ' Requires following NuGet packages
 ' NuGet package -> Microsoft.Extensions.Configuration
 ' NuGet package -> Microsoft.Extensions.Configuration.Json
@@ -33,15 +38,15 @@ Namespace GitHubLabeler
 
         Public Property Configuration As IConfiguration
 
-        Sub Main(ByVal args() As String)
+        Sub Main(args() As String)
             MainAsync(args).GetAwaiter.GetResult()
         End Sub
 
-        Public Async Function MainAsync(ByVal args() As String) As Task
+        Public Async Function MainAsync(args() As String) As Task
             SetupAppConfiguration()
 
             '1. ChainedBuilderExtensions and Train the model
-            BuildAndTrainModel(DataSetLocation, ModelPath, MyTrainerStrategy.SdcaMultiClassTrainer)
+            BuildAndTrainModel(DataSetLocation, ModelPath, MyTrainerStrategy.OVAAveragedPerceptronTrainer)
 
             '2. Try/test to predict a label for a single hard-coded Issue
             TestSingleLabelPrediction(ModelPath)
@@ -53,7 +58,7 @@ Namespace GitHubLabeler
             Common.ConsoleHelper.ConsolePressAnyKey()
         End Function
 
-        Public Sub BuildAndTrainModel(ByVal DataSetLocation As String, ByVal ModelPath As String, ByVal selectedStrategy As MyTrainerStrategy)
+        Public Sub BuildAndTrainModel(DataSetLocation As String, ModelPath As String, selectedStrategy As MyTrainerStrategy)
             ' Create MLContext to be shared across the model creation workflow objects 
             ' Set a random seed for repeatable/deterministic results across multiple trainings.
             Dim mlContext = New MLContext(seed:=1)
@@ -62,7 +67,7 @@ Namespace GitHubLabeler
             Dim trainingDataView = mlContext.Data.LoadFromTextFile(Of GitHubIssue)(DataSetLocation, hasHeader:=True, separatorChar:=vbTab, allowSparse:=False)
 
             ' STEP 2: Common data process configuration with pipeline data transformations
-            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey(outputColumnName:=DefaultColumnNames.Label, inputColumnName:=NameOf(GitHubIssue.Area)).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="TitleFeaturized", inputColumnName:=NameOf(GitHubIssue.Title))).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="DescriptionFeaturized", inputColumnName:=NameOf(GitHubIssue.Description))).Append(mlContext.Transforms.Concatenate(outputColumnName:=DefaultColumnNames.Features, "TitleFeaturized", "DescriptionFeaturized")).AppendCacheCheckpoint(mlContext)
+            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey(outputColumnName:="Label", inputColumnName:=NameOf(GitHubIssue.Area)).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="TitleFeaturized", inputColumnName:=NameOf(GitHubIssue.Title))).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:="DescriptionFeaturized", inputColumnName:=NameOf(GitHubIssue.Description))).Append(mlContext.Transforms.Concatenate(outputColumnName:="Features", "TitleFeaturized", "DescriptionFeaturized")).AppendCacheCheckpoint(mlContext)
             ' Use in-memory cache for small/medium datasets to lower training time. 
             ' Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets.
 
@@ -73,10 +78,10 @@ Namespace GitHubLabeler
             Dim trainer As IEstimator(Of ITransformer) = Nothing
             Select Case selectedStrategy
                 Case MyTrainerStrategy.SdcaMultiClassTrainer
-                    trainer = mlContext.MulticlassClassification.Trainers.StochasticDualCoordinateAscent(DefaultColumnNames.Label, DefaultColumnNames.Features)
+                    trainer = mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features")
                 Case MyTrainerStrategy.OVAAveragedPerceptronTrainer
                     ' Create a binary classification trainer.
-                    Dim averagedPerceptronBinaryTrainer = mlContext.BinaryClassification.Trainers.AveragedPerceptron(DefaultColumnNames.Label, DefaultColumnNames.Features, numIterations:=10)
+                    Dim averagedPerceptronBinaryTrainer = mlContext.BinaryClassification.Trainers.AveragedPerceptron("Label", "Features", numberOfIterations:=10)
                     ' Compose an OVA (One-Versus-All) trainer with the BinaryTrainer.
                     ' In this strategy, a binary classification algorithm is used to train one classifier for each class, "
                     ' which distinguishes that class from all other classes. Prediction is then performed by running these binary classifiers, "
@@ -88,7 +93,7 @@ Namespace GitHubLabeler
             End Select
 
             'Set the trainer/algorithm and map label to value (original readable state)
-            Dim trainingPipeline = dataProcessPipeline.Append(trainer).Append(mlContext.Transforms.Conversion.MapKeyToValue(DefaultColumnNames.PredictedLabel))
+            Dim trainingPipeline = dataProcessPipeline.Append(trainer).Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel"))
 
             ' STEP 4: Cross-Validate with single dataset (since we don't have two datasets, one for training and for evaluate)
             ' in order to evaluate and get the model's accuracy metrics
@@ -98,7 +103,7 @@ Namespace GitHubLabeler
             'Measure cross-validation time
             Dim watchCrossValTime = System.Diagnostics.Stopwatch.StartNew()
 
-            Dim crossValidationResults() As CrossValidationResult(Of MultiClassClassifierMetrics) = mlContext.MulticlassClassification.CrossValidate(data:=trainingDataView, estimator:=trainingPipeline, numFolds:=6, labelColumn:=DefaultColumnNames.Label)
+            Dim crossValidationResults = mlContext.MulticlassClassification.CrossValidate(data:=trainingDataView, estimator:=trainingPipeline, numberOfFolds:=6, labelColumnName:="Label")
 
             'Stop measuring time
             watchCrossValTime.Stop()
@@ -122,13 +127,13 @@ Namespace GitHubLabeler
             Console.WriteLine($"Time Training the model: {elapsedCrossValMs} miliSecs")
 
             ' (OPTIONAL) Try/test a single prediction with the "just-trained model" (Before saving the model)
-            Dim issue As New GitHubIssue() With {
+            Dim issue As GitHubIssue = New GitHubIssue With {
                 .ID = "Any-ID",
                 .Title = "WebSockets communication is slow in my machine",
                 .Description = "The WebSockets communication used under the covers by SignalR looks like is going slow in my development machine.."
             }
             ' Create prediction engine related to the loaded trained model
-            Dim predEngine = trainedModel.CreatePredictionEngine(Of GitHubIssue, GitHubIssuePrediction)(mlContext)
+            Dim predEngine = mlContext.Model.CreatePredictionEngine(Of GitHubIssue, GitHubIssuePrediction)(trainedModel)
             'Score
             Dim prediction = predEngine.Predict(issue)
             Console.WriteLine($"=============== Single Prediction just-trained-model - Result: {prediction.Area} ===============")
@@ -136,19 +141,17 @@ Namespace GitHubLabeler
 
             ' STEP 6: Save/persist the trained model to a .ZIP file
             Console.WriteLine("=============== Saving the model to a file ===============")
-            Using fs = New FileStream(ModelPath, FileMode.Create, FileAccess.Write, FileShare.Write)
-                mlContext.Model.Save(trainedModel, fs)
-            End Using
+            mlContext.Model.Save(trainedModel, trainingDataView.Schema, ModelPath)
 
             Common.ConsoleHelper.ConsoleWriteHeader("Training process finalized")
         End Sub
 
-        Private Sub TestSingleLabelPrediction(ByVal modelFilePathName As String)
+        Private Sub TestSingleLabelPrediction(modelFilePathName As String)
             Dim labeler = New Labeler(modelPath:=ModelPath)
             labeler.TestPredictionForSingleIssue()
         End Sub
 
-        Private Async Function PredictLabelsAndUpdateGitHub(ByVal ModelPath As String) As Task
+        Private Async Function PredictLabelsAndUpdateGitHub(ModelPath As String) As Task
             Console.WriteLine(".............Retrieving Issues from GITHUB repo, predicting label/s and assigning predicted label/s......")
 
             Dim token = Configuration("GitHubToken")
@@ -172,12 +175,12 @@ Namespace GitHubLabeler
         End Function
 
         Private Sub SetupAppConfiguration()
-            Dim builder = (New ConfigurationBuilder()).SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json")
+            Dim builder = (New ConfigurationBuilder).SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json")
 
             Configuration = builder.Build()
         End Sub
 
-        Public Function GetAbsolutePath(ByVal relativePath As String) As String
+        Public Function GetAbsolutePath(relativePath As String) As String
             Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
             Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
 

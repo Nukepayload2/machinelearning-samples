@@ -9,20 +9,17 @@
     <OptionInfer>On</OptionInfer>
     <RootNamespace />
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <Import Include="Microsoft.VisualBasic" />
-    <Import Include="System.Collections.Generic" />
-    <Import Include="System.Collections" />
-    <Import Include="System.Diagnostics" />
-    <Import Include="System.Linq" />
-    <Import Include="System" />
+    <Compile Include="..\..\..\common\ConsoleHelper.vb" Link="Common\ConsoleHelper.vb" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Common\" />
     <Folder Include="Data\" />
   </ItemGroup>
 

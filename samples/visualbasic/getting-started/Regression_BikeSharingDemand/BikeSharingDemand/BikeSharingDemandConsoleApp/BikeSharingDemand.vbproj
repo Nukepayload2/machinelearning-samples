@@ -11,8 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Remove="Datasets\**" />
     <EmbeddedResource Remove="Datasets\**" />
     <None Remove="Datasets\**" />
@@ -23,11 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\Data\Readme.txt" Link="Data\Readme.txt" />
+    <Content Include="..\Data - VB\Readme.txt" Link="Data\Readme.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
+    <PackageReference Include="Microsoft.ML.FastTree" Version="1.0.0-preview" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,8 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\Data\hour_test.csv" Link="Data\hour_test.csv" />
-    <None Include="..\Data\hour_train.csv" Link="Data\hour_train.csv" />
+    <None Include="..\Data - VB\hour_test.csv" Link="Data\hour_test.csv" />
+    <None Include="..\Data - VB\hour_train.csv" Link="Data\hour_train.csv" />
   </ItemGroup>
 
 </Project>

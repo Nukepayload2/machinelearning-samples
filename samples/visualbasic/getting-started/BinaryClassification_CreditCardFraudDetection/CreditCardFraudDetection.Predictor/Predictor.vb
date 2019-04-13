@@ -1,7 +1,5 @@
 ﻿Imports CreditCardFraudDetection.Common.DataModels
-Imports Microsoft.Data.DataView
 Imports Microsoft.ML
-Imports Microsoft.ML.Data
 
 Namespace CreditCardFraudDetection.Predictor
     Public Class Predictor
@@ -22,36 +20,38 @@ Namespace CreditCardFraudDetection.Predictor
 
         Public Sub RunMultiplePredictions(numberOfPredictions As Integer)
 
-            Dim mlContext As New MLContext
+            Dim mlContext = New MLContext
 
-            'Load data sa input for predictions
+            'Load data as input for predictions
             Dim inputDataForPredictions As IDataView = mlContext.Data.LoadFromTextFile(Of TransactionObservation)(_dasetFile, separatorChar:=","c, hasHeader:=True)
 
             Console.WriteLine($"Predictions from saved model:")
 
-            Dim model As ITransformer
-            Using file = IO.File.OpenRead(_modelfile)
-                model = mlContext.Model.Load(file)
-            End Using
+            Dim model As ITransformer = mlContext.Model.Load(_modelfile, Nothing)
 
-            Dim predictionEngine = model.CreatePredictionEngine(Of TransactionObservation, TransactionFraudPrediction)(mlContext)
+            Dim predictionEngine = mlContext.Model.CreatePredictionEngine(Of TransactionObservation, TransactionFraudPrediction)(model)
             Console.WriteLine(vbLf & " " & vbLf & $" Test {numberOfPredictions} transactions, from the test datasource, that should be predicted as fraud (true):")
 
-            mlContext.Data.CreateEnumerable(Of TransactionObservation)(inputDataForPredictions, reuseRowObject:=False).Where(Function(x) x.Label = True).Take(numberOfPredictions).Select(Function(testData) testData).ToList().ForEach(Sub(testData)
-                                                                                                                                                                                                                                            Console.WriteLine($"--- Transaction ---")
-                                                                                                                                                                                                                                            testData.PrintToConsole()
-                                                                                                                                                                                                                                            predictionEngine.Predict(testData).PrintToConsole()
-                                                                                                                                                                                                                                            Console.WriteLine($"-------------------")
-                                                                                                                                                                                                                                        End Sub)
+            mlContext.Data.CreateEnumerable(Of TransactionObservation)(inputDataForPredictions, reuseRowObject:=False).
+                Where(Function(x) x.Label = True).Take(numberOfPredictions).
+                Select(Function(testData) testData).ToList().
+                ForEach(Sub(testData)
+                            Console.WriteLine($"--- Transaction ---")
+                            testData.PrintToConsole()
+                            predictionEngine.Predict(testData).PrintToConsole()
+                            Console.WriteLine($"-------------------")
+                        End Sub)
 
 
             Console.WriteLine(vbLf & " " & vbLf & $" Test {numberOfPredictions} transactions, from the test datasource, that should NOT be predicted as fraud (false):")
-            mlContext.Data.CreateEnumerable(Of TransactionObservation)(inputDataForPredictions, reuseRowObject:=False).Where(Function(x) x.Label = False).Take(numberOfPredictions).ToList().ForEach(Sub(testData)
-                                                                                                                                                                                                         Console.WriteLine($"--- Transaction ---")
-                                                                                                                                                                                                         testData.PrintToConsole()
-                                                                                                                                                                                                         predictionEngine.Predict(testData).PrintToConsole()
-                                                                                                                                                                                                         Console.WriteLine($"-------------------")
-                                                                                                                                                                                                     End Sub)
+            mlContext.Data.CreateEnumerable(Of TransactionObservation)(inputDataForPredictions, reuseRowObject:=False).
+                Where(Function(x) x.Label = False).Take(numberOfPredictions).ToList().
+                ForEach(Sub(testData)
+                            Console.WriteLine($"--- Transaction ---")
+                            testData.PrintToConsole()
+                            predictionEngine.Predict(testData).PrintToConsole()
+                            Console.WriteLine($"-------------------")
+                        End Sub)
         End Sub
 
     End Class

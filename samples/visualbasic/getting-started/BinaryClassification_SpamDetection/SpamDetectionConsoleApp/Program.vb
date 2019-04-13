@@ -1,12 +1,10 @@
 ﻿Imports System
-Imports System.ComponentModel.Composition
 Imports System.IO
 Imports System.IO.Compression
 Imports System.Linq
 Imports System.Net
+Imports Common
 Imports Microsoft.ML
-Imports Microsoft.ML.Core.Data
-Imports Microsoft.ML.Data
 Imports SpamDetectionConsoleApp.MLDataStructures
 
 Namespace SpamDetectionConsoleApp
@@ -39,44 +37,42 @@ Namespace SpamDetectionConsoleApp
 				ZipFile.ExtractToDirectory("spam.zip", DataDirectoryPath)
 			End If
 
-            ' Set up the MLContext, which is a catalog of components in ML.NET.
-            Dim mlContext As New MLContext
+			' Set up the MLContext, which is a catalog of components in ML.NET.
+			Dim mlContext As MLContext = New MLContext
 
             ' Specify the schema for spam data and read it into DataView.
-            Dim data = mlContext.Data.ReadFromTextFile(Of SpamInput)(path:=TrainDataPath, hasHeader:=True, separatorChar:=vbTab)
+            Dim data = mlContext.Data.LoadFromTextFile(Of SpamInput)(path:=TrainDataPath, hasHeader:=True, separatorChar:=vbTab)
 
             ' Create the estimator which converts the text label to boolean, featurizes the text, and adds a linear trainer.
-            Dim dataProcessPipeLine = mlContext.Transforms.CustomMapping(Of MyInput, MyOutput)(mapAction:= AddressOf MyLambda.MyAction, contractName:= "MyLambda").Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:= DefaultColumnNames.Features, inputColumnName:= NameOf(SpamInput.Message)))
+            ' Data process configuration with pipeline data transformations 
+            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey("Label", "Label").Append(mlContext.Transforms.Text.FeaturizeText("FeaturesText", New Microsoft.ML.Transforms.Text.TextFeaturizingEstimator.Options With {
+				.WordFeatureExtractor = New Microsoft.ML.Transforms.Text.WordBagEstimator.Options With {
+					.NgramLength = 2,
+					.UseAllLengths = True
+				},
+				.CharFeatureExtractor = New Microsoft.ML.Transforms.Text.WordBagEstimator.Options With {
+					.NgramLength = 3,
+					.UseAllLengths = False
+				}
+			}, "Message")).Append(mlContext.Transforms.CopyColumns("Features", "FeaturesText")).Append(mlContext.Transforms.NormalizeLpNorm("Features", "Features")).AppendCacheCheckpoint(mlContext)
 
-			'Create the training pipeline
-			Console.WriteLine("=============== Training the model ===============")
-			Dim trainingPipeLine = dataProcessPipeLine.Append(mlContext.BinaryClassification.Trainers.StochasticDualCoordinateAscent())
+			' Set the training algorithm 
+			Dim trainer = mlContext.MulticlassClassification.Trainers.OneVersusAll(mlContext.BinaryClassification.Trainers.AveragedPerceptron(labelColumnName:= "Label", numberOfIterations:= 10, featureColumnName:= "Features"), labelColumnName:= "Label").Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel", "PredictedLabel"))
+			Dim trainingPipeLine = dataProcessPipeline.Append(trainer)
 
 			' Evaluate the model using cross-validation.
 			' Cross-validation splits our dataset into 'folds', trains a model on some folds and 
 			' evaluates it on the remaining fold. We are using 5 folds so we get back 5 sets of scores.
 			' Let's compute the average AUC, which should be between 0.5 and 1 (higher is better).
 			Console.WriteLine("=============== Cross-validating to get model's accuracy metrics ===============")
-			Dim crossValidationResults = mlContext.BinaryClassification.CrossValidate(data:=data, estimator:=trainingPipeLine, numFolds:= 5)
-			Dim aucs = crossValidationResults.Select(Function(r) r.metrics.Auc)
-			Console.WriteLine("The AUC is {0}", aucs.Average())
+			Dim crossValidationResults = mlContext.MulticlassClassification.CrossValidate(data:= data, estimator:= trainingPipeLine, numberOfFolds:= 5)
+			ConsoleHelper.PrintMulticlassClassificationFoldsAverageMetrics(trainer.ToString(), crossValidationResults)
 
 			' Now let's train a model on the full dataset to help us get better results
 			Dim model = trainingPipeLine.Fit(data)
 
-			' The dataset we have is skewed, as there are many more non-spam messages than spam messages.
-			' While our model is relatively good at detecting the difference, this skewness leads it to always
-			' say the message is not spam. We deal with this by lowering the threshold of the predictor. In reality,
-			' it is useful to look at the precision-recall curve to identify the best possible threshold.
-			Dim inPipe = New TransformerChain(Of ITransformer)(model.Take(model.Count() - 1).ToArray())
-			Dim lastTransformer = New BinaryPredictionTransformer(Of IPredictorProducing(Of Single))(mlContext, model.LastTransformer.Model, inPipe.GetOutputSchema(data.Schema), model.LastTransformer.FeatureColumn, threshold:= 0.15F, thresholdColumn:= DefaultColumnNames.Probability)
-
-			Dim parts() As ITransformer = model.ToArray()
-			parts(parts.Length - 1) = lastTransformer
-			Dim newModel As ITransformer = New TransformerChain(Of ITransformer)(parts)
-
-			' Create a PredictionFunction from our model 
-			Dim predictor = newModel.CreatePredictionEngine(Of SpamInput, SpamPrediction)(mlContext)
+			'Create a PredictionFunction from our model 
+			Dim predictor = mlContext.Model.CreatePredictionEngine(Of SpamInput, SpamPrediction)(model)
 
 			Console.WriteLine("=============== Predictions for below data===============")
 			' Test a few examples
@@ -89,35 +85,11 @@ Namespace SpamDetectionConsoleApp
 			Console.ReadLine()
 		End Sub
 
-		Public Class MyInput
-			Public Property Label As String
-		End Class
-
-		Public Class MyOutput
-			Public Property Label As Boolean
-		End Class
-
-		Public Class MyLambda
-            <Export("MyLambda")>
-            Public ReadOnly Property MyTransformer As ITransformer
-                Get
-                    Return ML.Transforms.CustomMappingTransformer(Of MyInput, MyOutput)(AddressOf MyAction, "MyLambda")
-                End Get
-            End Property
-
-            <Import>
-			Public Property ML As MLContext
-
-			Public Shared Sub MyAction(input As MyInput, output As MyOutput)
-				output.Label = If(input.Label = "spam", True, False)
-			End Sub
-		End Class
-
 		Public Shared Sub ClassifyMessage(predictor As PredictionEngine(Of SpamInput, SpamPrediction), message As String)
 			Dim input = New SpamInput With {.Message = message}
 			Dim prediction = predictor.Predict(input)
 
-			Console.WriteLine("The message '{0}' is {1}", input.Message,If(prediction.isSpam, "spam", "not spam"))
+			Console.WriteLine("The message '{0}' is {1}", input.Message,If(prediction.isSpam = "spam", "spam", "not spam"))
 		End Sub
 	End Class
 End Namespace

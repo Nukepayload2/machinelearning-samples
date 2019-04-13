@@ -2,54 +2,39 @@
 Imports System.Collections.Generic
 Imports System.IO
 Imports System.Linq
-Imports Microsoft.Data.DataView
 Imports Microsoft.ML
 Imports Microsoft.ML.Data
-Imports Microsoft.ML.Transforms.TimeSeries
+Imports PowerAnomalyDetection.DataStructures
 
 Namespace myApp
 	Friend Class Program
-		Private Class MeterData
-			<LoadColumn(0)>
-			Public Property name As String
-			<LoadColumn(1)>
-			Public Property time As DateTime
-			<LoadColumn(2)>
-			Public Property ConsumptionDiffNormalized As Single
-		End Class
+		Private Shared DatasetsRelativePath As String = "../../../Data"
+		Private Shared TrainingDatarelativePath As String = $"{DatasetsRelativePath}/power-export_min.csv"
 
-		Private Class SpikePrediction
-			<VectorType(3)>
-			Public Property Prediction As Double()
-		End Class
+		Private Shared TrainingDataPath As String = GetAbsolutePath(TrainingDatarelativePath)
 
-		Private Shared DatasetsLocation As String = "../../../Data"
-		Private Shared TrainingData As String = $"{DatasetsLocation}/power-export_min.csv"
+		Private Shared BaseModelsRelativePath As String = "../../../MLModels"
+		Private Shared ModelRelativePath As String = $"{BaseModelsRelativePath}/PowerAnomalyDetectionModel.zip"
 
-		Public Shared Function LoadPowerDataMin(ml As MLContext) As IDataView
-			Dim dataView = ml.Data.LoadFromTextFile(Of MeterData)(TrainingData, separatorChar:= ","c, hasHeader:= True)
-
-			' take a peek to make sure data is loaded
-			'var col = dataView.GetColumn<float>(ml, "ConsumptionDiffNormalized").ToArray(); 
-
-			Return dataView
-		End Function
+		Private Shared ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
 		Shared Sub Main()
-			Dim ml = New MLContext
+			Dim mlContext = New MLContext(seed:=0)
 
 			' load data
-			Dim dataView = LoadPowerDataMin(ml)
+			Dim dataView = mlContext.Data.LoadFromTextFile(Of MeterData)(TrainingDatarelativePath, separatorChar:= ","c, hasHeader:= True)
 
 			' transform options
-			BuildTrainEvaluateModel(ml, dataView) ' using SsaSpikeEstimator
+			BuildTrainModel(mlContext, dataView) ' using SsaSpikeEstimator
+
+			DetectAnomalies(mlContext, dataView)
 
 			Console.WriteLine(vbLf & "Press any key to exit")
 			Console.Read()
 		End Sub
 
 
-		Public Shared Sub BuildTrainEvaluateModel(ml As MLContext, dataView As IDataView)
+		Public Shared Sub BuildTrainModel(mlContext As MLContext, dataView As IDataView)
 			' Configure the Estimator
 			Const PValueSize As Integer = 30
 			Const SeasonalitySize As Integer = 30
@@ -59,24 +44,35 @@ Namespace myApp
 			Dim outputColumnName As String = NameOf(SpikePrediction.Prediction)
 			Dim inputColumnName As String = NameOf(MeterData.ConsumptionDiffNormalized)
 
-			Dim estimator = ml.Transforms.SsaSpikeEstimator(outputColumnName, inputColumnName, confidence:= ConfidenceInterval, pvalueHistoryLength:= PValueSize, trainingWindowSize:= TrainingSize, seasonalityWindowSize:= SeasonalitySize)
+			Dim trainigPipeLine = mlContext.Transforms.DetectSpikeBySsa(outputColumnName, inputColumnName, confidence:= ConfidenceInterval, pvalueHistoryLength:= PValueSize, trainingWindowSize:= TrainingSize, seasonalityWindowSize:= SeasonalitySize)
 
-			Dim model = estimator.Fit(dataView)
+			Dim trainedModel As ITransformer = trainigPipeLine.Fit(dataView)
 
-			Dim transformedData = model.Transform(dataView)
+			' STEP 6: Save/persist the trained model to a .ZIP file
+			mlContext.Model.Save(trainedModel, dataView.Schema, ModelPath)
+
+			Console.WriteLine("The model is saved to {0}", ModelPath)
+			Console.WriteLine("")
+		End Sub
+
+		Public Shared Sub DetectAnomalies(mlContext As MLContext, dataView As IDataView)
+			Dim modelInputSchema As Object
+			Dim trainedModel As ITransformer = mlContext.Model.Load(ModelPath, modelInputSchema)
+
+			Dim transformedData = trainedModel.Transform(dataView)
 
 			' Getting the data of the newly created column as an IEnumerable
-			Dim predictionColumn As IEnumerable(Of SpikePrediction) = ml.Data.CreateEnumerable(Of SpikePrediction)(transformedData, False)
+			Dim predictions As IEnumerable(Of SpikePrediction) = mlContext.Data.CreateEnumerable(Of SpikePrediction)(transformedData, False)
 
-			Dim colCDN = dataView.GetColumn(Of Single)(ml, "ConsumptionDiffNormalized").ToArray()
-			Dim colTime = dataView.GetColumn(Of DateTime)(ml, "time").ToArray()
+			Dim colCDN = dataView.GetColumn(Of Single)("ConsumptionDiffNormalized").ToArray()
+			Dim colTime = dataView.GetColumn(Of DateTime)("time").ToArray()
 
 			' Output the input data and predictions
-			Console.WriteLine($"{outputColumnName} column obtained post-transformation.")
+			Console.WriteLine("======Displaying anomalies in the Power meter data=========")
 			Console.WriteLine("Date              " & vbTab & "ReadingDiff" & vbTab & "Alert" & vbTab & "Score" & vbTab & "P-Value")
 
 			Dim i As Integer = 0
-			For Each p In predictionColumn
+			For Each p In predictions
 				If p.Prediction(0) = 1 Then
 					Console.BackgroundColor = ConsoleColor.DarkYellow
 					Console.ForegroundColor = ConsoleColor.Black
@@ -86,5 +82,14 @@ Namespace myApp
 				i += 1
 			Next p
 		End Sub
+
+		Public Shared Function GetAbsolutePath(relativeDatasetPath As String) As String
+			Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
+			Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
+
+			Dim fullPath As String = Path.Combine(assemblyFolderPath, relativeDatasetPath)
+
+			Return fullPath
+		End Function
 	End Class
 End Namespace

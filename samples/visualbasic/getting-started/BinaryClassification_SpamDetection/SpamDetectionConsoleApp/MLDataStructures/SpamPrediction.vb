@@ -3,9 +3,6 @@
 Namespace SpamDetectionConsoleApp.MLDataStructures
 	Friend Class SpamPrediction
 		<ColumnName("PredictedLabel")>
-		Public Property isSpam As Boolean
-
-		Public Property Score As Single
-		Public Property Probability As Single
+		Public Property isSpam As String
 	End Class
 End Namespace

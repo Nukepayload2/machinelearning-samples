@@ -1,13 +1,17 @@
-﻿Namespace Clustering_Iris.DataStructures
-    Public Class IrisData
-        Public Label As Single
+﻿Imports System
+Imports System.Collections.Generic
+Imports System.Text
 
-        Public SepalLength As Single
+Namespace Clustering_Iris.DataStructures
+	Public Class IrisData
+		Public Label As Single
 
-        Public SepalWidth As Single
+		Public SepalLength As Single
 
-        Public PetalLength As Single
+		Public SepalWidth As Single
 
-        Public PetalWidth As Single
-    End Class
+		Public PetalLength As Single
+
+		Public PetalWidth As Single
+	End Class
 End Namespace

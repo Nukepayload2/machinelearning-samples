@@ -12,13 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="assets\output\.gitignore" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,7 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
+    <PackageReference Include="Microsoft.ML.FastTree" Version="$(MicrosoftMLVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="assets\output\" />
+    <Folder Include="Common\" />
   </ItemGroup>
 
   <ItemGroup>

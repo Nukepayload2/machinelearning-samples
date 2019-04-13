@@ -27,12 +27,10 @@ Namespace GitHubLabeler
 
             'Load model from file
 
-            Using stream = New FileStream(_modelPath, System.IO.FileMode.Open, FileAccess.Read, FileShare.Read)
-                _trainedModel = _mlContext.Model.Load(stream)
-            End Using
+            _trainedModel = _mlContext.Model.Load(_modelPath, Nothing)
 
             ' Create prediction engine related to the loaded trained model
-            _predEngine = _trainedModel.CreatePredictionEngine(Of GitHubIssue, GitHubIssuePrediction)(_mlContext)
+            _predEngine = _mlContext.Model.CreatePredictionEngine(Of GitHubIssue, GitHubIssuePrediction)(_trainedModel)
 
             'Configure Client to access a GitHub repo
             If accessToken <> String.Empty Then

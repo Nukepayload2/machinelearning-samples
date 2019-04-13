@@ -12,8 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\..\..\common\ConsoleHelper.vb" Link="Common\ConsoleHelper.vb" />
     <Compile Include="..\CustomerSegmentation.Train\DataStructures\ClusteringPrediction.vb" Link="DataStructures\ClusteringPrediction.vb" />
     <Compile Include="..\CustomerSegmentation.Train\DataStructures\DataHelpers.vb" Link="DataStructures\DataHelpers.vb" />

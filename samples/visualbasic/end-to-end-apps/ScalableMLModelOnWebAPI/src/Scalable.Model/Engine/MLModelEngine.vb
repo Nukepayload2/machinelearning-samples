@@ -26,12 +26,10 @@ Namespace Scalable.Model.Engine
 			'Create the MLContext object to use under the scope of this class 
 			_mlContext = New MLContext
 
-			'Load the ProductSalesForecast model from the .ZIP file
-			Using fileStream = File.OpenRead(modelFilePathName)
-				_mlModel = _mlContext.Model.Load(fileStream)
-			End Using
+            'Load the ProductSalesForecast model from the .ZIP file
+            _mlModel = _mlContext.Model.Load(modelFilePathName, Nothing)
 
-			_maxObjectsRetained = maxObjectsRetained
+            _maxObjectsRetained = maxObjectsRetained
 
 			'Create PredictionEngine Object Pool
 			_predictionEnginePool = CreatePredictionEngineObjectPool()

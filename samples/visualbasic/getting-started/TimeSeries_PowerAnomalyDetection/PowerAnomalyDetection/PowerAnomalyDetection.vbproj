@@ -7,16 +7,17 @@
     <OptionCompare>Binary</OptionCompare>
     <OptionStrict>Off</OptionStrict>
     <OptionInfer>On</OptionInfer>
+    <RootNamespace />
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.DataView" Version="0.11.0" />
-    <PackageReference Include="Microsoft.ML" Version="0.11.0" />
-    <PackageReference Include="Microsoft.ML.TimeSeries" Version="0.11.0" />
+    <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
+    <PackageReference Include="Microsoft.ML.TimeSeries" Version="0.12.0-preview" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Data\" />
+    <Folder Include="MLModels\" />
   </ItemGroup>
 
 </Project>

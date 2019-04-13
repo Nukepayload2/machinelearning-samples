@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\common\ConsoleHelper.vb" Link="Common\ConsoleHelper.vb" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Data\optdigits-train.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -21,12 +25,13 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-<ItemGroup>
-    <Compile Include="..\..\..\common\ConsoleHelper.vb" Link="Common\ConsoleHelper.vb" />
-</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\" />
   </ItemGroup>
 
 </Project>

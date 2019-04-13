@@ -34,7 +34,7 @@ Namespace Common
 
             'Load the ProductSalesForecast model from the .ZIP file
             Using fileStream = File.OpenRead(modelFilePathName)
-                _model = mlContext.Model.Load(fileStream)
+                _model = mlContext.Model.Load(fileStream, Nothing) ' out var modelInputSchema
             End Using
 
             _minPredictionEngineObjectsInPool = minPredictionEngineObjectsInPool
@@ -74,7 +74,7 @@ Namespace Common
                                      Dim watch = System.Diagnostics.Stopwatch.StartNew()
 
                                      'Make PredictionEngine
-                                     Dim predEngine = _model.CreatePredictionEngine(Of TData, TPrediction)(_mlContext)
+                                     Dim predEngine = _mlContext.Model.CreatePredictionEngine(Of TData, TPrediction)(_mlContext)
 
                                      'Stop measuring time
                                      watch.Stop()

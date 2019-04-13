@@ -1,20 +1,22 @@
-﻿Namespace ImageClassification.ImageData
-    Public Class ImageNetPrediction
-        Public Score() As Single
+﻿Imports System
 
-        Public PredictedLabelValue As String
-    End Class
+Namespace ImageClassification.ImageData
+	Public Class ImageNetPrediction
+		Public Score() As Single
 
-    Public Class ImageNetWithLabelPrediction
-        Inherits ImageNetPrediction
+		Public PredictedLabelValue As String
+	End Class
 
-        Public Sub New(pred As ImageNetPrediction, label As String)
-            Me.Label = label
-            Score = pred.Score
-            PredictedLabelValue = pred.PredictedLabelValue
-        End Sub
+	Public Class ImageNetWithLabelPrediction
+		Inherits ImageNetPrediction
 
-        Public Label As String
-    End Class
+		Public Sub New(pred As ImageNetPrediction, label As String)
+			Me.Label = label
+			Score = pred.Score
+			PredictedLabelValue = pred.PredictedLabelValue
+		End Sub
+
+		Public Label As String
+	End Class
 
 End Namespace

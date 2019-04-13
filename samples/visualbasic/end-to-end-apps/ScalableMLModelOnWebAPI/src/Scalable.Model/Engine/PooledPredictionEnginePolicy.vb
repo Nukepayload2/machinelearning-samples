@@ -16,7 +16,7 @@ Namespace Scalable.Model.Engine
             ' Measuring CreatePredictionengine() time
             Dim watch = Stopwatch.StartNew()
 
-            Dim predictionEngine = _model.CreatePredictionEngine(Of TData, TPrediction)(_mlContext)
+            Dim predictionEngine = _mlContext.Model.CreatePredictionEngine(Of TData, TPrediction)(_model)
 
             watch.Stop()
             Dim elapsedMs As Long = watch.ElapsedMilliseconds
