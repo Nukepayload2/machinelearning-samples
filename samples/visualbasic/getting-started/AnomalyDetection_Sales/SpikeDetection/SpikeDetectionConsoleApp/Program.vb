@@ -1,17 +1,17 @@
 ﻿Imports System
 Imports Microsoft.ML
-Imports ShampooSales.DataStructures
 Imports System.IO
+Imports SpikeDetection.DataStructures
 
-Namespace ShampooSales
+Namespace SpikeDetection
 	Friend Module Program
 		Private BaseDatasetsRelativePath As String = "../../../../Data"
-		Private DatasetRelativePath As String = $"{BaseDatasetsRelativePath}/shampoo-sales.csv"
+		Private DatasetRelativePath As String = $"{BaseDatasetsRelativePath}/product-sales.csv"
 
 		Private DatasetPath As String = GetAbsolutePath(DatasetRelativePath)
 
 		Private BaseModelsRelativePath As String = "../../../../MLModels"
-		Private ModelRelativePath As String = $"{BaseModelsRelativePath}/ShampooSalesModel.zip"
+		Private ModelRelativePath As String = $"{BaseModelsRelativePath}/ProductSalesModel.zip"
 
 		Private ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
@@ -23,7 +23,7 @@ Namespace ShampooSales
 			Const size As Integer = 36
 
 			'STEP 1: Common data loading configuration
-			Dim dataView As IDataView = mlcontext.Data.LoadFromTextFile(Of ShampooSalesData)(path:= DatasetPath, hasHeader:= True, separatorChar:= ","c)
+			Dim dataView As IDataView = mlcontext.Data.LoadFromTextFile(Of ProductSalesData)(path:= DatasetPath, hasHeader:= True, separatorChar:= ","c)
 
 			'To detech temporay changes in the pattern
 			DetectSpike(mlcontext,size,dataView)
@@ -40,7 +40,7 @@ Namespace ShampooSales
 		   Console.WriteLine("Detect temporary changes in pattern")
 
 			'STEP 2: Set the training algorithm    
-			Dim trainingPipeLine = mlcontext.Transforms.DetectIidSpike(outputColumnName:= NameOf(ShampooSalesPrediction.Prediction), inputColumnName:= NameOf(ShampooSalesData.numSales),confidence:= 95, pvalueHistoryLength:= size \ 4)
+			Dim trainingPipeLine = mlcontext.Transforms.DetectIidSpike(outputColumnName:= NameOf(ProductSalesPrediction.Prediction), inputColumnName:= NameOf(ProductSalesData.numSales),confidence:= 95, pvalueHistoryLength:= size \ 4)
 
 			'STEP 3:Train the model by fitting the dataview
 			Console.WriteLine("=============== Training the model using Spike Detection algorithm ===============")
@@ -49,7 +49,7 @@ Namespace ShampooSales
 
 			'Apply data transformation to create predictions.
 			Dim transformedData As IDataView = trainedModel.Transform(dataView)
-			Dim predictions = mlcontext.Data.CreateEnumerable(Of ShampooSalesPrediction)(transformedData, reuseRowObject:= False)
+			Dim predictions = mlcontext.Data.CreateEnumerable(Of ProductSalesPrediction)(transformedData, reuseRowObject:= False)
 
 			Console.WriteLine("Alert" & vbTab & "Score" & vbTab & "P-Value")
 			For Each p In predictions
@@ -67,7 +67,7 @@ Namespace ShampooSales
 		  Console.WriteLine("Detect Persistent changes in pattern")
 
 		  'STEP 2: Set the training algorithm    
-		  Dim trainingPipeLine = mlcontext.Transforms.DetectIidChangePoint(outputColumnName:= NameOf(ShampooSalesPrediction.Prediction), inputColumnName:= NameOf(ShampooSalesData.numSales), confidence:= 95, changeHistoryLength:= size \ 4)
+		  Dim trainingPipeLine = mlcontext.Transforms.DetectIidChangePoint(outputColumnName:= NameOf(ProductSalesPrediction.Prediction), inputColumnName:= NameOf(ProductSalesData.numSales), confidence:= 95, changeHistoryLength:= size \ 4)
 
 		  'STEP 3:Train the model by fitting the dataview
 		  Console.WriteLine("=============== Training the model Using Change Point Detection Algorithm===============")
@@ -76,9 +76,9 @@ Namespace ShampooSales
 
 		  'Apply data transformation to create predictions.
 		  Dim transformedData As IDataView = trainedModel.Transform(dataView)
-		  Dim predictions = mlcontext.Data.CreateEnumerable(Of ShampooSalesPrediction)(transformedData, reuseRowObject:= False)
+		  Dim predictions = mlcontext.Data.CreateEnumerable(Of ProductSalesPrediction)(transformedData, reuseRowObject:= False)
 
-		  Console.WriteLine($"{NameOf(ShampooSalesPrediction.Prediction)} column obtained post-transformation.")
+		  Console.WriteLine($"{NameOf(ProductSalesPrediction.Prediction)} column obtained post-transformation.")
 		  Console.WriteLine("Alert" & vbTab & "Score" & vbTab & "P-Value" & vbTab & "Martingale value")
 
 		  For Each p In predictions

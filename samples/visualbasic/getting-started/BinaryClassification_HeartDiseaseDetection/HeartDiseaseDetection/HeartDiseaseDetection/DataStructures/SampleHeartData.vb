@@ -2,7 +2,7 @@
 
 Namespace HeartDiseasePredictionConsoleApp.DataStructures
 	Public Class HeartSampleData
-		Friend Shared ReadOnly heartDatas As New List(Of HeartData) From {
+		Friend Shared ReadOnly heartDataList As New List(Of HeartData) From {
 			New HeartData With {
 				.Age = 36.0F,
 				.Sex = 1.0F,

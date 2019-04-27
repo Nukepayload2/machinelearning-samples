@@ -1,7 +1,7 @@
 ﻿Imports Microsoft.ML.Data
 
-Namespace ShampooSales.DataStructures
-	Public Class ShampooSalesPrediction
+Namespace SpikeDetection.DataStructures
+	Public Class ProductSalesPrediction
 		'vector to hold alert,score,p-value values
 		<VectorType(3)>
 		Public Property Prediction As Double()

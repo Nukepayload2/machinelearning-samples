@@ -2,8 +2,6 @@
 Imports System.IO
 Imports HeartDiseasePredictionConsoleApp.DataStructures
 Imports Microsoft.ML
-Imports Microsoft.ML.Data
-
 
 Namespace HeartDiseasePredictionConsoleApp
 	Public Class Program
@@ -31,14 +29,15 @@ Namespace HeartDiseasePredictionConsoleApp
 		End Sub
 
 		Private Shared Sub BuildTrainEvaluateAndSaveModel(mlContext As MLContext)
-
+			' STEP 1: Common data loading configuration
 			Dim trainingDataView = mlContext.Data.LoadFromTextFile(Of HeartData)(TrainDataPath, hasHeader:= True, separatorChar:= ";"c)
 			Dim testDataView = mlContext.Data.LoadFromTextFile(Of HeartData)(TestDataPath, hasHeader:= True, separatorChar:= ";"c)
 
+			' STEP 2: Concatenate the features and set the training algorithm
 			Dim pipeline = mlContext.Transforms.Concatenate("Features", "Age", "Sex", "Cp", "TrestBps", "Chol", "Fbs", "RestEcg", "Thalac", "Exang", "OldPeak", "Slope", "Ca", "Thal").Append(mlContext.BinaryClassification.Trainers.FastTree(labelColumnName:= "Label", featureColumnName:= "Features"))
 
 			Console.WriteLine("=============== Training the model ===============")
-			Dim trainedModel = pipeline.Fit(trainingDataView)
+			Dim trainedModel As ITransformer = pipeline.Fit(trainingDataView)
 			Console.WriteLine("")
 			Console.WriteLine("")
 			Console.WriteLine("=============== Finish the train model. Push Enter ===============")
@@ -52,7 +51,7 @@ Namespace HeartDiseasePredictionConsoleApp
 			Console.WriteLine("")
 			Console.WriteLine("")
 			Console.WriteLine($"************************************************************")
-			Console.WriteLine($"*       Metrics for {trainedModel.ToString()} binary classification model      ")
+			Console.WriteLine($"*       Metrics for {DirectCast(trainedModel, Object).ToString()} binary classification model      ")
 			Console.WriteLine($"*-----------------------------------------------------------")
 			Console.WriteLine($"*       Accuracy: {metrics.Accuracy:P2}")
 			Console.WriteLine($"*       Area Under Roc Curve:      {metrics.AreaUnderRocCurve:P2}")
@@ -80,9 +79,10 @@ Namespace HeartDiseasePredictionConsoleApp
 			Dim modelInputSchema As Object
 			Dim trainedModel As ITransformer = mlContext.Model.Load(ModelPath, modelInputSchema)
 
+			' Create prediction engine related to the loaded trained model
 			Dim predictionEngine = mlContext.Model.CreatePredictionEngine(Of HeartData, HeartPrediction)(trainedModel)
 
-			For Each heartData In HeartSampleData.heartDatas
+			For Each heartData In HeartSampleData.heartDataList
 				Dim prediction = predictionEngine.Predict(heartData)
 
 				Console.WriteLine($"=============== Single Prediction  ===============")

@@ -116,26 +116,26 @@ Namespace MulticlassClassification_Iris
 			'Score sample 1
 			Dim resultprediction1 = predEngine.Predict(SampleIrisData.Iris1)
 
-			Console.WriteLine($"Actual: setosa.     Predicted label and score: {IrisFlowers(labelsArray(0))}:      {resultprediction1.Score(0):0.####}")
-			Console.WriteLine($"                                           {IrisFlowers(labelsArray(1))}:  {resultprediction1.Score(1):0.####}")
-			Console.WriteLine($"                                           {IrisFlowers(labelsArray(2))}:   {resultprediction1.Score(2):0.####}")
-			Console.WriteLine()
+            Console.WriteLine($"Actual: setosa.     Predicted label and score: {IrisFlowers(labelsArray(0))}: {resultprediction1.Score(0):0.####}")
+            Console.WriteLine($"                                               {IrisFlowers(labelsArray(1))}: {resultprediction1.Score(1):0.####}")
+            Console.WriteLine($"                                               {IrisFlowers(labelsArray(2))}: {resultprediction1.Score(2):0.####}")
+            Console.WriteLine()
 
 			'Score sample 2
 			Dim resultprediction2 = predEngine.Predict(SampleIrisData.Iris2)
 
-			Console.WriteLine($"Actual: Virginica.     Predicted label and score: {IrisFlowers(labelsArray(0))}:      {resultprediction2.Score(0):0.####}")
-			Console.WriteLine($"                                           {IrisFlowers(labelsArray(1))}:  {resultprediction2.Score(1):0.####}")
-			Console.WriteLine($"                                           {IrisFlowers(labelsArray(2))}:   {resultprediction2.Score(2):0.####}")
-			Console.WriteLine()
+            Console.WriteLine($"Actual: Virginica.   Predicted label and score: {IrisFlowers(labelsArray(0))}: {resultprediction2.Score(0):0.####}")
+            Console.WriteLine($"                                                {IrisFlowers(labelsArray(1))}: {resultprediction2.Score(1):0.####}")
+            Console.WriteLine($"                                                {IrisFlowers(labelsArray(2))}: {resultprediction2.Score(2):0.####}")
+            Console.WriteLine()
 
 			'Score sample 3
 			Dim resultprediction3 = predEngine.Predict(SampleIrisData.Iris3)
 
-			Console.WriteLine($"Actual: Virginica.     Predicted label and score: {IrisFlowers(labelsArray(0))}:      {resultprediction3.Score(0):0.####}")
-			Console.WriteLine($"                                           {IrisFlowers(labelsArray(1))}:  {resultprediction3.Score(1):0.####}")
-			Console.WriteLine($"                                           {IrisFlowers(labelsArray(2))}:   {resultprediction3.Score(2):0.####}")
-			Console.WriteLine()
+            Console.WriteLine($"Actual: Versicolor.   Predicted label and score: {IrisFlowers(labelsArray(0))}: {resultprediction3.Score(0):0.####}")
+            Console.WriteLine($"                                                 {IrisFlowers(labelsArray(1))}: {resultprediction3.Score(1):0.####}")
+            Console.WriteLine($"                                                 {IrisFlowers(labelsArray(2))}: {resultprediction3.Score(2):0.####}")
+            Console.WriteLine()
 		End Sub
 
 		Public Function GetAbsolutePath(relativePath As String) As String

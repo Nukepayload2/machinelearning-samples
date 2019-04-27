@@ -1,8 +1,9 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.421
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeartDiseaseDetectionConsoleApp", "HeartDiseaseDetection\HeartDiseaseDetectionConsoleApp\HeartDiseaseDetectionConsoleApp.vbproj", "{0B5B3AC0-85F1-48A2-A50F-EFE1FA49B08F}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "HeartDiseaseDetection", "HeartDiseaseDetection\HeartDiseaseDetection\HeartDiseaseDetection.vbproj", "{E4500D44-2E33-408E-A09A-6B69E295EE9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0B5B3AC0-85F1-48A2-A50F-EFE1FA49B08F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0B5B3AC0-85F1-48A2-A50F-EFE1FA49B08F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0B5B3AC0-85F1-48A2-A50F-EFE1FA49B08F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0B5B3AC0-85F1-48A2-A50F-EFE1FA49B08F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4500D44-2E33-408E-A09A-6B69E295EE9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4500D44-2E33-408E-A09A-6B69E295EE9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4500D44-2E33-408E-A09A-6B69E295EE9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4500D44-2E33-408E-A09A-6B69E295EE9E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

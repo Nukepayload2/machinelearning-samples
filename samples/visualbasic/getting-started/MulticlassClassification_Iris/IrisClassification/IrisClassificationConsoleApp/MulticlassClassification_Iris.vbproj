@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\Data - VB\iris-test.txt" Link="Data\iris-test.txt" />
-    <Content Include="..\Data - VB\iris-train.txt" Link="Data\iris-train.txt" />
+    <Content Include="..\Data\iris-test.txt" Link="Data\iris-test.txt" />
+    <Content Include="..\Data\iris-train.txt" Link="Data\iris-train.txt" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 ﻿Imports Microsoft.ML.Data
 
-Namespace ShampooSales.DataStructures
-	Public Class ShampooSalesData
+Namespace SpikeDetection.DataStructures
+	Public Class ProductSalesData
 		<LoadColumn(0)>
 		Public Month As String
 
