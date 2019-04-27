@@ -10,13 +10,21 @@ Module Program
             Return
         End If
         Console.WriteLine("Coping markdown")
-        CopyFilesRecursive(rootDir:=sampleDir, fromDir:="csharp", toDir:="visualbasic", depth:=8, pattern:="*.md",
+        CopyCSharpToVB(sampleDir, "*.md")
+        Console.WriteLine("Coping license")
+        CopyCSharpToVB(sampleDir, "LICENSE")
+        Console.WriteLine("Coping txt")
+        CopyCSharpToVB(sampleDir, "*.txt")
+        Console.WriteLine("Finished")
+        Console.ReadKey()
+    End Sub
+
+    Private Sub CopyCSharpToVB(sampleDir As String, pattern As String)
+        CopyFilesRecursive(rootDir:=sampleDir, fromDir:="csharp", toDir:="visualbasic", depth:=8, pattern:=pattern,
                            copiedCallback:=
                            Sub(copyInfo As (src As String, dest As String))
                                Console.WriteLine($"Copied {copyInfo.src} to {copyInfo.dest}.")
                            End Sub)
-        Console.WriteLine("Finished")
-        Console.ReadKey()
     End Sub
 
     Private Sub CopyFilesRecursive(rootDir As String, fromDir As String, toDir As String, depth As Integer,
