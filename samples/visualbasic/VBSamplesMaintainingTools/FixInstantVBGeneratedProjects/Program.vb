@@ -18,16 +18,17 @@ Module Program
     End Sub
 
     Private Sub MergeDirectories(vbSampleFolder As DirectoryInfo)
-        Dim duplicateFolders = vbSampleFolder.GetDirectories("* - VB")
+        Dim duplicateFolders = vbSampleFolder.GetDirectories("* - VB", SearchOption.AllDirectories)
         For Each dupFolder In duplicateFolders
             Dim srcDirName = dupFolder.Name
+            Console.WriteLine("Merging " & dupFolder.FullName)
             Dim targetDirName = srcDirName.Substring(0, srcDirName.Length - " - VB".Length)
             Dim parentDir = dupFolder.Parent.FullName
             Dim targetDir = Path.Combine(parentDir, targetDirName)
             If Not Directory.Exists(targetDir) Then
                 Directory.CreateDirectory(targetDir)
             End If
-            MoveFilesRecursive(dupFolder.Name, targetDir)
+            MoveFilesRecursive(dupFolder.FullName, targetDir)
         Next
     End Sub
 
@@ -35,7 +36,6 @@ Module Program
         For Each fromFile In Directory.GetFiles(fullFromDir)
             Dim relativeFile As String = fromFile.Substring(fullFromDir.Length + 1)
             Dim destFile = Path.Combine(fullToDir, relativeFile)
-            Directory.CreateDirectory(destFile)
             If File.Exists(destFile) Then
                 File.Delete(destFile)
             End If
