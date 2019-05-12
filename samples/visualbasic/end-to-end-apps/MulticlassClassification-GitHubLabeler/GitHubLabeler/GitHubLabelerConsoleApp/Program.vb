@@ -33,33 +33,38 @@ Namespace GitHubLabeler
 			OVAAveragedPerceptronTrainer = 2
 		End Enum
 
-		Public Property Configuration As IConfiguration
-		Public Async Function Main(args() As String) As Task
-			SetupAppConfiguration()
+        Public Property Configuration As IConfiguration
 
-			'1. ChainedBuilderExtensions and Train the model
-			BuildAndTrainModel(DataSetLocation, ModelPath, MyTrainerStrategy.OVAAveragedPerceptronTrainer)
+        Sub Main()
+            MainAsync.GetAwaiter.GetResult()
+        End Sub
 
-			'2. Try/test to predict a label for a single hard-coded Issue
-			TestSingleLabelPrediction(ModelPath)
+        Public Async Function MainAsync() As Task
+            SetupAppConfiguration()
 
-			'3. Predict Issue Labels and apply into a real GitHub repo
-			' (Comment the next line if no real access to GitHub repo) 
-			Await PredictLabelsAndUpdateGitHub(ModelPath)
+            '1. ChainedBuilderExtensions and Train the model
+            BuildAndTrainModel(DataSetLocation, ModelPath, MyTrainerStrategy.OVAAveragedPerceptronTrainer)
 
-			Common.ConsoleHelper.ConsolePressAnyKey()
-		End Function
+            '2. Try/test to predict a label for a single hard-coded Issue
+            TestSingleLabelPrediction(ModelPath)
 
-		Public Sub BuildAndTrainModel(DataSetLocation As String, ModelPath As String, selectedStrategy As MyTrainerStrategy)
+            '3. Predict Issue Labels and apply into a real GitHub repo
+            ' (Comment the next line if no real access to GitHub repo) 
+            Await PredictLabelsAndUpdateGitHub(ModelPath)
+
+            Common.ConsoleHelper.ConsolePressAnyKey()
+        End Function
+
+        Public Sub BuildAndTrainModel(DataSetLocation As String, ModelPath As String, selectedStrategy As MyTrainerStrategy)
 			' Create MLContext to be shared across the model creation workflow objects 
 			' Set a random seed for repeatable/deterministic results across multiple trainings.
 			Dim mlContext = New MLContext(seed:= 1)
 
-			' STEP 1: Common data loading configuration
-			Dim trainingDataView = mlContext.Data.LoadFromTextFile(Of GitHubIssue)(DataSetLocation, hasHeader:= True, separatorChar:=ControlChars.Tab, allowSparse:= False)
+            ' STEP 1: Common data loading configuration
+            Dim trainingDataView = mlContext.Data.LoadFromTextFile(Of GitHubIssue)(DataSetLocation, hasHeader:=True, separatorChar:=vbTab, allowSparse:=False)
 
-			' STEP 2: Common data process configuration with pipeline data transformations
-			Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey(outputColumnName:= "Label",inputColumnName:=NameOf(GitHubIssue.Area)).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:= "TitleFeaturized",inputColumnName:=NameOf(GitHubIssue.Title))).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:= "DescriptionFeaturized", inputColumnName:= NameOf(GitHubIssue.Description))).Append(mlContext.Transforms.Concatenate(outputColumnName:="Features", "TitleFeaturized", "DescriptionFeaturized")).AppendCacheCheckpoint(mlContext)
+            ' STEP 2: Common data process configuration with pipeline data transformations
+            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey(outputColumnName:= "Label",inputColumnName:=NameOf(GitHubIssue.Area)).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:= "TitleFeaturized",inputColumnName:=NameOf(GitHubIssue.Title))).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:= "DescriptionFeaturized", inputColumnName:= NameOf(GitHubIssue.Description))).Append(mlContext.Transforms.Concatenate(outputColumnName:="Features", "TitleFeaturized", "DescriptionFeaturized")).AppendCacheCheckpoint(mlContext)
 							' Use in-memory cache for small/medium datasets to lower training time. 
 							' Do NOT use it (remove .AppendCacheCheckpoint()) when handling very large datasets.
 

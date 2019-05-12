@@ -17,17 +17,17 @@ Namespace movierecommender.Services
 
 		Public _activeprofileid As Integer = -1
 
-		Public Function GetProfileWatchedMovies(id As Integer) As List(Of (movieId As Integer, movieRating As Integer))
-			For Each Profile As Profile In _profile
-				If id = Profile.ProfileID Then
-					Return Profile.ProfileMovieRatings
-				End If
-			Next Profile
+        Public Function GetProfileWatchedMovies(id As Integer) As List(Of (movieId As Integer, movieRating As Integer)) Implements IProfileService.GetProfileWatchedMovies
+            For Each Profile As Profile In _profile
+                If id = Profile.ProfileID Then
+                    Return Profile.ProfileMovieRatings
+                End If
+            Next Profile
 
-			Return Nothing
-		End Function
+            Return Nothing
+        End Function
 
-		Public Function GetProfileByID(id As Integer) As Profile Implements IProfileService.GetProfileByID
+        Public Function GetProfileByID(id As Integer) As Profile Implements IProfileService.GetProfileByID
 			For Each Profile As Profile In _profile
 				If id = Profile.ProfileID Then
 					Return Profile

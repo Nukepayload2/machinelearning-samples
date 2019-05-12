@@ -34,17 +34,16 @@ Namespace CreditCardFraudDetection.Trainer
 			Dim trainingDataView As IDataView = mlContext.Data.LoadFromTextFile(Of TransactionObservation)(trainDataSetFilePath, separatorChar:= ","c, hasHeader:= True)
 			Dim testDataView As IDataView = mlContext.Data.LoadFromTextFile(Of TransactionObservation)(testDataSetFilePath, separatorChar:= ","c, hasHeader:= True)
 
-			' Train Model
-'INSTANT VB TODO TASK: VB has no equivalent to C# deconstruction declarations:
-			(ITransformer model, String trainerName) = TrainModel(mlContext, trainingDataView)
+            ' Train Model
+            With TrainModel(mlContext, trainingDataView)
+                ' Evaluate quality of Model
+                EvaluateModel(mlContext, .model, testDataView, .trainerName)
 
-			' Evaluate quality of Model
-			EvaluateModel(mlContext, model, testDataView, trainerName)
+                ' Save model
+                SaveModel(mlContext, .model, modelFilePath, trainingDataView.Schema)
+            End With
 
-			' Save model
-			SaveModel(mlContext, model, modelFilePath, trainingDataView.Schema)
-
-			Console.WriteLine("=============== Press any key ===============")
+            Console.WriteLine("=============== Press any key ===============")
 			Console.ReadKey()
 		End Sub
 

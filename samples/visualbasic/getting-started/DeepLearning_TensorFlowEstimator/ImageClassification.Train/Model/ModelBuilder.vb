@@ -57,10 +57,10 @@ Namespace ImageClassification.Model
 			Dim trainData = model.Transform(data)
 			Dim loadedModelOutputColumnNames = trainData.Schema.Where(Function(col) Not col.IsHidden).Select(Function(col) col.Name)
 			Dim trainData2 = mlContext.Data.CreateEnumerable(Of ImageNetPipeline)(trainData, False, True).ToList()
-			trainData2.ForEach(Function(pr) ConsoleWriteImagePrediction(pr.ImagePath,pr.PredictedLabelValue, pr.Score.Max()))
+            trainData2.ForEach(Sub(pr) ConsoleWriteImagePrediction(pr.ImagePath, pr.PredictedLabelValue, pr.Score.Max()))
 
-			' Get some performance metric on the model using training data            
-			Dim classificationContext = mlContext.MulticlassClassification
+            ' Get some performance metric on the model using training data            
+            Dim classificationContext = mlContext.MulticlassClassification
 			ConsoleWriteHeader("Classification metrics")
 			Dim metrics = classificationContext.Evaluate(trainData, labelColumnName:= LabelTokey, predictedLabelColumnName:= "PredictedLabel")
 			Console.WriteLine($"LogLoss is: {metrics.LogLoss}")

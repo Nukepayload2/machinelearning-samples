@@ -29,17 +29,17 @@ Namespace Clustering_Iris
 			'Create the MLContext to share across components for deterministic results
 			Dim mlContext As New MLContext(seed:= 1) 'Seed set to any number so you have a deterministic environment
 
-			' STEP 1: Common data loading configuration            
-			Dim fullData As IDataView = mlContext.Data.LoadFromTextFile(path:= DataPath, columns:= {
-				New TextLoader.Column("Label", DataKind.Single, 0),
-				New TextLoader.Column(NameOf(IrisData.SepalLength), DataKind.Single, 1),
-				New TextLoader.Column(NameOf(IrisData.SepalWidth), DataKind.Single, 2),
-				New TextLoader.Column(NameOf(IrisData.PetalLength), DataKind.Single, 3),
-				New TextLoader.Column(NameOf(IrisData.PetalWidth), DataKind.Single, 4)
-			}, hasHeader:=True, separatorChar:=ControlChars.Tab)
+            ' STEP 1: Common data loading configuration            
+            Dim fullData As IDataView = mlContext.Data.LoadFromTextFile(path:=DataPath, columns:={
+                New TextLoader.Column("Label", DataKind.Single, 0),
+                New TextLoader.Column(NameOf(IrisData.SepalLength), DataKind.Single, 1),
+                New TextLoader.Column(NameOf(IrisData.SepalWidth), DataKind.Single, 2),
+                New TextLoader.Column(NameOf(IrisData.PetalLength), DataKind.Single, 3),
+                New TextLoader.Column(NameOf(IrisData.PetalWidth), DataKind.Single, 4)
+            }, hasHeader:=True, separatorChar:=vbTab)
 
-			'Split dataset in two parts: TrainingDataset (80%) and TestDataset (20%)
-			Dim trainTestData As DataOperationsCatalog.TrainTestData = mlContext.Data.TrainTestSplit(fullData, testFraction:= 0.2)
+            'Split dataset in two parts: TrainingDataset (80%) and TestDataset (20%)
+            Dim trainTestData As DataOperationsCatalog.TrainTestData = mlContext.Data.TrainTestSplit(fullData, testFraction:= 0.2)
 			trainingDataView = trainTestData.TrainSet
 			testingDataView = trainTestData.TestSet
 

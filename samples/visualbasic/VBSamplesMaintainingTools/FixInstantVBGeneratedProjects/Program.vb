@@ -14,7 +14,21 @@ Module Program
         Dim vbSampleFolder As New DirectoryInfo(curDir)
         FixVBProjectFiles(vbSampleFolder)
         MergeDirectories(vbSampleFolder)
+        FixControlChars(vbSampleFolder)
         Console.WriteLine("Done")
+    End Sub
+
+    Private Sub FixControlChars(vbSampleFolder As DirectoryInfo)
+        ' ControlChars.Tab
+        Dim vbFiles = vbSampleFolder.GetFiles("*.vb", SearchOption.AllDirectories)
+        For Each vb In vbFiles
+            Dim content = File.ReadAllText(vb.FullName)
+            Dim newContent = content.Replace("ControlChars.Tab", "vbTab")
+            If content.Length <> newContent.Length Then
+                Console.WriteLine("Fix code file " & vb.FullName)
+                File.WriteAllText(vb.FullName, newContent)
+            End If
+        Next
     End Sub
 
     Private Sub MergeDirectories(vbSampleFolder As DirectoryInfo)
@@ -65,7 +79,7 @@ Module Program
         content = FixXmlFormat(content)
         content = RemoveDefaultImports(content)
         content = MergeDirectoryReference(content)
-        content = RemoveLangVersion(content)
+        content = ConvertLangVersion(content)
         content = EmptyRootNamespace(content)
         File.WriteAllText(fullName, content)
     End Sub
@@ -95,8 +109,9 @@ Module Program
         Return content
     End Function
 
-    Private Function RemoveLangVersion(content As String) As String
-        content = content.Replace("<LangVersion>7.2</LangVersion>", String.Empty)
+    Private Function ConvertLangVersion(content As String) As String
+        content = content.Replace("<LangVersion>7.2</LangVersion>", "<LangVersion>15.5</LangVersion>")
+        content = content.Replace("<LangVersion>7.1</LangVersion>", "<LangVersion>15.5</LangVersion>")
         Return content
     End Function
 

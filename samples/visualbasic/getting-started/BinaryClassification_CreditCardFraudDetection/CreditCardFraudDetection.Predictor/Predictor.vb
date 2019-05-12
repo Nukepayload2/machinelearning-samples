@@ -10,13 +10,16 @@ Namespace CreditCardFraudDetection.Predictor
 		Private ReadOnly _dasetFile As String
 
 		Public Sub New(modelfile As String, dasetFile As String)
-'INSTANT VB TODO TASK: Throw expressions are not converted by Instant VB:
-'ORIGINAL LINE: _modelfile = modelfile ?? throw new ArgumentNullException(nameof(modelfile));
-			_modelfile = If(modelfile, throw New ArgumentNullException(NameOf(modelfile)))
-'INSTANT VB TODO TASK: Throw expressions are not converted by Instant VB:
-'ORIGINAL LINE: _dasetFile = dasetFile ?? throw new ArgumentNullException(nameof(dasetFile));
-			_dasetFile = If(dasetFile, throw New ArgumentNullException(NameOf(dasetFile)))
-		End Sub
+            If String.IsNullOrEmpty(modelfile) Then
+                Throw New ArgumentException(NameOf(modelfile))
+            End If
+            If String.IsNullOrEmpty(dasetFile) Then
+                Throw New ArgumentException(NameOf(dasetFile))
+            End If
+
+            _modelfile = modelfile
+            _dasetFile = dasetFile
+        End Sub
 
 		Public Sub RunMultiplePredictions(numberOfPredictions As Integer)
 
@@ -31,9 +34,9 @@ Namespace CreditCardFraudDetection.Predictor
 			Dim model As ITransformer = mlContext.Model.Load(_modelfile, inputSchema)
 
 			Dim predictionEngine = mlContext.Model.CreatePredictionEngine(Of TransactionObservation, TransactionFraudPredictionWithContribution)(model)
-			Console.WriteLine($vbLf & " " & vbLf & " Test {numberOfPredictions} transactions, from the test datasource, that should be predicted as fraud (true):")
+            Console.WriteLine(vbLf & " " & vbLf & $" Test {numberOfPredictions} transactions, from the test datasource, that should be predicted as fraud (true):")
 
-			mlContext.Data.CreateEnumerable(Of TransactionObservation)(inputDataForPredictions, reuseRowObject:= False).Where(Function(x) x.Label = True).Take(numberOfPredictions).Select(Function(testData) testData).ToList().ForEach(Sub(testData)
+            mlContext.Data.CreateEnumerable(Of TransactionObservation)(inputDataForPredictions, reuseRowObject:= False).Where(Function(x) x.Label = True).Take(numberOfPredictions).Select(Function(testData) testData).ToList().ForEach(Sub(testData)
 										Console.WriteLine($"--- Transaction ---")
 										testData.PrintToConsole()
 										predictionEngine.Predict(testData).PrintToConsole()
@@ -41,9 +44,9 @@ Namespace CreditCardFraudDetection.Predictor
 			End Sub)
 
 
-			Console.WriteLine($vbLf & " " & vbLf & " Test {numberOfPredictions} transactions, from the test datasource, that should NOT be predicted as fraud (false):")
+            Console.WriteLine(vbLf & " " & vbLf & $" Test {numberOfPredictions} transactions, from the test datasource, that should NOT be predicted as fraud (false):")
 
-			mlContext.Data.CreateEnumerable(Of TransactionObservation)(inputDataForPredictions, reuseRowObject:= False).Where(Function(x) x.Label = False).Take(numberOfPredictions).ToList().ForEach(Sub(testData)
+            mlContext.Data.CreateEnumerable(Of TransactionObservation)(inputDataForPredictions, reuseRowObject:= False).Where(Function(x) x.Label = False).Take(numberOfPredictions).ToList().ForEach(Sub(testData)
 									   Console.WriteLine($"--- Transaction ---")
 									   testData.PrintToConsole()
 									   predictionEngine.Predict(testData).PrintToConsole(model.GetOutputSchema(inputDataForPredictions.Schema))

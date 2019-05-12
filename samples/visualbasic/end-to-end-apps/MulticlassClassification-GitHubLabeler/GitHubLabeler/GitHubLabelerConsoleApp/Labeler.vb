@@ -130,11 +130,11 @@ Namespace GitHubLabeler
 		' Label all issues that are not labeled yet
 		Public Async Function LabelAllNewIssuesInGitHubRepo() As Task
 			Dim newIssues = Await GetNewIssues()
-			For Each issue In newIssues.Where(Function(issue) Not issue.Labels.Any())
-				Dim label = PredictLabels(issue)
-				ApplyLabels(issue, label)
-			Next issue
-		End Function
+            For Each issue In newIssues.Where(Function(issue1) Not issue1.Labels.Any())
+                Dim label = PredictLabels(issue)
+                ApplyLabels(issue, label)
+            Next issue
+        End Function
 
 		Private Async Function GetNewIssues() As Task(Of IReadOnlyList(Of Issue))
 			Dim issueRequest = New RepositoryIssueRequest With {

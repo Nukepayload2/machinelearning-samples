@@ -82,9 +82,13 @@ Namespace ImageClassification.ModelScorer
 					.ImagePath = sample.ImagePath,
 					.Label = sample.Label
 				}
-'INSTANT VB TODO TASK: VB has no equivalent to the C# deconstruction assignments:
-				(imageData.PredictedLabel, imageData.Probability) = GetBestLabel(labels, probs)
-				imageData.ConsoleWrite()
+
+                With GetBestLabel(labels, probs)
+                    imageData.PredictedLabel = .Item1
+                    imageData.Probability = .Item2
+                End With
+
+                imageData.ConsoleWrite()
 				Yield imageData
 			Next sample
 		End Function
