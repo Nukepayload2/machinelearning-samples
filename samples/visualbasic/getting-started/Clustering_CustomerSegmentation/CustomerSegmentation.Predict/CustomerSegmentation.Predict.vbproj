@@ -1,16 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <LangVersion>latest</LangVersion>
     <OptionExplicit>On</OptionExplicit>
     <OptionCompare>Binary</OptionCompare>
     <OptionStrict>Off</OptionStrict>
     <OptionInfer>On</OptionInfer>
-    <RootNamespace />
+    <RootNamespace></RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\..\..\common\ConsoleHelper.vb" Link="Common\ConsoleHelper.vb" />
     <Compile Include="..\CustomerSegmentation.Train\DataStructures\ClusteringPrediction.vb" Link="DataStructures\ClusteringPrediction.vb" />
@@ -19,15 +16,12 @@
     <Compile Include="..\CustomerSegmentation.Train\DataStructures\PivotData.vb" Link="DataStructures\PivotData.vb" />
     <Compile Include="..\CustomerSegmentation.Train\DataStructures\Transaction.vb" Link="DataStructures\Transaction.vb" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
     <PackageReference Include="OxyPlot.Core" Version="1.0.0" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="DataStructures\" />
     <Folder Include="Common\" />
   </ItemGroup>
-
 </Project>

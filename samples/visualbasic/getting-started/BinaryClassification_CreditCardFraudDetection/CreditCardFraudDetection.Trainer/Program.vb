@@ -5,6 +5,7 @@ Imports System
 Imports Common
 Imports CreditCardFraudDetection.Common.DataModels
 Imports System.IO.Compression
+Imports Microsoft.ML.Trainers
 Imports Microsoft.ML.DataOperationsCatalog
 
 Namespace CreditCardFraudDetection.Trainer
@@ -33,15 +34,17 @@ Namespace CreditCardFraudDetection.Trainer
 			Dim trainingDataView As IDataView = mlContext.Data.LoadFromTextFile(Of TransactionObservation)(trainDataSetFilePath, separatorChar:= ","c, hasHeader:= True)
 			Dim testDataView As IDataView = mlContext.Data.LoadFromTextFile(Of TransactionObservation)(testDataSetFilePath, separatorChar:= ","c, hasHeader:= True)
 
-            ' Train Model
-            With TrainModel(mlContext, trainingDataView)
-                ' Evaluate quality of Model
-                EvaluateModel(mlContext, .model, testDataView, .trainerName)
-                ' Save model
-                SaveModel(mlContext, .model, modelFilePath, trainingDataView.Schema)
-            End With
+			' Train Model
+'INSTANT VB TODO TASK: VB has no equivalent to C# deconstruction declarations:
+			(ITransformer model, String trainerName) = TrainModel(mlContext, trainingDataView)
 
-            Console.WriteLine("=============== Press any key ===============")
+			' Evaluate quality of Model
+			EvaluateModel(mlContext, model, testDataView, trainerName)
+
+			' Save model
+			SaveModel(mlContext, model, modelFilePath, trainingDataView.Schema)
+
+			Console.WriteLine("=============== Press any key ===============")
 			Console.ReadKey()
 		End Sub
 
@@ -86,17 +89,21 @@ Namespace CreditCardFraudDetection.Trainer
 			ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, "Features", trainDataView, dataProcessPipeline, 1)
 
 			' Set the training algorithm
-			Dim trainer As IEstimator(Of ITransformer) = mlContext.BinaryClassification.Trainers.FastTree(labelColumnName:= NameOf(TransactionObservation.Label), featureColumnName:= "FeaturesNormalizedByMeanVar", numberOfLeaves:= 20, numberOfTrees:= 100, minimumExampleCountPerLeaf:= 10, learningRate:= 0.2)
+			Dim trainer = mlContext.BinaryClassification.Trainers.FastTree(labelColumnName:= NameOf(TransactionObservation.Label), featureColumnName:= "FeaturesNormalizedByMeanVar", numberOfLeaves:= 20, numberOfTrees:= 100, minimumExampleCountPerLeaf:= 10, learningRate:= 0.2)
 
-			Dim trainingPipeline As IEstimator(Of ITransformer) = dataProcessPipeline.Append(trainer)
+			Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
 			ConsoleHelper.ConsoleWriteHeader("=============== Training model ===============")
 
-			Dim model As ITransformer = trainingPipeline.Fit(trainDataView)
+			Dim model = trainingPipeline.Fit(trainDataView)
 
 			ConsoleHelper.ConsoleWriteHeader("=============== End of training process ===============")
 
-			Return (model, DirectCast(trainer, Object).ToString())
+			' Append feature contribution calculator in the pipeline. This will be used
+			' at prediction time for explainability. 
+			Dim fccPipeline = model.Append(mlContext.Transforms.CalculateFeatureContribution(model.LastTransformer).Fit(dataProcessPipeline.Fit(trainDataView).Transform(trainDataView)))
+
+			Return (fccPipeline, fccPipeline.ToString())
 
 		End Function
 
@@ -108,7 +115,6 @@ Namespace CreditCardFraudDetection.Trainer
 			Dim metrics = mlContext.BinaryClassification.Evaluate(data:= predictions, labelColumnName:= NameOf(TransactionObservation.Label), scoreColumnName:= "Score")
 
 			ConsoleHelper.PrintBinaryClassificationMetrics(trainerName, metrics)
-
 		End Sub
 
 		Public Shared Function GetAbsolutePath(relativePath As String) As String

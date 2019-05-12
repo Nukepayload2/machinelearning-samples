@@ -13,7 +13,7 @@ Namespace ObjectDetection
 		Public Label As String
 
 		Public Shared Function ReadFromCsv(file As String, folder As String) As IEnumerable(Of ImageNetData)
-			Return System.IO.File.ReadAllLines(file).Select(Function(x) x.Split(vbTab)).Select(Function(x) New ImageNetData With {
+			Return System.IO.File.ReadAllLines(file).Select(Function(x) x.Split(ControlChars.Tab)).Select(Function(x) New ImageNetData With {
 				.ImagePath = Path.Combine(folder, x(0)),
 				.Label = x(1)
 			})

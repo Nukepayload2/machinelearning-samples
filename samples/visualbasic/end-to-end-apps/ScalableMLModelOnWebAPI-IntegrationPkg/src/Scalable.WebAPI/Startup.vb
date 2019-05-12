@@ -9,8 +9,9 @@ Imports System.IO
 
 Namespace Scalable.WebAPI
 	Public Class Startup
-		Public Sub New(configuration As IConfiguration)
-			Me.Configuration = configuration
+'INSTANT VB NOTE: The variable configuration was renamed since Visual Basic does not handle local variables named the same as class members well:
+		Public Sub New(configuration_Renamed As IConfiguration)
+			Me.Configuration = configuration_Renamed
 		End Sub
 
 		Public ReadOnly Property Configuration As IConfiguration

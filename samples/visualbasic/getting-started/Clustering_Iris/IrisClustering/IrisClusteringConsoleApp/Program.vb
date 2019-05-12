@@ -36,7 +36,7 @@ Namespace Clustering_Iris
 				New TextLoader.Column(NameOf(IrisData.SepalWidth), DataKind.Single, 2),
 				New TextLoader.Column(NameOf(IrisData.PetalLength), DataKind.Single, 3),
 				New TextLoader.Column(NameOf(IrisData.PetalWidth), DataKind.Single, 4)
-			}, hasHeader:=True, separatorChar:=vbTab)
+			}, hasHeader:=True, separatorChar:=ControlChars.Tab)
 
 			'Split dataset in two parts: TrainingDataset (80%) and TestDataset (20%)
 			Dim trainTestData As DataOperationsCatalog.TrainTestData = mlContext.Data.TrainTestSplit(fullData, testFraction:= 0.2)

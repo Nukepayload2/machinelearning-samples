@@ -1,5 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -8,31 +7,25 @@
     <OptionCompare>Binary</OptionCompare>
     <OptionStrict>Off</OptionStrict>
     <OptionInfer>On</OptionInfer>
-    <RootNamespace />
+    <RootNamespace></RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="datasets\**" />
     <EmbeddedResource Remove="datasets\**" />
     <None Remove="datasets\**" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Include="..\..\..\..\common\ConsoleHelper.vb" Link="Common\ConsoleHelper.vb" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
     <PackageReference Include="PLplot" Version="5.13.7" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Data\" />
   </ItemGroup>
-
   <ItemGroup>
-    <None Include="..\Data - VB\taxi-fare-test.csv" Link="Data\taxi-fare-test.csv" />
-    <None Include="..\Data - VB\taxi-fare-train.csv" Link="Data\taxi-fare-train.csv" />
+    <None Include="..\Data\taxi-fare-test.csv" Link="Data\taxi-fare-test.csv" />
+    <None Include="..\Data\taxi-fare-train.csv" Link="Data\taxi-fare-train.csv" />
   </ItemGroup>
-
 </Project>

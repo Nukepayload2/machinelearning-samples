@@ -60,17 +60,9 @@ Namespace SentimentAnalysisConsoleApp
 			Dim trainer = mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(labelColumnName:= "Label", featureColumnName:= "Features")
 			Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
-			'Measure training time
-			Dim watch = System.Diagnostics.Stopwatch.StartNew()
-
 			' STEP 4: Train the model fitting to the DataSet
 			Console.WriteLine("=============== Training the model ===============")
 			Dim trainedModel As ITransformer = trainingPipeline.Fit(trainingData)
-
-			'Stop measuring time
-			watch.Stop()
-			Dim elapsedMs As Long = watch.ElapsedMilliseconds
-			Console.WriteLine($"***** Training time: {elapsedMs \ 1000} seconds *****")
 
 			' STEP 5: Evaluate the model and show accuracy stats
 			Console.WriteLine("===== Evaluating Model's accuracy with Test data =====")

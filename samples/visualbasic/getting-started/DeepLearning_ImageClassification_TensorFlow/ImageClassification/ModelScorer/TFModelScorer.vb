@@ -78,15 +78,13 @@ Namespace ImageClassification.ModelScorer
 
 			For Each sample In testData
 				Dim probs = model.Predict(sample).PredictedLabels
-                Dim imageData = New ImageNetDataProbability With {
-                    .ImagePath = sample.ImagePath,
-                    .Label = sample.Label
-                }
-                With GetBestLabel(labels, probs)
-                    imageData.PredictedLabel = .Item1
-                    imageData.Probability = .Item2
-                End With
-                imageData.ConsoleWrite()
+				Dim imageData = New ImageNetDataProbability With {
+					.ImagePath = sample.ImagePath,
+					.Label = sample.Label
+				}
+'INSTANT VB TODO TASK: VB has no equivalent to the C# deconstruction assignments:
+				(imageData.PredictedLabel, imageData.Probability) = GetBestLabel(labels, probs)
+				imageData.ConsoleWrite()
 				Yield imageData
 			Next sample
 		End Function

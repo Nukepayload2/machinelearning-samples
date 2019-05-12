@@ -36,13 +36,13 @@ Namespace BikeSharingDemand
 			Common.ConsoleHelper.PeekDataViewInConsole(mlContext, trainingDataView, dataProcessPipeline, 10)
 			Common.ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, "Features", trainingDataView, dataProcessPipeline, 10)
 
-            ' Definition of regression trainers/algorithms to use
-            'var regressionLearners = new (string name, IEstimator<ITransformer> value)[]
-            Dim regressionLearners As (name As String, value As IEstimator(Of ITransformer))() = {("FastTree", mlContext.Regression.Trainers.FastTree()), ("Poisson", mlContext.Regression.Trainers.LbfgsPoissonRegression()), ("SDCA", mlContext.Regression.Trainers.Sdca()), ("FastTreeTweedie", mlContext.Regression.Trainers.FastTreeTweedie())}
+			' Definition of regression trainers/algorithms to use
+			'var regressionLearners = new (string name, IEstimator<ITransformer> value)[]
+			(String name, IEstimator(Of ITransformer) value)() regressionLearners = { ("FastTree", mlContext.Regression.Trainers.FastTree()), ("Poisson", mlContext.Regression.Trainers.LbfgsPoissonRegression()), ("SDCA", mlContext.Regression.Trainers.Sdca()), ("FastTreeTweedie", mlContext.Regression.Trainers.FastTreeTweedie())}
 
-            ' 3. Phase for Training, Evaluation and model file persistence
-            ' Per each regression trainer: Train, Evaluate, and Save a different model
-            For Each trainer In regressionLearners
+			' 3. Phase for Training, Evaluation and model file persistence
+			' Per each regression trainer: Train, Evaluate, and Save a different model
+			For Each trainer In regressionLearners
 				Console.WriteLine("=============== Training the current model ===============")
 				Dim trainingPipeline = dataProcessPipeline.Append(trainer.value)
 				Dim trainedModel = trainingPipeline.Fit(trainingDataView)
@@ -67,10 +67,11 @@ Namespace BikeSharingDemand
 				'Load current model from .ZIP file
 				Dim modelRelativeLocation As String = $"{ModelsLocation}/{learner.name}Model.zip"
 				Dim modelPath As String = GetAbsolutePath(modelRelativeLocation)
-                Dim trainedModel As ITransformer = mlContext.Model.Load(modelPath, Nothing)
+				Dim modelInputSchema As Object
+				Dim trainedModel As ITransformer = mlContext.Model.Load(modelPath, modelInputSchema)
 
-                ' Create prediction engine related to the loaded trained model
-                Dim predEngine = mlContext.Model.CreatePredictionEngine(Of DemandObservation, DemandPrediction)(trainedModel)
+				' Create prediction engine related to the loaded trained model
+				Dim predEngine = mlContext.Model.CreatePredictionEngine(Of DemandObservation, DemandPrediction)(trainedModel)
 
 				Console.WriteLine($"================== Visualize/test 10 predictions for model {learner.name}Model.zip ==================")
 				'Visualize 10 tests comparing prediction with actual/observed values from the test dataset

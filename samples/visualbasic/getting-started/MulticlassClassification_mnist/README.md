@@ -2,7 +2,7 @@
 
 | ML.NET version | API type          | Status                        | App Type    | Data type | Scenario            | ML Task                   | Algorithms                  |
 |----------------|-------------------|-------------------------------|-------------|-----------|---------------------|---------------------------|-----------------------------|
-| v1.0.0-preview           | Dynamic API | Up-to-date | Console app | .csv files | MNIST classification | Multi-class classification | Sdca Multi-class |
+| v1.0.0           | Dynamic API | Up-to-date | Console app | .csv files | MNIST classification | Multi-class classification | Sdca Multi-class |
 
 In this introductory sample, you'll see how to use [ML.NET](https://www.microsoft.com/net/learn/apps/machine-learning-and-ai/ml-dotnet) to classify handwritten digits from 0 to 9 using the MNIST dataset. This is a **multiclass classification** problem that we will solve using SDCA (Stochastic Dual Coordinate Ascent) algorithm.
 
@@ -18,7 +18,7 @@ the ML model that we will build will return probabilities for a given image of b
 
 Dataset is avaialble at UCI Machine Learning Repository i.e http://archive.ics.uci.edu/ml/datasets/Optical+Recognition+of+Handwritten+Digits
 
-Citation to Dataset is added [here](MNIST/Data/Datasets-Citation.txt)
+Citation to Dataset is added [here](./MNIST/Data/Datasets-Citation.txt)
 
 ## ML task - Multiclass classification
 The generalized problem of **multiclass classification** is to classify items into one of three or more classes. (Classifying items into one of the two classes is called **binary classification**).

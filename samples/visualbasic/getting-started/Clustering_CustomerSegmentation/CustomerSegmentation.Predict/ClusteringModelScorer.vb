@@ -28,8 +28,9 @@ Namespace CustomerSegmentation.Model
 		End Sub
 
 		Public Function LoadModel(modelPath As String) As ITransformer
-            _trainedModel = _mlContext.Model.Load(modelPath, Nothing)
-            Return _trainedModel
+			Dim modelInputSchema As Object
+			_trainedModel = _mlContext.Model.Load(modelPath, modelInputSchema)
+			Return _trainedModel
 		End Function
 
 		Public Sub CreateCustomerClusters()
@@ -81,8 +82,8 @@ Namespace CustomerSegmentation.Model
 					.Title = $"Cluster: {cluster}",
 					.RenderInLegend=True
 				}
-                Dim series = predictions.Where(Function(p) p.SelectedClusterId = cluster).Select(Function(p) New ScatterPoint(p.Location(0), p.Location(1))).ToArray()
-                scatter.Points.AddRange(series)
+				Dim series = predictions.Where(Function(p) p.SelectedClusterId Is cluster).Select(Function(p) New ScatterPoint(p.Location(0), p.Location(1))).ToArray()
+				scatter.Points.AddRange(series)
 				plot.Series.Add(scatter)
 			Next cluster
 

@@ -1,18 +1,19 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <RootNamespace />
+    <OptionExplicit>On</OptionExplicit>
+    <OptionCompare>Binary</OptionCompare>
+    <OptionStrict>Off</OptionStrict>
+    <OptionInfer>On</OptionInfer>
+    <RootNamespace></RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="MLModels\**" />
     <EmbeddedResource Remove="MLModels\**" />
     <None Remove="MLModels\**" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="Data\HeartTest.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -24,10 +25,8 @@
   <ItemGroup>
     <Folder Include="Data\" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
     <PackageReference Include="Microsoft.ML.FastTree" Version="$(MicrosoftMLVersion)" />
   </ItemGroup>
-
 </Project>

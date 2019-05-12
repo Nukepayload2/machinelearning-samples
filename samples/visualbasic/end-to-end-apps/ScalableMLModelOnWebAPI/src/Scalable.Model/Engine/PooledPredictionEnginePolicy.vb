@@ -12,24 +12,24 @@ Namespace Scalable.Model.Engine
 			_model = model
 		End Sub
 
-        Public Function Create() As PredictionEngine(Of TData, TPrediction) Implements IPooledObjectPolicy(Of PredictionEngine(Of TData, TPrediction)).Create
-            ' Measuring CreatePredictionengine() time
-            Dim watch = Stopwatch.StartNew()
+		Public Function Create() As PredictionEngine(Of TData, TPrediction)
+			' Measuring CreatePredictionengine() time
+			Dim watch = System.Diagnostics.Stopwatch.StartNew()
 
-            Dim predictionEngine = _mlContext.Model.CreatePredictionEngine(Of TData, TPrediction)(_model)
+			Dim predictionEngine = _mlContext.Model.CreatePredictionEngine(Of TData, TPrediction)(_model)
 
-            watch.Stop()
-            Dim elapsedMs As Long = watch.ElapsedMilliseconds
+			watch.Stop()
+			Dim elapsedMs As Long = watch.ElapsedMilliseconds
 
-            Return predictionEngine
-        End Function
+			Return predictionEngine
+		End Function
 
-        Public Function [Return](obj As PredictionEngine(Of TData, TPrediction)) As Boolean Implements IPooledObjectPolicy(Of PredictionEngine(Of TData, TPrediction)).Return
-            If obj Is Nothing Then
-                Return False
-            End If
+		Public Function [Return](obj As PredictionEngine(Of TData, TPrediction)) As Boolean
+			If obj Is Nothing Then
+				Return False
+			End If
 
-            Return True
-        End Function
-    End Class
+			Return True
+		End Function
+	End Class
 End Namespace

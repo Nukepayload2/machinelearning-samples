@@ -1,7 +1,6 @@
 ﻿Imports Microsoft.ML
 Imports Microsoft.Extensions.ObjectPool
 Imports System.IO
-Imports Microsoft.Data.DataView
 
 Namespace Scalable.Model.Engine
 	Public Class MLModelEngine(Of TData As Class, TPrediction As {Class, New})
@@ -26,10 +25,13 @@ Namespace Scalable.Model.Engine
 			'Create the MLContext object to use under the scope of this class 
 			_mlContext = New MLContext
 
-            'Load the ProductSalesForecast model from the .ZIP file
-            _mlModel = _mlContext.Model.Load(modelFilePathName, Nothing)
+			'Load the ProductSalesForecast model from the .ZIP file
+			Using fileStream = File.OpenRead(modelFilePathName)
+				Dim modelInputSchema As Object
+				_mlModel = _mlContext.Model.Load(fileStream, modelInputSchema)
+			End Using
 
-            _maxObjectsRetained = maxObjectsRetained
+			_maxObjectsRetained = maxObjectsRetained
 
 			'Create PredictionEngine Object Pool
 			_predictionEnginePool = CreatePredictionEngineObjectPool()
