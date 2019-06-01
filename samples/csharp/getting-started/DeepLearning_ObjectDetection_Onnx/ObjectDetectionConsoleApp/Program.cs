@@ -13,16 +13,15 @@ namespace ObjectDetection
             string assetsPath = GetAbsolutePath(assetsRelativePath);
             var modelFilePath = Path.Combine(assetsPath, "Model", "TinyYolo2_model.onnx");
             var imagesFolder = Path.Combine(assetsPath,"images");
-            var tagsTsv = Path.Combine(assetsPath,"images", "tags.tsv");
 
             try
             {
-                var modelScorer = new OnnxModelScorer(tagsTsv, imagesFolder, modelFilePath);
+                var modelScorer = new OnnxModelScorer(imagesFolder, modelFilePath);
                 modelScorer.Score();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.ToString());
             }
 
             Console.WriteLine("========= End of Process..Hit any Key ========");
