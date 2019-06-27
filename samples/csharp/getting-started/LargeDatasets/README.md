@@ -2,7 +2,7 @@
 
 | ML.NET version | API type          | Status                        | App Type    | Data type | Scenario            | ML Task                   | Algorithms                  |
 |----------------|-------------------|-------------------------------|-------------|-----------|---------------------|---------------------------|-----------------------------|
-| v1.0.0           | Dynamic API | Up-to-date | Console app | .txt files | Large datasets | Binary classification | FieldAwareFactorizationMachine |
+| v1.1.0           | Dynamic API | Up-to-date | Console app | .txt files | Large datasets | Binary classification | FieldAwareFactorizationMachine |
 
 In this introductory sample, you'll see how to use [ML.NET](https://www.microsoft.com/net/learn/apps/machine-learning-and-ai/ml-dotnet) to deal with **large datasets containing millions of records and thousands/millions of features**. ML.Net API can handle upto **1TB** of data. 
 
@@ -131,7 +131,7 @@ Note that ML.NET works with data with a lazy-load approach, so in reality no dat
 
 ### 3. Evaluate model
 
-We need this step to conclude how accurate our model operates on new data. To do so, the model from the previous step is run against another dataset that was not used in training (`wikipedia-detox-250-line-test.tsv`). This dataset also contains known sentiments. 
+We need this step to conclude how accurate our model operates on new data. To do so, the model from the previous step is run against another dataset that was not used in training (`testDataView`). This dataset also contains known sentiments. 
 
 `Evaluate()` compares the predicted values for the test dataset and produces various metrics, such as accuracy, you can explore.
 
