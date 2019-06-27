@@ -1,4 +1,4 @@
-﻿#Disable Warning BC649 ' We don't care about unsused fields here, because they are mapped with the input file.
+﻿#Disable Warning BC649 ' We don't care about unused fields here, because they are mapped with the input file.
 
 Imports Microsoft.ML.Data
 

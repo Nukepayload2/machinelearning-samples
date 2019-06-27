@@ -1,4 +1,4 @@
-Imports Microsoft.ML
+﻿Imports Microsoft.ML
 Imports System
 Imports System.Collections.Generic
 Imports System.Data
@@ -77,7 +77,7 @@ Namespace SpikeDetection.WinForms
 			Dim yAxis As String = ""
 
 			Dim dataset() As String = File.ReadAllLines(filePath)
-			dataCol = If(commaSeparatedRadio.Checked, dataset(0).Split(","c), dataset(0).Split(vbTab))
+			dataCol = If(commaSeparatedRadio.Checked, dataset(0).Split(","c), dataset(0).Split(ControlChars.Tab))
 
 			dataTable.Columns.Add(dataCol(0))
 			dataTable.Columns.Add(dataCol(1))
@@ -86,7 +86,7 @@ Namespace SpikeDetection.WinForms
 
 			For Each line As String In dataset.Skip(1)
 				' Add next row of data
-				dataCol = If(commaSeparatedRadio.Checked, line.Split(","c), line.Split(vbTab))
+				dataCol = If(commaSeparatedRadio.Checked, line.Split(","c), line.Split(ControlChars.Tab))
 				dataTable.Rows.Add(dataCol)
 
 				tup = New Tuple(Of String, String)(dataCol(0), dataCol(1))
@@ -129,8 +129,8 @@ Namespace SpikeDetection.WinForms
 			' Create MLContext to be shared across the model creation workflow objects 
 			Dim mlcontext = New MLContext
 
-			' STEP 1: Common data loading configuration for new data
-			Dim dataView As IDataView = mlcontext.Data.LoadFromTextFile(Of ProductSalesData)(path:= filePath, hasHeader:= True, separatorChar:=If(commaSeparatedRadio.Checked, ","c, vbTab))
+			' STEP 1: Load the data into IDataView.
+			Dim dataView As IDataView = mlcontext.Data.LoadFromTextFile(Of ProductSalesData)(path:= filePath, hasHeader:= True, separatorChar:=If(commaSeparatedRadio.Checked, ","c, ControlChars.Tab))
 
 			' Step 2: Load & use model
 			' Note -- The model is trained with the product-sales dataset in a separate console app (see AnomalyDetectionConsoleApp)            
@@ -162,10 +162,10 @@ Namespace SpikeDetection.WinForms
 
 		Private Sub loadAndUseModel(mlcontext As MLContext, dataView As IDataView, modelPath As String, type As String, color As Color)
 			Dim modelInputSchema As Object
-			Dim trainedModel As ITransformer = mlcontext.Model.Load(modelPath, modelInputSchema)
+			Dim tansformedModel As ITransformer = mlcontext.Model.Load(modelPath, modelInputSchema)
 
 			' Step 3: Apply data transformation to create predictions
-			Dim transformedData As IDataView = trainedModel.Transform(dataView)
+			Dim transformedData As IDataView = tansformedModel.Transform(dataView)
 			Dim predictions = mlcontext.Data.CreateEnumerable(Of ProductSalesPrediction)(transformedData, reuseRowObject:= False)
 
 			' Index key for dictionary (date, sales)

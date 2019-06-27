@@ -3,7 +3,9 @@ Imports Microsoft.AspNetCore.Hosting
 Imports Microsoft.AspNetCore.Mvc
 Imports Microsoft.Extensions.Configuration
 Imports Microsoft.Extensions.DependencyInjection
+Imports Microsoft.Extensions.ML
 Imports movierecommender.Services
+Imports MovieRecommender.DataStructures
 
 Namespace movierecommender
 	Public Class Startup
@@ -18,6 +20,7 @@ Namespace movierecommender
 		Public Sub ConfigureServices(services As IServiceCollection)
 			services.AddSingleton(Of IProfileService, ProfileService)()
 			services.AddSingleton(Of IMovieService, MovieService)()
+			services.AddPredictionEnginePool(Of MovieRating, MovieRatingPrediction)().FromFile(Configuration("MLModelPath"))
 
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
 		End Sub

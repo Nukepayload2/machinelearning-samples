@@ -35,11 +35,11 @@ Namespace GitHubLabeler
 
         Public Property Configuration As IConfiguration
 
-        Sub Main()
-            MainAsync.GetAwaiter.GetResult()
+        Sub Main(args() As String)
+            MainAsync(args).GetAwaiter.GetResult()
         End Sub
 
-        Public Async Function MainAsync() As Task
+        Public Async Function MainAsync(args() As String) As Task
             SetupAppConfiguration()
 
             '1. ChainedBuilderExtensions and Train the model

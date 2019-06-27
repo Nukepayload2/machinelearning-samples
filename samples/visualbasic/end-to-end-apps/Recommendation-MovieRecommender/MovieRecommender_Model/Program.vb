@@ -5,6 +5,7 @@ Imports System.Linq
 Imports Microsoft.ML.Data
 Imports Console = Colorful.Console
 Imports System.Drawing
+Imports System.Diagnostics
 
 Namespace MovieRecommenderModel
 '     This movie recommendation model is built on the http://files.grouplens.org/datasets/movielens/ml-latest-small.zip dataset
@@ -48,15 +49,14 @@ Namespace MovieRecommenderModel
 
 			'STEP 4: Transform your data by encoding the two features userId and movieID.
 			'        These encoded features will be provided as input to FieldAwareFactorizationMachine learner
-			Dim pipeline = mlContext.Transforms.Text.FeaturizeText(outputColumnName:= "userIdFeaturized", inputColumnName:= NameOf(MovieRating.userId)).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:= "movieIdFeaturized", inputColumnName:= NameOf(MovieRating.movieId)).Append(mlContext.Transforms.Concatenate("Features", "userIdFeaturized", "movieIdFeaturized")).Append(mlContext.BinaryClassification.Trainers.FieldAwareFactorizationMachine(New String() {"Features"})))
-
-			Dim preview = pipeline.Preview(trainingDataView, maxRows:= 10)
+			Dim dataProcessPipeline = mlContext.Transforms.Text.FeaturizeText(outputColumnName:= "userIdFeaturized", inputColumnName:= NameOf(MovieRating.userId)).Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName:= "movieIdFeaturized", inputColumnName:= NameOf(MovieRating.movieId)).Append(mlContext.Transforms.Concatenate("Features", "userIdFeaturized", "movieIdFeaturized")))
+			Common.ConsoleHelper.PeekDataViewInConsole(mlContext, trainingDataView, dataProcessPipeline, 10)
 
 			' STEP 5: Train the model fitting to the DataSet
 			Console.WriteLine("=============== Training the model ===============", color)
 			Console.WriteLine()
-
-			Dim model = pipeline.Fit(trainingDataView)
+			Dim trainingPipeLine = dataProcessPipeline.Append(mlContext.BinaryClassification.Trainers.FieldAwareFactorizationMachine(New String() { "Features" }))
+			Dim model = trainingPipeLine.Fit(trainingDataView)
 
 			'STEP 6: Evaluate the model performance
 			Console.WriteLine("=============== Evaluating the model ===============", color)

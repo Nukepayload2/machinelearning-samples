@@ -121,6 +121,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LargeDatasets.Solution", "L
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "LargeDatasets", "getting-started\LargeDatasets\LargeDatasets\LargeDatasets.vbproj", "{14CB76F9-C602-41EE-9AEF-0DDE1BDEECF2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TFImageClassififcationE2E.Solution", "TFImageClassififcationE2E.Solution", "{718303FC-3060-45AA-BC7D-B9A09F97F8D7}"
+EndProject
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "TensorFlowImageClassification", "end-to-end-apps\DeepLearning_ImageClassification_TensorFlow\TensorFlowImageClassification\TensorFlowImageClassification.vbproj", "{BC13E42D-09AF-431A-8C4B-A51A0F0D7080}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -401,6 +405,14 @@ Global
 		{14CB76F9-C602-41EE-9AEF-0DDE1BDEECF2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{14CB76F9-C602-41EE-9AEF-0DDE1BDEECF2}.Release|x64.ActiveCfg = Release|Any CPU
 		{14CB76F9-C602-41EE-9AEF-0DDE1BDEECF2}.Release|x64.Build.0 = Release|Any CPU
+		{BC13E42D-09AF-431A-8C4B-A51A0F0D7080}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC13E42D-09AF-431A-8C4B-A51A0F0D7080}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC13E42D-09AF-431A-8C4B-A51A0F0D7080}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BC13E42D-09AF-431A-8C4B-A51A0F0D7080}.Debug|x64.Build.0 = Debug|Any CPU
+		{BC13E42D-09AF-431A-8C4B-A51A0F0D7080}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC13E42D-09AF-431A-8C4B-A51A0F0D7080}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC13E42D-09AF-431A-8C4B-A51A0F0D7080}.Release|x64.ActiveCfg = Release|Any CPU
+		{BC13E42D-09AF-431A-8C4B-A51A0F0D7080}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -440,6 +452,7 @@ Global
 		{AC2A1A3F-84F6-4453-8E65-9327B576C8E1} = {417CA47F-36DE-4F6E-B53D-330D2B373ECF}
 		{76B467C8-C810-4CB4-A5AC-9E8982CA7A6B} = {9F966E75-9D04-4DCA-A1B9-5F3AE49A1347}
 		{14CB76F9-C602-41EE-9AEF-0DDE1BDEECF2} = {2A9629BC-D699-40D3-AB2A-A85A8A059F82}
+		{BC13E42D-09AF-431A-8C4B-A51A0F0D7080} = {718303FC-3060-45AA-BC7D-B9A09F97F8D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98369941-33DD-450C-A410-B9A91C8CDE91}

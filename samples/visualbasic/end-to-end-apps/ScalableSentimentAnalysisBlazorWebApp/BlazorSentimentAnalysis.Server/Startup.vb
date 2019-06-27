@@ -42,12 +42,11 @@ Namespace BlazorSentimentAnalysis.Server
 			End If
 
 			app.UseRouting()
-
+			app.UseClientSideBlazorFiles(Of Client.Startup)()
 			app.UseEndpoints(Sub(endpoints)
 				endpoints.MapDefaultControllerRoute()
+				endpoints.MapFallbackToClientSideBlazor(Of Client.Startup)("index.html")
 			End Sub)
-
-			app.UseBlazor(Of Client.Startup)()
 		End Sub
 	End Class
 End Namespace

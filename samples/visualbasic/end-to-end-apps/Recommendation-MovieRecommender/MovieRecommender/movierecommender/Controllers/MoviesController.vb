@@ -1,9 +1,11 @@
 ﻿Imports Microsoft.AspNetCore.Mvc
 Imports Microsoft.Extensions.Logging
+Imports Microsoft.Extensions.ML
 Imports Microsoft.Extensions.Options
 Imports Microsoft.ML
 Imports movierecommender.Models
 Imports movierecommender.Services
+Imports MovieRecommender.DataStructures
 Imports Newtonsoft.Json
 Imports System
 Imports System.Collections.Generic
@@ -19,13 +21,15 @@ Namespace movierecommender.Controllers
 		Private ReadOnly _profileService As IProfileService
 		Private ReadOnly _appSettings As AppSettings
 		Private ReadOnly _logger As ILogger(Of MoviesController)
+		Private ReadOnly _model As PredictionEnginePool(Of MovieRating, MovieRatingPrediction)
 
 'INSTANT VB NOTE: The parameter movieService was renamed since it may cause conflicts with calls to static members of the user-defined type with this name:
-		Public Sub New(logger As ILogger(Of MoviesController), appSettings As IOptions(Of AppSettings), movieService_Renamed As IMovieService, profileService As IProfileService)
+		Public Sub New(model As PredictionEnginePool(Of MovieRating, MovieRatingPrediction), logger As ILogger(Of MoviesController), appSettings As IOptions(Of AppSettings), movieService_Renamed As IMovieService, profileService As IProfileService)
 			_movieService = movieService_Renamed
 			_profileService = profileService
 			_logger = logger
 			_appSettings = appSettings.Value
+			_model = model
 		End Sub
 
 		Public Function Choose() As ActionResult
@@ -38,24 +42,18 @@ Namespace movierecommender.Controllers
 			' 1. Create the ML.NET environment and load the already trained model
 			Dim mlContext As MLContext = New MLContext
 
-			Dim modelInputSchema As Object
-			Dim trainedModel As ITransformer = mlContext.Model.Load(_movieService.GetModelPath(), modelInputSchema)
-
-			'2. Create a prediction function
-			Dim predictionEngine = mlContext.Model.CreatePredictionEngine(Of MovieRating, MovieRatingPrediction)(trainedModel)
-
 			Dim ratings As New List(Of (movieId As Integer, normalizedScore As Single))
 			Dim MovieRatings = _profileService.GetProfileWatchedMovies(id)
 			Dim WatchedMovies As New List(Of Movie)
 
-            For Each tmp As (movieId As Integer, movieRating As Integer) In MovieRatings
-                WatchedMovies.Add(_movieService.Get(tmp.movieId))
+            For Each rating In MovieRatings
+                WatchedMovies.Add(_movieService.Get(rating.movieId))
             Next
 
             Dim prediction As MovieRatingPrediction = Nothing
 			For Each movie In _movieService.GetTrendingMovies
 				' Call the Rating Prediction for each movie prediction
-				 prediction = predictionEngine.Predict(New MovieRating With {
+				 prediction = _model.Predict(New MovieRating With {
 					 .userId = id.ToString(),
 					 .movieId = movie.MovieID.ToString()
 				 })
@@ -93,8 +91,8 @@ Namespace movierecommender.Controllers
 			Dim MovieRatings = _profileService.GetProfileWatchedMovies(id)
 			Dim WatchedMovies As New List(Of Movie)
 
-            For Each tmp As (movieId As Integer, normalizedScore As Single) In MovieRatings
-                WatchedMovies.Add(_movieService.Get(tmp.movieId))
+            For Each item In MovieRatings
+                WatchedMovies.Add(_movieService.Get(item.movieId))
             Next
 
             ViewData("watchedmovies") = WatchedMovies
@@ -108,20 +106,6 @@ Namespace movierecommender.Controllers
 			Public Sub New(obj As Object)
 				MyBase.New(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json")
 			End Sub
-		End Class
-
-		Public Class MovieRating
-			Public userId As String
-
-			Public movieId As String
-
-			Public Label As Boolean
-		End Class
-
-		Public Class MovieRatingPrediction
-			Public Label As Boolean
-
-			Public Score As Single
 		End Class
 	End Class
 End Namespace

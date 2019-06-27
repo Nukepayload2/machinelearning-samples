@@ -24,7 +24,7 @@ Namespace eShopForecastModelsTrainer
 				CountryModelHelper.TrainAndSaveModel(mlContext, CountryDataPath)
 				CountryModelHelper.TestPrediction(mlContext)
 			Catch ex As Exception
-				ConsoleWriteException(ex.Message)
+				ConsoleWriteException(ex.ToString())
 			End Try
 			ConsolePressAnyKey()
 		End Sub
