@@ -87,7 +87,6 @@ Namespace ImageClassification.ModelScorer
                     imageData.PredictedLabel = .Item1
                     imageData.Probability = .Item2
                 End With
-
                 imageData.ConsoleWrite()
 				Yield imageData
 			Next sample

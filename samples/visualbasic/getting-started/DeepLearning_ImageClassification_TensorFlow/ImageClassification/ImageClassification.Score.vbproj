@@ -2,6 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>15.5</LangVersion>
     <OptionExplicit>On</OptionExplicit>
     <OptionCompare>Binary</OptionCompare>
     <OptionStrict>Off</OptionStrict>
@@ -14,6 +15,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
     <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="$(MicrosoftMLVersion)" />
-    <PackageReference Include="Microsoft.ML.TensorFlow" Version="0.12.0-preview" />
+    <PackageReference Include="Microsoft.ML.TensorFlow" Version="$(MicrosoftMLPreviewVersion)" />
   </ItemGroup>
 </Project>

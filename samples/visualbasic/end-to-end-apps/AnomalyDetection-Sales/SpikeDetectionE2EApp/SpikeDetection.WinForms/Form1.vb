@@ -1,4 +1,4 @@
-﻿Imports Microsoft.ML
+Imports Microsoft.ML
 Imports System
 Imports System.Collections.Generic
 Imports System.Data
@@ -77,7 +77,7 @@ Namespace SpikeDetection.WinForms
 			Dim yAxis As String = ""
 
 			Dim dataset() As String = File.ReadAllLines(filePath)
-			dataCol = If(commaSeparatedRadio.Checked, dataset(0).Split(","c), dataset(0).Split(ControlChars.Tab))
+			dataCol = If(commaSeparatedRadio.Checked, dataset(0).Split(","c), dataset(0).Split(vbTab))
 
 			dataTable.Columns.Add(dataCol(0))
 			dataTable.Columns.Add(dataCol(1))
@@ -86,7 +86,7 @@ Namespace SpikeDetection.WinForms
 
 			For Each line As String In dataset.Skip(1)
 				' Add next row of data
-				dataCol = If(commaSeparatedRadio.Checked, line.Split(","c), line.Split(ControlChars.Tab))
+				dataCol = If(commaSeparatedRadio.Checked, line.Split(","c), line.Split(vbTab))
 				dataTable.Rows.Add(dataCol)
 
 				tup = New Tuple(Of String, String)(dataCol(0), dataCol(1))
@@ -130,7 +130,7 @@ Namespace SpikeDetection.WinForms
 			Dim mlcontext = New MLContext
 
 			' STEP 1: Common data loading configuration for new data
-			Dim dataView As IDataView = mlcontext.Data.LoadFromTextFile(Of ProductSalesData)(path:= filePath, hasHeader:= True, separatorChar:=If(commaSeparatedRadio.Checked, ","c, ControlChars.Tab))
+			Dim dataView As IDataView = mlcontext.Data.LoadFromTextFile(Of ProductSalesData)(path:= filePath, hasHeader:= True, separatorChar:=If(commaSeparatedRadio.Checked, ","c, vbTab))
 
 			' Step 2: Load & use model
 			' Note -- The model is trained with the product-sales dataset in a separate console app (see AnomalyDetectionConsoleApp)            

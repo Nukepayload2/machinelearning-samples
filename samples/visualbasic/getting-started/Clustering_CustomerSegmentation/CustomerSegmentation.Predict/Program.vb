@@ -25,7 +25,7 @@ Namespace CustomerSegmentation
 
 				clusteringModelScorer.CreateCustomerClusters()
 			Catch ex As Exception
-				Common.ConsoleHelper.ConsoleWriteException(ex.Message)
+				Common.ConsoleHelper.ConsoleWriteException(ex.ToString())
 			End Try
 
 			Common.ConsoleHelper.ConsolePressAnyKey()

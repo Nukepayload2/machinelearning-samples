@@ -34,11 +34,11 @@ Namespace CustomerSegmentation
 				Dim dataProcessPipeline = mlContext.Transforms.ProjectToPrincipalComponents(outputColumnName:= "PCAFeatures", inputColumnName:= "Features", rank:= 2).Append(mlContext.Transforms.Categorical.OneHotEncoding(outputColumnName:= "LastNameKey", inputColumnName:= NameOf(PivotData.LastName), OneHotEncodingEstimator.OutputKind.Indicator))
 
 
-				' (Optional) Peek data in training DataView after applying the ProcessPipeline's transformations  
+				' (Optional) Peek data in training DataView after applying the ProcessPipeline's transformations
 				Common.ConsoleHelper.PeekDataViewInConsole(mlContext, pivotDataView, dataProcessPipeline, 10)
 				Common.ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, "Features", pivotDataView, dataProcessPipeline, 10)
 
-				'STEP 3: Create the training pipeline                
+				'STEP 3: Create the training pipeline
 				Dim trainer = mlContext.Clustering.Trainers.KMeans(featureColumnName:= "Features", numberOfClusters:= 3)
 				Dim trainingPipeline = dataProcessPipeline.Append(trainer)
 
@@ -58,7 +58,7 @@ Namespace CustomerSegmentation
 
 				Console.WriteLine("The model is saved to {0}", modelPath)
 			Catch ex As Exception
-				Common.ConsoleHelper.ConsoleWriteException(ex.Message)
+				Common.ConsoleHelper.ConsoleWriteException(ex.ToString())
 			End Try
 
 			Common.ConsoleHelper.ConsolePressAnyKey()

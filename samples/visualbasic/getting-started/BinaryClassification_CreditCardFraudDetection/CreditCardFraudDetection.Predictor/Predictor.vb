@@ -11,17 +11,15 @@ Namespace CreditCardFraudDetection.Predictor
 
 		Public Sub New(modelfile As String, dasetFile As String)
             If String.IsNullOrEmpty(modelfile) Then
-                Throw New ArgumentException(NameOf(modelfile))
-            End If
-            If String.IsNullOrEmpty(dasetFile) Then
-                Throw New ArgumentException(NameOf(dasetFile))
+                Throw New ArgumentNullException(NameOf(modelfile))
             End If
 
-            _modelfile = modelfile
-            _dasetFile = dasetFile
+            If String.IsNullOrEmpty(dasetFile) Then
+                Throw New ArgumentNullException(NameOf(dasetFile))
+            End If
         End Sub
 
-		Public Sub RunMultiplePredictions(numberOfPredictions As Integer)
+        Public Sub RunMultiplePredictions(numberOfPredictions As Integer)
 
 			Dim mlContext = New MLContext
 

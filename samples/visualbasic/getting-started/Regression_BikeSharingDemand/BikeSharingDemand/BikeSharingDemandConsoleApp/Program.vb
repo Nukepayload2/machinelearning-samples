@@ -38,12 +38,7 @@ Namespace BikeSharingDemand
 
             ' Definition of regression trainers/algorithms to use
             'var regressionLearners = new (string name, IEstimator<ITransformer> value)[]
-            Dim regressionLearners As (name As String, value As IEstimator(Of ITransformer))() = {
-                ("FastTree", mlContext.Regression.Trainers.FastTree()),
-                ("Poisson", mlContext.Regression.Trainers.LbfgsPoissonRegression()),
-                ("SDCA", mlContext.Regression.Trainers.Sdca()),
-                ("FastTreeTweedie", mlContext.Regression.Trainers.FastTreeTweedie())
-            }
+            Dim regressionLearners() As (name As String, value As IEstimator(Of ITransformer)) = {("FastTree", mlContext.Regression.Trainers.FastTree()), ("Poisson", mlContext.Regression.Trainers.LbfgsPoissonRegression()), ("SDCA", mlContext.Regression.Trainers.Sdca()), ("FastTreeTweedie", mlContext.Regression.Trainers.FastTreeTweedie())}
 
             ' 3. Phase for Training, Evaluation and model file persistence
             ' Per each regression trainer: Train, Evaluate, and Save a different model

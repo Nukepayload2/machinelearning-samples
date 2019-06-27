@@ -19,7 +19,7 @@ Namespace ImageClassification.Train
 				Dim modelBuilder = New ModelBuilder(tagsTsv, imagesFolder, inceptionPb, imageClassifierZip)
 				modelBuilder.BuildAndTrain()
 			Catch ex As Exception
-				ConsoleWriteException(ex.Message)
+				ConsoleWriteException(ex.ToString())
 			End Try
 
 			ConsolePressAnyKey()

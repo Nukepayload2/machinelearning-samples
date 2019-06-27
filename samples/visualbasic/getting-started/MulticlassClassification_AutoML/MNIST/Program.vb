@@ -62,7 +62,7 @@ Namespace MNIST
 				Dim trainedModel As ITransformer = bestRun.Model
 				Dim predictions = trainedModel.Transform(testData)
 				Dim metrics = mlContext.MulticlassClassification.Evaluate(data:=predictions, labelColumnName:= "Number", scoreColumnName:= "Score")
-				ConsoleHelper.PrintMulticlassClassificationMetrics_Renamed(bestRun.TrainerName, metrics)
+				ConsoleHelper.PrintMulticlassClassificationMetrics(bestRun.TrainerName, metrics)
 
 				' STEP 5: Save/persist the trained model to a .ZIP file
 				mlContext.Model.Save(trainedModel, trainData.Schema, ModelPath)

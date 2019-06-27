@@ -59,13 +59,13 @@ Namespace mnist
 				Dim predictions = trainedModel.Transform(testData)
 				Dim metrics = mlContext.MulticlassClassification.Evaluate(data:=predictions, labelColumnName:="Number", scoreColumnName:="Score")
 
-				Common.ConsoleHelper.PrintMultiClassClassificationMetrics(trainer.ToString(), metrics)
+                Common.ConsoleHelper.PrintMultiClassClassificationMetrics(trainer.ToString(), metrics)
 
-				mlContext.Model.Save(trainedModel, trainData.Schema, ModelPath)
+                mlContext.Model.Save(trainedModel, trainData.Schema, ModelPath)
 
 				Console.WriteLine("The model is saved to {0}", ModelPath)
 			Catch ex As Exception
-				Console.WriteLine(ex.Message)
+				Console.WriteLine(ex.ToString())
 				'return null;
 			End Try
 		End Sub

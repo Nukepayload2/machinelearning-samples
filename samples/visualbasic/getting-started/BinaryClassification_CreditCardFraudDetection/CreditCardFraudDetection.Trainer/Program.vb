@@ -35,10 +35,10 @@ Namespace CreditCardFraudDetection.Trainer
 			Dim testDataView As IDataView = mlContext.Data.LoadFromTextFile(Of TransactionObservation)(testDataSetFilePath, separatorChar:= ","c, hasHeader:= True)
 
             ' Train Model
+            'INSTANT VB TODO TASK: VB has no equivalent to C# deconstruction declarations:
             With TrainModel(mlContext, trainingDataView)
                 ' Evaluate quality of Model
                 EvaluateModel(mlContext, .model, testDataView, .trainerName)
-
                 ' Save model
                 SaveModel(mlContext, .model, modelFilePath, trainingDataView.Schema)
             End With

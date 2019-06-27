@@ -19,11 +19,11 @@ Module Program
     End Sub
 
     Private Sub FixControlChars(vbSampleFolder As DirectoryInfo)
-        ' ControlChars.Tab
+        ' vbTab
         Dim vbFiles = vbSampleFolder.GetFiles("*.vb", SearchOption.AllDirectories)
         For Each vb In vbFiles
             Dim content = File.ReadAllText(vb.FullName)
-            Dim newContent = content.Replace("ControlChars.Tab", "vbTab")
+            Dim newContent = content.Replace("vbTab", "vbTab")
             If content.Length <> newContent.Length Then
                 Console.WriteLine("Fix code file " & vb.FullName)
                 File.WriteAllText(vb.FullName, newContent)

@@ -18,7 +18,7 @@ Namespace ImageClassification.Predict
 				Dim modelScorer = New ModelScorer(tagsTsv, imagesFolder, imageClassifierZip)
 				modelScorer.ClassifyImages()
 			Catch ex As Exception
-				ConsoleWriteException(ex.Message)
+				ConsoleWriteException(ex.ToString())
 			End Try
 
 			ConsolePressAnyKey()

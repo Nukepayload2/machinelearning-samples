@@ -1,4 +1,4 @@
-﻿Imports System
+Imports System
 Imports System.IO
 Imports System.IO.Compression
 Imports System.Linq
@@ -40,12 +40,12 @@ Namespace SpamDetectionConsoleApp
 			' Set up the MLContext, which is a catalog of components in ML.NET.
 			Dim mlContext As MLContext = New MLContext
 
-            ' Specify the schema for spam data and read it into DataView.
-            Dim data = mlContext.Data.LoadFromTextFile(Of SpamInput)(path:=TrainDataPath, hasHeader:=True, separatorChar:=vbTab)
+			' Specify the schema for spam data and read it into DataView.
+			Dim data = mlContext.Data.LoadFromTextFile(Of SpamInput)(path:= TrainDataPath, hasHeader:= True, separatorChar:= vbTab)
 
-            ' Create the estimator which converts the text label to boolean, featurizes the text, and adds a linear trainer.
-            ' Data process configuration with pipeline data transformations 
-            Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey("Label", "Label").Append(mlContext.Transforms.Text.FeaturizeText("FeaturesText", New Microsoft.ML.Transforms.Text.TextFeaturizingEstimator.Options With {
+			' Create the estimator which converts the text label to boolean, featurizes the text, and adds a linear trainer.
+			' Data process configuration with pipeline data transformations 
+			Dim dataProcessPipeline = mlContext.Transforms.Conversion.MapValueToKey("Label", "Label").Append(mlContext.Transforms.Text.FeaturizeText("FeaturesText", New Microsoft.ML.Transforms.Text.TextFeaturizingEstimator.Options With {
 				.WordFeatureExtractor = New Microsoft.ML.Transforms.Text.WordBagEstimator.Options With {
 					.NgramLength = 2,
 					.UseAllLengths = True

@@ -7,40 +7,23 @@ Imports Microsoft.ML.DataOperationsCatalog
 
 Namespace SentimentAnalysisConsoleApp
 	Friend Module Program
-		Private ReadOnly Property AppPath As String
-			Get
-				Return Path.GetDirectoryName(Environment.GetCommandLineArgs()(0))
-			End Get
-		End Property
-
 		Private ReadOnly BaseDatasetsRelativePath As String = "../../../../Data"
 		Private ReadOnly DataRelativePath As String = $"{BaseDatasetsRelativePath}/wikiDetoxAnnotated40kRows.tsv"
 
-		Private DataPath As String = GetAbsolutePath(DataRelativePath)
+		Private ReadOnly DataPath As String = GetAbsolutePath(DataRelativePath)
 
 		Private ReadOnly BaseModelsRelativePath As String = "../../../../MLModels"
 		Private ReadOnly ModelRelativePath As String = $"{BaseModelsRelativePath}/SentimentModel.zip"
 
-		Private ModelPath As String = GetAbsolutePath(ModelRelativePath)
+		Private ReadOnly ModelPath As String = GetAbsolutePath(ModelRelativePath)
 
 		Sub Main(args() As String)
-			'Create MLContext to be shared across the model creation workflow objects 
-			'Set a random seed for repeatable/deterministic results across multiple trainings.
+'			#Region "try"
+			' Create MLContext to be shared across the model creation workflow objects 
+			' Set a random seed for repeatable/deterministic results across multiple trainings.
 			Dim mlContext = New MLContext(seed:= 1)
 
-			' Create, Train, Evaluate and Save a model
-			BuildTrainEvaluateAndSaveModel(mlContext)
-			Common.ConsoleHelper.ConsoleWriteHeader("=============== End of training process ===============")
-
-			' Make a single test prediction loding the model from .ZIP file
-			TestSinglePrediction(mlContext)
-
-			Common.ConsoleHelper.ConsoleWriteHeader("=============== End of process, hit any key to finish ===============")
-			Console.ReadKey()
-
-		End Sub
-
-		Private Function BuildTrainEvaluateAndSaveModel(mlContext As MLContext) As ITransformer
+'			#Region "step1to3"
 			' STEP 1: Common data loading configuration
 			Dim dataView As IDataView = mlContext.Data.LoadFromTextFile(Of SentimentIssue)(DataPath, hasHeader:= True)
 
@@ -49,25 +32,23 @@ Namespace SentimentAnalysisConsoleApp
 			Dim testData As IDataView = trainTestSplit.TestSet
 
 			' STEP 2: Common data process configuration with pipeline data transformations          
-			Dim dataProcessPipeline = mlContext.Transforms.Text.FeaturizeText(outputColumnName:= "Features", inputColumnName:=NameOf(SentimentIssue.Text))
-
-			' (OPTIONAL) Peek data (such as 2 records) in training DataView after applying the ProcessPipeline's transformations into "Features" 
-			ConsoleHelper.PeekDataViewInConsole(mlContext, dataView, dataProcessPipeline, 2)
-			'Peak the transformed features column
-			'ConsoleHelper.PeekVectorColumnDataInConsole(mlContext, "Features", dataView, dataProcessPipeline, 1);
+			Dim dataProcessPipeline = mlContext.Transforms.Text.FeaturizeText(outputColumnName:= "Features", inputColumnName:= NameOf(SentimentIssue.Text))
 
 			' STEP 3: Set the training algorithm, then create and config the modelBuilder                            
 			Dim trainer = mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(labelColumnName:= "Label", featureColumnName:= "Features")
 			Dim trainingPipeline = dataProcessPipeline.Append(trainer)
+'			#End Region
 
+'			#Region "step4"
 			' STEP 4: Train the model fitting to the DataSet
-			Console.WriteLine("=============== Training the model ===============")
 			Dim trainedModel As ITransformer = trainingPipeline.Fit(trainingData)
+'			#End Region
 
+'			#Region "step5"
 			' STEP 5: Evaluate the model and show accuracy stats
-			Console.WriteLine("===== Evaluating Model's accuracy with Test data =====")
 			Dim predictions = trainedModel.Transform(testData)
-			Dim metrics = mlContext.BinaryClassification.Evaluate(data:=predictions, labelColumnName:= "Label", scoreColumnName:= "Score")
+			Dim metrics = mlContext.BinaryClassification.Evaluate(data:= predictions, labelColumnName:= "Label", scoreColumnName:= "Score")
+'			#End Region
 
 			ConsoleHelper.PrintBinaryClassificationMetrics(trainer.ToString(), metrics)
 
@@ -76,25 +57,22 @@ Namespace SentimentAnalysisConsoleApp
 
 			Console.WriteLine("The model is saved to {0}", ModelPath)
 
-			Return trainedModel
-		End Function
-
-		' (OPTIONAL) Try/test a single prediction by loding the model from the file, first.
-		Private Sub TestSinglePrediction(mlContext As MLContext)
+			' TRY IT: Make a single test prediction loding the model from .ZIP file
 			Dim sampleStatement As SentimentIssue = New SentimentIssue With {.Text = "This is a very rude movie"}
 
-			Dim modelInputSchema As Object
-			Dim trainedModel As ITransformer = mlContext.Model.Load(ModelPath, modelInputSchema)
-
+'			#Region "consume"
 			' Create prediction engine related to the loaded trained model
-			Dim predEngine= mlContext.Model.CreatePredictionEngine(Of SentimentIssue, SentimentPrediction)(trainedModel)
+			Dim predEngine = mlContext.Model.CreatePredictionEngine(Of SentimentIssue, SentimentPrediction)(trainedModel)
 
-			'Score
+			' Score
 			Dim resultprediction = predEngine.Predict(sampleStatement)
+'			#End Region
 
 			Console.WriteLine($"=============== Single Prediction  ===============")
 			Console.WriteLine($"Text: {sampleStatement.Text} | Prediction: {(If(Convert.ToBoolean(resultprediction.Prediction), "Toxic", "Non Toxic"))} sentiment | Probability of being toxic: {resultprediction.Probability} ")
-			Console.WriteLine($"==================================================")
+			Console.WriteLine($"================End of Process.Hit any key to exit==================================")
+			Console.ReadLine()
+'			#End Region
 		End Sub
 
 		Public Function GetAbsolutePath(relativePath As String) As String

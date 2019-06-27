@@ -2,7 +2,7 @@
 
 | ML.NET version | API type          | Status                        | App Type    | Data type | Scenario            | ML Task                   | Algorithms                  |
 |----------------|-------------------|-------------------------------|-------------|-----------|---------------------|---------------------------|-----------------------------|
-|v1.0.0   | Dynamic API | Up-to-date | Console app | .txt files | Recommendation | Matrix Factorization | MatrixFactorizationTrainer (One Class)|
+|v1.1.0   | Dynamic API | Up-to-date | Console app | .txt files | Recommendation | Matrix Factorization | MatrixFactorizationTrainer (One Class)|
 
 In this sample, you can see how to use ML.NET to build a product recommendation scenario.
 
@@ -137,3 +137,7 @@ Once the prediction engine has been created you can predict scores of two produc
                              CoPurchaseProductID = 63
                              });
 ```
+
+#### Score in Matrix Factorization
+
+The score produced by matrix factorization represents the likelihood of being a positive case. The larger the score value, the higher probability of being a positive case. However, the score doesn't carry any probability information. When making a prediction, you will have to compute multiple merchandises' scores and pick up the merchandise with the highest score.

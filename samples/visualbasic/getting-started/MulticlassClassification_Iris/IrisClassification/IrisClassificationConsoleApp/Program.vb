@@ -66,10 +66,10 @@ Namespace MulticlassClassification_Iris
 			Dim predictions = trainedModel.Transform(testDataView)
 			Dim metrics = mlContext.MulticlassClassification.Evaluate(predictions, "Label", "Score")
 
-			Common.ConsoleHelper.PrintMultiClassClassificationMetrics(trainer.ToString(), metrics)
+            Common.ConsoleHelper.PrintMultiClassClassificationMetrics(trainer.ToString(), metrics)
 
-			' STEP 6: Save/persist the trained model to a .ZIP file
-			mlContext.Model.Save(trainedModel, trainingDataView.Schema, ModelPath)
+            ' STEP 6: Save/persist the trained model to a .ZIP file
+            mlContext.Model.Save(trainedModel, trainingDataView.Schema, ModelPath)
 			Console.WriteLine("The model is saved to {0}", ModelPath)
 		End Sub
 

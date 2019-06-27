@@ -14,15 +14,12 @@ Namespace ImageClassification
 			Dim inceptionPb = Path.Combine(assetsPath, "inputs", "inception", "tensorflow_inception_graph.pb")
 			Dim labelsTxt = Path.Combine(assetsPath, "inputs", "inception", "imagenet_comp_graph_label_strings.txt")
 
-			Dim customInceptionPb = Path.Combine(assetsPath, "inputs", "inception_custom", "model_tf.pb")
-			Dim customLabelsTxt = Path.Combine(assetsPath, "inputs", "inception_custom", "labels.txt")
-
 			Try
 				Dim modelScorer = New TFModelScorer(tagsTsv, imagesFolder, inceptionPb, labelsTxt)
 				modelScorer.Score()
 
 			Catch ex As Exception
-				ConsoleHelpers.ConsoleWriteException(ex.Message)
+				ConsoleHelpers.ConsoleWriteException(ex.ToString())
 			End Try
 
 			ConsoleHelpers.ConsolePressAnyKey()
@@ -31,9 +28,7 @@ Namespace ImageClassification
 		Public Shared Function GetAbsolutePath(relativePath As String) As String
 			Dim _dataRoot As New FileInfo(GetType(Program).Assembly.Location)
 			Dim assemblyFolderPath As String = _dataRoot.Directory.FullName
-
 			Dim fullPath As String = Path.Combine(assemblyFolderPath, relativePath)
-
 			Return fullPath
 		End Function
 	End Class

@@ -1,7 +1,5 @@
 ﻿Imports System
 Imports System.IO
-Imports System.IO.Compression
-Imports System.Net
 
 Namespace ObjectDetection
 	Friend Class Program
@@ -9,14 +7,13 @@ Namespace ObjectDetection
 			Dim assetsRelativePath = "../../../assets"
 			Dim assetsPath As String = GetAbsolutePath(assetsRelativePath)
 			Dim modelFilePath = Path.Combine(assetsPath, "Model", "TinyYolo2_model.onnx")
-			Dim imagesFolder = Path.Combine(assetsPath,"images")
-			Dim tagsTsv = Path.Combine(assetsPath,"images", "tags.tsv")
+			Dim imagesFolder = Path.Combine(assetsPath, "images")
 
 			Try
-				Dim modelScorer = New OnnxModelScorer(tagsTsv, imagesFolder, modelFilePath)
+				Dim modelScorer = New OnnxModelScorer(imagesFolder, modelFilePath)
 				modelScorer.Score()
 			Catch ex As Exception
-				Console.WriteLine(ex.Message)
+				Console.WriteLine(ex.ToString())
 			End Try
 
 			Console.WriteLine("========= End of Process..Hit any Key ========")
