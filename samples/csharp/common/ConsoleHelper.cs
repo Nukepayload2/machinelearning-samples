@@ -56,6 +56,16 @@ namespace Common
             Console.WriteLine($"************************************************************");
         }
 
+        public static void PrintAnomalyDetectionMetrics(string name, AnomalyDetectionMetrics metrics)
+        {
+            Console.WriteLine($"************************************************************");
+            Console.WriteLine($"*       Metrics for {name} anomaly detection model      ");
+            Console.WriteLine($"*-----------------------------------------------------------");
+            Console.WriteLine($"*       Area Under ROC Curve:                       {metrics.AreaUnderRocCurve:P2}");
+            Console.WriteLine($"*       Detection rate at false positive count: {metrics.DetectionRateAtFalsePositiveCount}");
+            Console.WriteLine($"************************************************************");
+        }
+
         public static void PrintMultiClassClassificationMetrics(string name, MulticlassClassificationMetrics metrics)
         {
             Console.WriteLine($"************************************************************");
@@ -213,13 +223,21 @@ namespace Common
                                                         .Take(numberOfRows).ToList();
 
             // print to console the peeked rows
+
+            int currentRow = 0;
             someColumnData.ForEach(row => {
+                                            currentRow++;
                                             String concatColumn = String.Empty;
                                             foreach (float f in row)
                                             {
                                                 concatColumn += f.ToString();                                              
                                             }
+
+                                            Console.WriteLine();
+                                            string rowMsg = string.Format("**** Row {0} with '{1}' field value ****", currentRow, columnName);
+                                            Console.WriteLine(rowMsg);
                                             Console.WriteLine(concatColumn);
+                                            Console.WriteLine();
                                           });
         }
 
