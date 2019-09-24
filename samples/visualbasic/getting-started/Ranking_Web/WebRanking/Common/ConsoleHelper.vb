@@ -1,9 +1,6 @@
 ﻿Imports Microsoft.ML
 Imports Microsoft.ML.Data
 Imports WebRanking.DataStructures
-Imports System
-Imports System.Collections.Generic
-Imports System.Linq
 
 Namespace WebRanking.Common
     Public Class ConsoleHelper
