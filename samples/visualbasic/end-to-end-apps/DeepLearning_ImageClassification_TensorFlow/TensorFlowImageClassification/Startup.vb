@@ -1,37 +1,30 @@
-﻿Imports System
-Imports System.Collections.Generic
-Imports System.IO
-Imports System.Linq
-Imports System.Threading.Tasks
+﻿Imports System.IO
 Imports Microsoft.AspNetCore.Builder
 Imports Microsoft.AspNetCore.Hosting
 Imports Microsoft.AspNetCore.Http
-Imports Microsoft.AspNetCore.HttpsPolicy
 Imports Microsoft.AspNetCore.Mvc
 Imports Microsoft.Extensions.Configuration
 Imports Microsoft.Extensions.DependencyInjection
 Imports Microsoft.Extensions.ML
+Imports Microsoft.ML
 Imports TensorFlowImageClassification.ML
 Imports TensorFlowImageClassification.ML.DataModels
 
 Namespace TensorFlowImageClassification
 	Public Class Startup
 		Private ReadOnly _tensorFlowModelFilePath As String
-		Private ReadOnly _mlnetModelFilePath As String
+		Private ReadOnly _mlnetModel As ITransformer
 
 'INSTANT VB NOTE: The variable configuration was renamed since Visual Basic does not handle local variables named the same as class members well:
 		Public Sub New(configuration_Renamed As IConfiguration)
 			Me.Configuration = configuration_Renamed
 
 			_tensorFlowModelFilePath = GetAbsolutePath(Me.Configuration("MLModel:TensorFlowModelFilePath"))
-			_mlnetModelFilePath = GetAbsolutePath(Me.Configuration("MLModel:MLNETModelFilePath"))
 
 			'///////////////////////////////////////////////////////////////
 			'Configure the ML.NET model for the pre-trained TensorFlow model
 			Dim tensorFlowModelConfigurator As New TensorFlowModelConfigurator(_tensorFlowModelFilePath)
-
-			' Save the ML.NET model .zip file based on the TensorFlow model and related configuration
-			tensorFlowModelConfigurator.SaveMLNetModel(_mlnetModelFilePath)
+			_mlnetModel = tensorFlowModelConfigurator.Model
 		End Sub
 
 		Public ReadOnly Property Configuration As IConfiguration
@@ -49,7 +42,10 @@ Namespace TensorFlowImageClassification
 			'///////////////////////////////////////////////////////////////////////////
 			' Register the PredictionEnginePool as a service in the IoC container for DI
 			'
-			services.AddPredictionEnginePool(Of ImageInputData, ImageLabelPredictions)().FromFile(_mlnetModelFilePath)
+			services.AddPredictionEnginePool(Of ImageInputData, ImageLabelPredictions)()
+			services.AddOptions(Of PredictionEnginePoolOptions(Of ImageInputData, ImageLabelPredictions))().Configure(Sub(options)
+					options.ModelLoader = New InMemoryModelLoader(_mlnetModel)
+			End Sub)
 		End Sub
 
 		' This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

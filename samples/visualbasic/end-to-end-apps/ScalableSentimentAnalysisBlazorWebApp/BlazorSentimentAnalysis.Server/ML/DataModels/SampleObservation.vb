@@ -5,7 +5,6 @@ Namespace BlazorSentimentAnalysis.Server.ML.DataModels
 		<ColumnName("col0"), LoadColumn(0)>
 		Public Property Col0 As String
 
-
 		<ColumnName("Label"), LoadColumn(1)>
 		Public Property Label As Boolean
 	End Class

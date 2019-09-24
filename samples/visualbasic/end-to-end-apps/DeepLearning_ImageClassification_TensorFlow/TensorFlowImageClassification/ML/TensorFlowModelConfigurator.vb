@@ -1,21 +1,19 @@
 ﻿Imports Microsoft.ML
-Imports System
 Imports System.Collections.Generic
-Imports System.IO
 Imports System.Linq
-Imports System.Threading.Tasks
 Imports TensorFlowImageClassification.ML.DataModels
 
 Namespace TensorFlowImageClassification.ML
 	Public Class TensorFlowModelConfigurator
 		Private ReadOnly _mlContext As MLContext
-		Private ReadOnly _mlModel As ITransformer
+
+		Public ReadOnly Property Model As ITransformer
 
 		Public Sub New(tensorFlowModelFilePath As String)
 			_mlContext = New MLContext
 
 			' Model creation and pipeline definition for images needs to run just once, so calling it from the constructor:
-			_mlModel = SetupMlnetModel(tensorFlowModelFilePath)
+			Model = SetupMlnetModel(tensorFlowModelFilePath)
 		End Sub
 
 		Public Structure ImageSettings
@@ -50,10 +48,5 @@ Namespace TensorFlowImageClassification.ML
 			Dim dv = _mlContext.Data.LoadFromEnumerable(Of ImageInputData)(list)
 			Return dv
 		End Function
-
-		Public Sub SaveMLNetModel(mlnetModelFilePath As String)
-			' Save/persist the model to a .ZIP file to be loaded by the PredictionEnginePool
-			_mlContext.Model.Save(_mlModel, Nothing, mlnetModelFilePath)
-		End Sub
 	End Class
 End Namespace

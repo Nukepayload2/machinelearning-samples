@@ -1,11 +1,7 @@
 ﻿Imports System
-Imports System.Collections.Generic
-Imports System.Linq
-Imports System.Threading.Tasks
-Imports BlazorSentimentAnalysis.Server.ML.DataModels
 Imports Microsoft.Extensions.ML
-Imports Microsoft.AspNetCore.Http
 Imports Microsoft.AspNetCore.Mvc
+Imports BlazorSentimentAnalysis.Server.ML.DataModels
 
 Namespace BlazorSentimentAnalysis.Server.Controllers
 	<Route("api/[controller]")>
@@ -23,12 +19,12 @@ Namespace BlazorSentimentAnalysis.Server.Controllers
 		<HttpGet("[action]")>
 		<Route("sentimentprediction")>
 		Public Function PredictSentiment(<FromQuery> sentimentText As String) As ActionResult(Of Single)
-			Dim sampleText As String = sentimentText
-
 			' Predict sentiment using ML.NET model
 			Dim sampleData As SampleObservation = New SampleObservation With {.Col0 = sentimentText}
-			'Predict sentiment
+
+			' Predict sentiment
 			Dim prediction As SamplePrediction = _predictionEnginePool.Predict(sampleData)
+
 			Dim percentage As Single = CalculatePercentage(prediction.Score)
 
 			Return percentage

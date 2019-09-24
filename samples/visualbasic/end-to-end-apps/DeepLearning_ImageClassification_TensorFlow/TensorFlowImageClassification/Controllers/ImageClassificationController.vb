@@ -90,12 +90,10 @@ Namespace TensorFlowImageClassification.Controllers
 			'Set a single label as predicted or even none if probabilities were lower than 70%
 			Dim imageBestLabelPrediction = New ImagePredictedLabelWithProbability With {.ImageId = imageInputData.GetHashCode().ToString()}
 
-            With GetBestLabel(labels, probabilities)
-                imageBestLabelPrediction.PredictedLabel = .Item1
-                imageBestLabelPrediction.Probability = .Item2
-            End With
+'INSTANT VB TODO TASK: VB has no equivalent to the C# deconstruction assignments:
+			(imageBestLabelPrediction.PredictedLabel, imageBestLabelPrediction.Probability) = GetBestLabel(labels, probabilities)
 
-            Return imageBestLabelPrediction
+			Return imageBestLabelPrediction
 		End Function
 
 		Private Function GetBestLabel(labels() As String, probs() As Single) As (String, Single)
@@ -124,7 +122,7 @@ Namespace TensorFlowImageClassification.Controllers
 		' GET api/ImageClassification
 		<HttpGet>
 		Public Function [Get]() As ActionResult(Of IEnumerable(Of String))
-            Return New ActionResult(Of IEnumerable(Of String))({"ACK Heart beat 1", "ACK Heart beat 2"})
-        End Function
+			Return New String() { "ACK Heart beat 1", "ACK Heart beat 2" }
+		End Function
 	End Class
 End Namespace

@@ -4,9 +4,7 @@ Imports Microsoft.AspNetCore.ResponseCompression
 Imports Microsoft.Extensions.Configuration
 Imports Microsoft.Extensions.DependencyInjection
 Imports Microsoft.Extensions.Hosting
-Imports Newtonsoft.Json.Serialization
 Imports System.Linq
-
 Imports Microsoft.Extensions.ML
 Imports BlazorSentimentAnalysis.Server.ML.DataModels
 
@@ -28,7 +26,6 @@ Namespace BlazorSentimentAnalysis.Server
 			End Sub)
 
 			' Register the PredictionEnginePool as a service in the IoC container for DI
-			'
 			services.AddPredictionEnginePool(Of SampleObservation, SamplePrediction)().FromFile(Configuration("MLModel:MLModelFilePath"))
 		End Sub
 
