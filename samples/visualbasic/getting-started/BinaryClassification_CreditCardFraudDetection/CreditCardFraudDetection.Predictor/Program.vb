@@ -6,7 +6,7 @@ Namespace CreditCardFraudDetection.Predictor
 	Friend Class Program
 		Shared Sub Main(args() As String)
 			Dim assetsPath As String = GetAbsolutePath("../../../assets")
-			Dim trainOutput As String = GetAbsolutePath("../../../../CreditCardFraudDetection.Trainer\assets\output")
+			Dim trainOutput As String = GetAbsolutePath("../../../../CreditCardFraudDetection.Trainer/assets/output")
 
 			CopyModelAndDatasetFromTrainingProject(trainOutput, assetsPath)
 

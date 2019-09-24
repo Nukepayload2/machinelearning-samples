@@ -1,4 +1,4 @@
-Imports Common
+﻿Imports Common
 Imports ICSharpCode.SharpZipLib.GZip
 Imports ICSharpCode.SharpZipLib.Tar
 Imports Microsoft.ML
@@ -132,7 +132,7 @@ Namespace LargeDatasets
 				CSV(i).Insert(1, newColumnData)
 			Next i
 
-			File.WriteAllLines(preparedFilePath, CSV.Select(Function(x) String.Join(vbTab, x)))
+			File.WriteAllLines(preparedFilePath, CSV.Select(Function(x) String.Join(ControlChars.Tab, x)))
 		End Sub
 
 		Public Shared Function GetAbsolutePath(relativePath As String) As String

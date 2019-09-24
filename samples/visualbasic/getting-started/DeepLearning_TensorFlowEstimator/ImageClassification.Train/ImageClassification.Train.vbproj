@@ -11,8 +11,17 @@
     <RootNamespace></RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\..\common\Compress.vb" Link="Common\Compress.vb" />
+    <Compile Include="..\..\..\common\ConsoleHelper.vb" Link="Common\ConsoleHelper.vb" />
+    <Compile Include="..\..\..\common\Web.vb" Link="Common\Web.vb" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
     <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="$(MicrosoftMLVersion)" />
-    <PackageReference Include="Microsoft.ML.TensorFlow" Version="$(MicrosoftMLPreviewVersion)" />
+    <PackageReference Include="Microsoft.ML.TensorFlow" Version="$(MicrosoftMLVersion)" />
+    <PackageReference Include="SharpZipLib" Version="1.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Common\" />
   </ItemGroup>
 </Project>

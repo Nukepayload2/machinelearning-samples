@@ -10,13 +10,14 @@ Namespace ImageClassification.Predict
 			Dim assetsRelativePath As String = "../../../assets"
 			Dim assetsPath As String = GetAbsolutePath(assetsRelativePath)
 
-			Dim tagsTsv = Path.Combine(assetsPath, "inputs", "data", "images_list.tsv")
-			Dim imagesFolder = Path.Combine(assetsPath, "inputs", "data")
-			Dim imageClassifierZip = Path.Combine(assetsPath, "inputs", "imageClassifier.zip")
+
+			Dim imagesFolder = Path.Combine(assetsPath, "inputs", "images-for-predictions")
+			Dim imageClassifierZip = Path.Combine(assetsPath, "inputs", "MLNETModel", "imageClassifier.zip")
 
 			Try
-				Dim modelScorer = New ModelScorer(tagsTsv, imagesFolder, imageClassifierZip)
-				modelScorer.ClassifyImages()
+'INSTANT VB NOTE: The variable modelScorer was renamed since it may cause conflicts with calls to static members of the user-defined type with this name:
+				Dim modelScorer_Renamed = New ModelScorer(imagesFolder, imageClassifierZip)
+				modelScorer_Renamed.ClassifyImages()
 			Catch ex As Exception
 				ConsoleWriteException(ex.ToString())
 			End Try

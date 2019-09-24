@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
-    <PackageReference Include="Microsoft.ML.TimeSeries" Version="$(MicrosoftMLPreviewVersion)" />
+    <PackageReference Include="Microsoft.ML.TimeSeries" Version="$(MicrosoftMLVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />

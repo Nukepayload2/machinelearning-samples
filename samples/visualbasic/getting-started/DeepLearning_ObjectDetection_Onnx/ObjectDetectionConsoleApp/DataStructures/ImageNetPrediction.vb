@@ -1,8 +1,8 @@
 ﻿Imports Microsoft.ML.Data
 
-Namespace ObjectDetection
+Namespace ObjectDetection.DataStructures
 	Public Class ImageNetPrediction
-		<ColumnName(OnnxModelScorer.TinyYoloModelSettings.ModelOutput)>
+		<ColumnName("grid")>
 		Public PredictedLabels() As Single
 	End Class
 End Namespace

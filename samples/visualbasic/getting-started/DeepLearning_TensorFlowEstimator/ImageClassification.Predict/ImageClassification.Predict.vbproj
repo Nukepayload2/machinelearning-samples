@@ -10,18 +10,18 @@
     <RootNamespace></RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\ImageClassification.Train\ImageData\ImageNetData.vb" Link="ImageData\ImageNetData.vb" />
-    <Compile Include="..\ImageClassification.Train\ImageData\ImageNetPrediction.vb" Link="ImageData\ImageNetPrediction.vb" />
+    <Compile Remove="assets\outputs\**" />
+    <EmbeddedResource Remove="assets\outputs\**" />
+    <None Remove="assets\outputs\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\ImageClassification.Train\ImageData\ImagePrediction.vb" Link="ImageData\ImagePrediction.vb" />
     <Compile Include="..\ImageClassification.Train\Model\ConsoleHelpers.vb" Link="Model\ConsoleHelpers.vb" />
     <Compile Include="..\ImageClassification.Train\Model\ModelHelpers.vb" Link="Model\ModelHelpers.vb" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
     <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="$(MicrosoftMLVersion)" />
-    <PackageReference Include="Microsoft.ML.TensorFlow" Version="$(MicrosoftMLPreviewVersion)" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="assets\outputs\" />
-    <Folder Include="ImageData\" />
+    <PackageReference Include="Microsoft.ML.TensorFlow" Version="$(MicrosoftMLVersion)" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-Imports System
+﻿Imports System
 Imports System.IO
 Imports System.IO.Compression
 Imports System.Linq
@@ -41,7 +41,7 @@ Namespace SpamDetectionConsoleApp
 			Dim mlContext As MLContext = New MLContext
 
 			' Specify the schema for spam data and read it into DataView.
-			Dim data = mlContext.Data.LoadFromTextFile(Of SpamInput)(path:= TrainDataPath, hasHeader:= True, separatorChar:= vbTab)
+			Dim data = mlContext.Data.LoadFromTextFile(Of SpamInput)(path:= TrainDataPath, hasHeader:= True, separatorChar:= ControlChars.Tab)
 
 			' Create the estimator which converts the text label to boolean, featurizes the text, and adds a linear trainer.
 			' Data process configuration with pipeline data transformations 

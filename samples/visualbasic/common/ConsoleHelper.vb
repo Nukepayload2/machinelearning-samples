@@ -4,6 +4,7 @@ Imports System.Collections.Generic
 Imports Microsoft.ML.Data
 Imports Microsoft.ML
 Imports Microsoft.ML.TrainCatalogBase
+Imports System.Diagnostics
 
 Namespace Common
 	Public Module ConsoleHelper
@@ -49,7 +50,17 @@ Namespace Common
 			Console.WriteLine($"************************************************************")
 		End Sub
 
-		Public Sub PrintMultiClassClassificationMetrics(name As String, metrics As MulticlassClassificationMetrics)
+		Public Sub PrintAnomalyDetectionMetrics(name As String, metrics As AnomalyDetectionMetrics)
+			Console.WriteLine($"************************************************************")
+			Console.WriteLine($"*       Metrics for {name} anomaly detection model      ")
+			Console.WriteLine($"*-----------------------------------------------------------")
+			Console.WriteLine($"*       Area Under ROC Curve:                       {metrics.AreaUnderRocCurve:P2}")
+			Console.WriteLine($"*       Detection rate at false positive count: {metrics.DetectionRateAtFalsePositiveCount}")
+			Console.WriteLine($"************************************************************")
+		End Sub
+
+'INSTANT VB NOTE: The method PrintMultiClassClassificationMetrics was renamed since Visual Basic does not allow same-signature methods with the same name:
+		Public Sub PrintMultiClassClassificationMetrics_Renamed(name As String, metrics As MulticlassClassificationMetrics)
 			Console.WriteLine($"************************************************************")
 			Console.WriteLine($"*    Metrics for {name} multi-class classification model   ")
 			Console.WriteLine($"*-----------------------------------------------------------")
@@ -151,6 +162,8 @@ Namespace Common
 			Next row
 		End Sub
 
+		' This method using 'DebuggerExtensions.Preview()' should only be used when debugging/developing, not for release/production trainings
+		<Conditional("DEBUG")>
 		Public Sub PeekDataViewInConsole(mlContext As MLContext, dataView As IDataView, pipeline As IEstimator(Of ITransformer), Optional numberOfRows As Integer = 4)
 			Dim msg As String = String.Format("Peek data in DataView: Showing {0} rows with the columns", numberOfRows.ToString())
 			ConsoleWriteHeader(msg)
@@ -174,7 +187,9 @@ Namespace Common
 			Next row
 		End Sub
 
-		Public Function PeekVectorColumnDataInConsole(mlContext As MLContext, columnName As String, dataView As IDataView, pipeline As IEstimator(Of ITransformer), Optional numberOfRows As Integer = 4) As List(Of Single())
+		' This method using 'DebuggerExtensions.Preview()' should only be used when debugging/developing, not for release/production trainings
+		<Conditional("DEBUG")>
+		Public Sub PeekVectorColumnDataInConsole(mlContext As MLContext, columnName As String, dataView As IDataView, pipeline As IEstimator(Of ITransformer), Optional numberOfRows As Integer = 4)
 			Dim msg As String = String.Format("Peek data in DataView: : Show {0} rows with just the '{1}' column", numberOfRows, columnName)
 			ConsoleWriteHeader(msg)
 
@@ -185,16 +200,21 @@ Namespace Common
 			Dim someColumnData = transformedData.GetColumn(Of Single())(columnName).Take(numberOfRows).ToList()
 
 			' print to console the peeked rows
+
+			Dim currentRow As Integer = 0
 			someColumnData.ForEach(Sub(row)
+				currentRow += 1
 				Dim concatColumn As String = String.Empty
 				For Each f As Single In row
 					concatColumn &= f.ToString()
 				Next f
+				Console.WriteLine()
+				Dim rowMsg As String = String.Format("**** Row {0} with '{1}' field value ****", currentRow, columnName)
+				Console.WriteLine(rowMsg)
 				Console.WriteLine(concatColumn)
+				Console.WriteLine()
 			End Sub)
-
-			Return someColumnData
-		End Function
+		End Sub
 
 		Public Sub ConsoleWriteHeader(ParamArray lines() As String)
 			Dim defaultColor = Console.ForegroundColor

@@ -1,8 +1,12 @@
-﻿Imports ObjectDetection.YoloParser
-Imports System.Drawing
+﻿Imports System.Drawing
 
-Namespace ObjectDetection
-	Friend Class YoloBoundingBox
+Namespace ObjectDetection.YoloParser
+	Public Class BoundingBoxDimensions
+		Inherits DimensionsBase
+
+	End Class
+
+	Public Class YoloBoundingBox
 		Public Property Dimensions As BoundingBoxDimensions
 
 		Public Property Label As String
@@ -18,8 +22,4 @@ Namespace ObjectDetection
 		Public Property BoxColor As Color
 	End Class
 
-	Friend Class BoundingBoxDimensions
-		Inherits DimensionsBase
-
-	End Class
 End Namespace

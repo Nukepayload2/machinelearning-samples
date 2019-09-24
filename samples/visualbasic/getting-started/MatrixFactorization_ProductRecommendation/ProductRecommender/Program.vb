@@ -1,4 +1,4 @@
-Imports Microsoft.ML
+﻿Imports Microsoft.ML
 Imports Microsoft.ML.Data
 Imports Microsoft.ML.Trainers
 Imports System
@@ -8,7 +8,7 @@ Namespace ProductRecommender
 	Friend Class Program
 		'1. Do remember to replace amazon0302.txt with dataset from https://snap.stanford.edu/data/amazon0302.html
 		'2. Replace column names with ProductID and CoPurchaseProductID. It should look like this:
-		'   ProductID	ProductID_Copurchased
+		'   ProductID	CoPurchaseProductID
 		'   0	1
 		'   0  2
 		Private Shared BaseDataSetRelativePath As String = "../../../Data"
@@ -29,7 +29,7 @@ Namespace ProductRecommender
 				New TextLoader.Column("Label", DataKind.Single, 0),
 				New TextLoader.Column(name:=NameOf(ProductEntry.ProductID), dataKind:=DataKind.UInt32, source:= New TextLoader.Range() { New TextLoader.Range(0) }, keyCount:= New KeyCount(262111)),
 				New TextLoader.Column(name:=NameOf(ProductEntry.CoPurchaseProductID), dataKind:=DataKind.UInt32, source:= New TextLoader.Range() { New TextLoader.Range(1) }, keyCount:= New KeyCount(262111))
-			}, hasHeader:= True, separatorChar:= vbTab)
+			}, hasHeader:= True, separatorChar:= ControlChars.Tab)
 
 			'STEP 3: Your data is already encoded so all you need to do is specify options for MatrxiFactorizationTrainer with a few extra hyperparameters
 			'        LossFunction, Alpa, Lambda and a few others like K and C as shown below and call the trainer. 
@@ -78,11 +78,11 @@ Namespace ProductRecommender
 		End Class
 
 		Public Class ProductEntry
-            <KeyType(262111)>
-            Public Property ProductID As UInteger
+			<KeyType(count := 262111)>
+			Public Property ProductID As UInteger
 
-            <KeyType(262111)>
-            Public Property CoPurchaseProductID As UInteger
+			<KeyType(count := 262111)>
+			Public Property CoPurchaseProductID As UInteger
 		End Class
 	End Class
 End Namespace

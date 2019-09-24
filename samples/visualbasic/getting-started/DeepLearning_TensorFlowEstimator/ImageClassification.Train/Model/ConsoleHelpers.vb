@@ -37,7 +37,7 @@ Namespace ImageClassification.Model
 			Next line
 		End Sub
 
-		Public Sub ConsoleWriteImagePrediction(ImagePath As String, PredictedLabel As String, Probability As Single)
+		Public Sub ConsoleWriteImagePrediction(ImagePath As String, Label As String, PredictedLabel As String, Probability As Single)
 			Dim defaultForeground = Console.ForegroundColor
 			Dim labelColor = ConsoleColor.Magenta
 			Dim probColor = ConsoleColor.Blue
@@ -45,6 +45,10 @@ Namespace ImageClassification.Model
 			Console.Write("ImagePath: ")
 			Console.ForegroundColor = labelColor
 			Console.Write($"{Path.GetFileName(ImagePath)}")
+			Console.ForegroundColor = defaultForeground
+			Console.Write(" original labeled as ")
+			Console.ForegroundColor = labelColor
+			Console.Write(Label)
 			Console.ForegroundColor = defaultForeground
 			Console.Write(" predicted as ")
 			Console.ForegroundColor = labelColor

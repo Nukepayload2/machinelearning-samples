@@ -37,8 +37,7 @@ Namespace Common
 			Console.WriteLine($"************************************************************")
 		End Sub
 
-'INSTANT VB NOTE: The method PrintMulticlassClassificationMetrics was renamed since Visual Basic does not allow same-signature methods with the same name:
-		Public Sub PrintMulticlassClassificationMetrics_Renamed(name As String, metrics As MulticlassClassificationMetrics)
+		Public Sub PrintMulticlassClassificationMetrics(name As String, metrics As MulticlassClassificationMetrics)
 			Console.WriteLine($"************************************************************")
 			Console.WriteLine($"*    Metrics for {name} multi-class classification model   ")
 			Console.WriteLine($"*-----------------------------------------------------------")
