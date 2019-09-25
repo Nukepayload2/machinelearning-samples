@@ -1,14 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
-    <OptionExplicit>On</OptionExplicit>
-    <OptionCompare>Binary</OptionCompare>
-    <OptionStrict>Off</OptionStrict>
-    <OptionInfer>On</OptionInfer>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>OnnxObjectDetectionApp</RootNamespace>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.ML" Version="$(MicrosoftMLVersion)" />
     <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="$(MicrosoftMLVersion)" />
@@ -16,6 +13,7 @@
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="3.0.0-rc1.19456.4" />
     <PackageReference Include="OpenCvSharp3-AnyCPU" Version="4.0.0.20181129" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\OnnxObjectDetection\OnnxObjectDetection.vbproj" />
   </ItemGroup>

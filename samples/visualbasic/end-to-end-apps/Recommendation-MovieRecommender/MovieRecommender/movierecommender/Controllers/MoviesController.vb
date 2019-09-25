@@ -23,16 +23,15 @@ Namespace movierecommender.Controllers
 		Private ReadOnly _logger As ILogger(Of MoviesController)
 		Private ReadOnly _model As PredictionEnginePool(Of MovieRating, MovieRatingPrediction)
 
-'INSTANT VB NOTE: The parameter movieService was renamed since it may cause conflicts with calls to static members of the user-defined type with this name:
-		Public Sub New(model As PredictionEnginePool(Of MovieRating, MovieRatingPrediction), logger As ILogger(Of MoviesController), appSettings As IOptions(Of AppSettings), movieService_Renamed As IMovieService, profileService As IProfileService)
-			_movieService = movieService_Renamed
-			_profileService = profileService
-			_logger = logger
-			_appSettings = appSettings.Value
-			_model = model
-		End Sub
+        Public Sub New(model As PredictionEnginePool(Of MovieRating, MovieRatingPrediction), logger As ILogger(Of MoviesController), appSettings As IOptions(Of AppSettings), movieService_Renamed As IMovieService, profileService As IProfileService)
+            _movieService = movieService_Renamed
+            _profileService = profileService
+            _logger = logger
+            _appSettings = appSettings.Value
+            _model = model
+        End Sub
 
-		Public Function Choose() As ActionResult
+        Public Function Choose() As ActionResult
 			Return View(_movieService.GetSomeSuggestions())
 		End Function
 
@@ -46,11 +45,11 @@ Namespace movierecommender.Controllers
 			Dim MovieRatings = _profileService.GetProfileWatchedMovies(id)
 			Dim WatchedMovies As New List(Of Movie)
 
-			foreach (Integer movieId, Integer movieRating) In MovieRatings
-				WatchedMovies.Add(_movieService.Get(movieId))
-			Next 
+            For Each x In MovieRatings
+                WatchedMovies.Add(_movieService.Get(x.movieId))
+            Next
 
-			Dim prediction As MovieRatingPrediction = Nothing
+            Dim prediction As MovieRatingPrediction = Nothing
 			For Each movie In _movieService.GetTrendingMovies
 				' Call the Rating Prediction for each movie prediction
 				 prediction = _model.Predict(New MovieRating With {
@@ -91,11 +90,11 @@ Namespace movierecommender.Controllers
 			Dim MovieRatings = _profileService.GetProfileWatchedMovies(id)
 			Dim WatchedMovies As New List(Of Movie)
 
-			foreach (Integer movieId, Single normalizedScore) In MovieRatings
-				WatchedMovies.Add(_movieService.Get(movieId))
-			Next 
+            For Each x In MovieRatings
+                WatchedMovies.Add(_movieService.Get(x.movieId))
+            Next
 
-			ViewData("watchedmovies") = WatchedMovies
+            ViewData("watchedmovies") = WatchedMovies
 			ViewData("trendingmovies") = _movieService.GetTrendingMovies
 			Return View(activeprofile)
 		End Function

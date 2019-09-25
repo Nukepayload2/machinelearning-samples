@@ -8,12 +8,9 @@
 		ReadOnly Property ModelOutput As String
 
 		ReadOnly Property Labels As String()
-'INSTANT VB TODO TASK: There is no equivalent in VB to C# default interface methods:
-'		(float, float)[] Anchors
-'		{
-'			get;
-'		}
-	End Interface
+
+        ReadOnly Property Anchors As (Single, Single)()
+    End Interface
 
 	Public Interface IOnnxObjectPrediction
 		Property PredictedLabels As Single()
